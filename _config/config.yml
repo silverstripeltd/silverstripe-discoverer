@@ -1,0 +1,5 @@
+---
+Name: elasticappsearch
+---
+SilverStripe\Search\Service\SearchService:
+  index_variant: '`ENTERPRISE_SEARCH_ENGINE_PREFIX`'

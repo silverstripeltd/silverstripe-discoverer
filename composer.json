@@ -1,20 +1,24 @@
 {
-    "name": "silverstripeltd/silverstripe-search-elastic",
-    "description": "A plugin module for silverstripeltd/silverstripe-search that provides integration for Elastic",
+    "name": "silverstripeltd/silverstripe-search",
+    "description": "Service agnostic abstraction of search querying requirements",
     "type": "silverstripe-vendormodule",
     "license": "proprietary",
-    "homepage": "https://github.com/silverstripeltd/silverstripe-search-elastic",
-    "authors": [],
+    "homepage": "https://github.com/silverstripeltd/silverstripe-search",
+    "authors": [
+        {
+            "name": "Christopher David Penny",
+            "email": "chris.penny@gmail.com"
+        }
+    ],
     "keywords": [
         "Silverstripe",
         "Silverstripe CMS",
-        "Search",
-        "Elastic",
-        "Elastic Search"
+        "Search"
     ],
     "require": {
         "php": "^8.1",
-        "silverstripe/framework": "^5"
+        "silverstripe/framework": "^5",
+        "silverstripeltd/silverstripe-search-elastic": "dev-main"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5",
@@ -22,8 +26,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Silverstripe\\SearchElastic\\": "src/",
-            "Silverstripe\\SearchElastic\\Tests\\": "tests/"
+            "Silverstripe\\Search\\": "src/",
+            "Silverstripe\\Search\\Tests\\": "tests/"
         }
     },
     "config": {
