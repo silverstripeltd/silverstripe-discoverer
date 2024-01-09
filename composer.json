@@ -1,0 +1,46 @@
+{
+    "name": "silverstripeltd/silverstripe-search-elastic",
+    "description": "A plugin module for silverstripeltd/silverstripe-search that provides integration for Elastic",
+    "type": "silverstripe-vendormodule",
+    "license": "proprietary",
+    "homepage": "https://github.com/silverstripeltd/silverstripe-search-elastic",
+    "authors": [],
+    "keywords": [
+        "Silverstripe",
+        "Silverstripe CMS",
+        "Search",
+        "Elastic",
+        "Elastic Search"
+    ],
+    "require": {
+        "php": "^8.1",
+        "silverstripe/framework": "^5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5",
+        "silverstripeltd/bespoke-standards": "^1.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Silverstripe\\SearchElastic\\": "src/",
+            "Silverstripe\\SearchElastic\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/installers": true,
+            "silverstripe/vendor-plugin": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "scripts": {
+        "silverstripe-standards": [
+            "@php-lint",
+            "@phpcs"
+        ],
+        "php-lint": "bespoke-phplint",
+        "phpcs": "bespoke-phpcs",
+        "phpcbf": "bespoke-phpcbf",
+        "phpcs-fix": "@phpcbf"
+    }
+}
