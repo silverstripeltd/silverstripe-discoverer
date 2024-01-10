@@ -25,7 +25,7 @@ class CriterionTest extends SapphireTest
     {
         parent::setUp();
 
-        Injector::inst()->registerService(CriterionAdaptor::create(), CriterionAdaptorInterface::class);
+        Injector::inst()->registerService(new CriterionAdaptor(), CriterionAdaptorInterface::class);
     }
 
 }
