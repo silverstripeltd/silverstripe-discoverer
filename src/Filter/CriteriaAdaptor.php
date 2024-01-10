@@ -2,7 +2,7 @@
 
 namespace SilverStripe\Search\Filter;
 
-interface CriteriaWriter
+interface CriteriaAdaptor
 {
 
     public function generateClauseString(Criteria $criterion): string;

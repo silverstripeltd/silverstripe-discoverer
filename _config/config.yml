@@ -1,11 +1,11 @@
 ---
-Name: elasticappsearch
+Name: search-config
 ---
 SilverStripe\Search\Service\SearchService:
   index_variant: '`ENTERPRISE_SEARCH_ENGINE_PREFIX`'
 
 SilverStripe\Core\Injector\Injector:
-  SilverStripe\Search\Filter\CriteriaWriter:
-    class: SilverStripe\Search\Filter\Niave\CriteriaWriter
-  SilverStripe\Search\Filter\CriterionWriter:
-    class: SilverStripe\Search\Filter\Niave\CriterionWriter
+  SilverStripe\Search\Filter\CriteriaAdaptor:
+    class: SilverStripe\Search\Filter\Niave\CriteriaAdaptor
+  SilverStripe\Search\Filter\CriterionAdaptor:
+    class: SilverStripe\Search\Filter\Niave\CriterionAdaptor

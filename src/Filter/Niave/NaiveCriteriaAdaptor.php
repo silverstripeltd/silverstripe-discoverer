@@ -3,14 +3,14 @@
 namespace SilverStripe\Search\Filter\Niave;
 
 use SilverStripe\Search\Filter\Criteria;
-use SilverStripe\Search\Filter\CriteriaWriter;
+use SilverStripe\Search\Filter\CriteriaAdaptor;
 
-class NaiveCriteriaWriter implements CriteriaWriter
+class NaiveCriteriaAdaptor implements CriteriaAdaptor
 {
 
     public function generateClauseString(Criteria $criterion): string
     {
-        return '';
+        return 'naive';
     }
 
 }
