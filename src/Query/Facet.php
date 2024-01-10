@@ -2,7 +2,7 @@
 
 namespace SilverStripe\Search\Query;
 
-interface SearchFilter
+interface Facet
 {
 
 }
