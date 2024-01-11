@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Search\Tests\Query;
 
-use ReflectionProperty;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Search\Filter\Criteria;

@@ -13,9 +13,9 @@ use SilverStripe\Core\Injector\Injector;
  *
  * The Criteria class will allow you to perform nested filtering, for example, if you need to achieve (something like):
  * (
- *   (field1 = value1 AND field1 = value2)
- *   OR
- *   (field2 = value3 AND field2 = value4)
+ *   (field1 = value1 OR field1 = value2)
+ *   AND
+ *   (field2 = value3 OR field2 = value4)
  * )
  */
 class Criteria implements Clause
