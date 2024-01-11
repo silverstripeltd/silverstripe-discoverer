@@ -3,8 +3,21 @@
 namespace SilverStripe\Search\Filter;
 
 use Exception;
+use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Core\Injector\Injector;
 
+/**
+ * A Criteria is a collection of filter clauses. The collection (in the case of many search services, but not all), can
+ * include a mixture of other Criteria (other collections of clauses) and Criterion (individual clauses)
+ *
+ * The Criteria class will allow you to perform nested filtering, for example, if you need to achieve (something like):
+ * (
+ *   (field1 = value1 AND field1 = value2)
+ *   OR
+ *   (field2 = value3 AND field2 = value4)
+ * )
+ */
 class Criteria implements Clause
 {
 
@@ -25,13 +38,7 @@ class Criteria implements Clause
      */
     private array $clauses = [];
 
-    private ?CriteriaAdaptor $writer = null;
-
     private string $conjunction;
-
-    private static array $dependencies = [
-        'writer' => '%$' . CriteriaAdaptor::class,
-    ];
 
     public static function createAny(): self
     {
@@ -43,14 +50,21 @@ class Criteria implements Clause
         return static::create(self::CONJUNCTION_AND);
     }
 
+    /**
+     * @throws Exception
+     */
     public function __construct(string $conjunction)
     {
-        $this->setConjunction($conjunction);
+        if (!in_array($conjunction, self::CONJUNCTIONS)) {
+            throw new Exception(sprintf('Invalid conjunction provided "%s"', $conjunction));
+        }
+
+        $this->conjunction = $conjunction;
     }
 
-    public function getPreparedClause(): string
+    public function getPreparedClause(): mixed
     {
-        return $this->writer->generateClauseString($this);
+        return $this->getAdaptor()->prepareClause($this);
     }
 
     public function getConjunction(): string
@@ -58,20 +72,24 @@ class Criteria implements Clause
         return $this->conjunction;
     }
 
-    public function setConjunction(string $conjunction): void
-    {
-        if (!in_array($conjunction, self::CONJUNCTIONS)) {
-            throw new Exception('Invalid conjunction provided');
-        }
-
-        $this->conjunction = $conjunction;
-    }
-
     public function addClause(Clause $clause): self
     {
         $this->clauses[] = $clause;
 
         return $this;
+    }
+
+    public function getClauses(): array
+    {
+        return $this->clauses;
+    }
+
+    /**
+     * @throws NotFoundExceptionInterface
+     */
+    private function getAdaptor(): CriteriaAdaptor
+    {
+        return Injector::inst()->get(CriteriaAdaptor::class);
     }
 
 }

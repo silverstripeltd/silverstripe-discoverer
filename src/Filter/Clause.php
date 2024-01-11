@@ -5,6 +5,6 @@ namespace SilverStripe\Search\Filter;
 interface Clause
 {
 
-    public function getPreparedClause(): string;
+    public function getPreparedClause(): mixed;
 
 }

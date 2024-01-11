@@ -6,6 +6,6 @@ SilverStripe\Search\Service\SearchService:
 
 SilverStripe\Core\Injector\Injector:
   SilverStripe\Search\Filter\CriteriaAdaptor:
-    class: SilverStripe\Search\Filter\Niave\CriteriaAdaptor
+    class: SilverStripe\Search\Filter\Niave\NaiveCriteriaAdaptor
   SilverStripe\Search\Filter\CriterionAdaptor:
-    class: SilverStripe\Search\Filter\Niave\CriterionAdaptor
+    class: SilverStripe\Search\Filter\Niave\NiaveCriterionAdaptor

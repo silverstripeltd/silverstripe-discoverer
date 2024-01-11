@@ -8,9 +8,9 @@ use SilverStripe\Search\Filter\CriteriaAdaptor;
 class NaiveCriteriaAdaptor implements CriteriaAdaptor
 {
 
-    public function generateClauseString(Criteria $criterion): string
+    public function prepareClause(Criteria $criterion): string
     {
-        return 'naive';
+        return '';
     }
 
 }

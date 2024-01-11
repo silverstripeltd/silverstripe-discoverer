@@ -5,6 +5,6 @@ namespace SilverStripe\Search\Filter;
 interface CriteriaAdaptor
 {
 
-    public function generateClauseString(Criteria $criterion): string;
+    public function prepareClause(Criteria $criteria): mixed;
 
 }

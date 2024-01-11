@@ -10,7 +10,7 @@ class NaiveCriterionAdaptor implements CriterionAdaptor
 
     public function prepareClause(Criterion $criterion): string
     {
-        return 'naive';
+        return '';
     }
 
 }

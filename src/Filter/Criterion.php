@@ -3,8 +3,13 @@
 namespace SilverStripe\Search\Filter;
 
 use Exception;
+use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Core\Injector\Injector;
 
+/**
+ * A Criterion is a single filter clause. EG: field1 = value1, or value1 IN (array, of, values), etc
+ */
 class Criterion implements Clause
 {
 
@@ -36,12 +41,6 @@ class Criterion implements Clause
 
     use Injectable;
 
-    public ?CriterionAdaptor $adaptor = null;
-
-    private static array $dependencies = [
-        'adaptor' => '%$' . CriterionAdaptor::class,
-    ];
-
     /**
      * @throws Exception
      */
@@ -50,8 +49,16 @@ class Criterion implements Clause
         private readonly mixed $value,
         private readonly string $comparison
     ) {
+        if (!in_array($this->comparison, self::COMPARISONS)) {
+            throw new Exception(sprintf('Invalid comparison provided: "%s"', $this->comparison));
+        }
+
         if ($this->comparison === self::RANGE) {
             $this->validateRange();
+        }
+
+        if ($this->comparison === self::IN || $this->comparison === self::NOT_IN) {
+            $this->validateIn();
         }
     }
 
@@ -70,9 +77,20 @@ class Criterion implements Clause
         return $this->value;
     }
 
-    public function getPreparedClause(): string
+    /**
+     * @throws NotFoundExceptionInterface
+     */
+    public function getPreparedClause(): mixed
     {
-        return $this->adaptor->prepareClause($this);
+        return $this->getAdaptor()->prepareClause($this);
+    }
+
+    /**
+     * @throws NotFoundExceptionInterface
+     */
+    private function getAdaptor(): CriterionAdaptor
+    {
+        return Injector::inst()->get(CriterionAdaptor::class);
     }
 
     /**
@@ -81,15 +99,27 @@ class Criterion implements Clause
     private function validateRange(): void
     {
         if (!is_array($this->value)) {
-            throw new Exception('Expected to receive an array with "from" and "to" keys for Range value');
+            throw new Exception('Expected to receive an array with "from" and "to" keys for Range $value');
         }
 
         $from = $this->value['from'] ?? null;
         $to = $this->value['to'] ?? null;
 
-        if (!$from || !$to) {
-            throw new Exception('Range comparison value must contain array keys "from" and "to"');
+        if (!$from && !$to) {
+            throw new Exception('Range comparison $value must contain one (or both) of keys "from" and "to"');
         }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function validateIn(): void
+    {
+        if (is_array($this->value)) {
+            return;
+        }
+
+        throw new Exception('$value of type array expected for IN and NOT_IN comparisons');
     }
 
 }
