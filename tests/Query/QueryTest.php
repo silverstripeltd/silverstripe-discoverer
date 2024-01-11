@@ -7,6 +7,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Search\Filter\Criteria;
 use SilverStripe\Search\Filter\CriteriaAdaptor;
+use SilverStripe\Search\Filter\Criterion;
 use SilverStripe\Search\Filter\CriterionAdaptor;
 use SilverStripe\Search\Query\Query;
 use SilverStripe\Search\Tests\Filter\MockCriteriaAdaptor;
@@ -193,6 +194,115 @@ class QueryTest extends SapphireTest
 
         $this->assertEquals(1, $query->getPageNum());
         $this->assertEquals(10, $query->getPageSize());
+    }
+
+    public function testFilterWithClause(): void
+    {
+        $query = Query::create();
+        $criterionOne = Criterion::create('field1', 'value1', Criterion::EQUAL);
+        $criterionTwo = Criterion::create('field2', 'value2', Criterion::EQUAL);
+
+        $query->filter($criterionOne);
+        $query->filter($criterionTwo);
+
+        $clauses = $query->getFilter()->getClauses();
+
+        $this->assertCount(2, $clauses);
+
+        /** @var Criterion $criterionOne */
+        $criterionOne = array_shift($clauses);
+        /** @var Criterion $criterionTwo */
+        $criterionTwo = array_shift($clauses);
+
+        $this->assertEquals('field1', $criterionOne->getTarget());
+        $this->assertEquals('value1', $criterionOne->getValue());
+        $this->assertEquals(Criterion::EQUAL, $criterionOne->getComparison());
+        $this->assertEquals('field2', $criterionTwo->getTarget());
+        $this->assertEquals('value2', $criterionTwo->getValue());
+        $this->assertEquals(Criterion::EQUAL, $criterionTwo->getComparison());
+    }
+
+    public function testFilterWithTarget(): void
+    {
+        $query = Query::create();
+        $query->filter('field1', 'value1', Criterion::EQUAL);
+        $query->filter('field2', 'value2', Criterion::EQUAL);
+
+        $clauses = $query->getFilter()->getClauses();
+
+        $this->assertCount(2, $clauses);
+
+        /** @var Criterion $criterionOne */
+        $criterionOne = array_shift($clauses);
+        /** @var Criterion $criterionTwo */
+        $criterionTwo = array_shift($clauses);
+
+        $this->assertEquals('field1', $criterionOne->getTarget());
+        $this->assertEquals('value1', $criterionOne->getValue());
+        $this->assertEquals(Criterion::EQUAL, $criterionOne->getComparison());
+        $this->assertEquals('field2', $criterionTwo->getTarget());
+        $this->assertEquals('value2', $criterionTwo->getValue());
+        $this->assertEquals(Criterion::EQUAL, $criterionTwo->getComparison());
+    }
+
+    public function testFilterAny(): void
+    {
+        $query = Query::create();
+        $criterion = Criterion::create('field1', 'value1', Criterion::EQUAL);
+
+        $query->filterAny([
+            $criterion,
+            ['field2', 'value2', Criterion::EQUAL],
+            ['field3', 'value3', Criterion::EQUAL],
+        ]);
+
+        $clauses = $query->getFilter()->getClauses();
+
+        // A filterAny() creates a new Criteria to contain all the clauses with an OR conjunction, so even though there
+        // are 3 filters above, this should be within a single clause in our Query's filter
+        $this->assertCount(1, $clauses);
+
+        /** @var Criteria $criteria */
+        $criteria = array_shift($clauses);
+
+        // Make sure it is a Criteria (a collection of our 3 filters)
+        $this->assertInstanceOf(Criteria::class, $criteria);
+
+        $clauses = $criteria->getClauses();
+        /** @var Criterion $criterionOne */
+        $criterionOne = array_shift($clauses);
+        /** @var Criterion $criterionTwo */
+        $criterionTwo = array_shift($clauses);
+        /** @var Criterion $criterionThree */
+        $criterionThree = array_shift($clauses);
+
+        $this->assertEquals('field1', $criterionOne->getTarget());
+        $this->assertEquals('value1', $criterionOne->getValue());
+        $this->assertEquals(Criterion::EQUAL, $criterionOne->getComparison());
+        $this->assertEquals('field2', $criterionTwo->getTarget());
+        $this->assertEquals('value2', $criterionTwo->getValue());
+        $this->assertEquals(Criterion::EQUAL, $criterionTwo->getComparison());
+        $this->assertEquals('field3', $criterionThree->getTarget());
+        $this->assertEquals('value3', $criterionThree->getValue());
+        $this->assertEquals(Criterion::EQUAL, $criterionThree->getComparison());
+    }
+
+    public function testFilterNoValue(): void
+    {
+        $this->expectExceptionMessage('mixed $value and string $comparison expected for filter()');
+
+        $query = Query::create();
+        // Should throw our exception
+        $query->filter('field1');
+    }
+
+    public function testFilterNoComparison(): void
+    {
+        $this->expectExceptionMessage('string $comparison expected for filter()');
+
+        $query = Query::create();
+        // Should throw our exception
+        $query->filter('field1', 'value1');
     }
 
     protected function setUp(): void

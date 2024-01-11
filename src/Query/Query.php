@@ -71,6 +71,12 @@ class Query
         $criteria = Criteria::createAny();
 
         foreach ($filters as $filter) {
+            if ($filter instanceof Clause) {
+                $criteria->addClause($filter);
+
+                continue;
+            }
+
             $criterion = $this->getCriterionForFilterParams(...$filter);
             $criteria->addClause($criterion);
         }
@@ -80,12 +86,23 @@ class Query
         return $this;
     }
 
+    /**
+     * @throws Exception
+     */
     public function filter(Clause|string $targetOrClause, mixed $value = null, ?string $comparison = null): self
     {
         if ($targetOrClause instanceof Clause) {
             $this->filter->addClause($targetOrClause);
 
             return $this;
+        }
+
+        if (!$value) {
+            throw new Exception('mixed $value and string $comparison expected for filter()');
+        }
+
+        if (!$comparison) {
+            throw new Exception('string $comparison expected for filter()');
         }
 
         $clause = Criterion::create($targetOrClause, $value, $comparison);
