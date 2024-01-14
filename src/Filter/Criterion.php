@@ -3,15 +3,15 @@
 namespace SilverStripe\Search\Filter;
 
 use Exception;
-use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\Core\Injector\Injector;
 
 /**
  * A Criterion is a single filter clause. EG: field1 = value1, or value1 IN (array, of, values), etc
  */
 class Criterion implements Clause
 {
+
+    use Injectable;
 
     public const EQUAL = 'EQUAL';
     public const NOT_EQUAL = 'NOT_EQUAL';
@@ -39,7 +39,11 @@ class Criterion implements Clause
         self::RANGE,
     ];
 
-    use Injectable;
+    private ?CriterionAdaptor $adaptor = null;
+
+    private static array $dependencies = [
+        'adaptor' => '%$' . CriterionAdaptor::class,
+    ];
 
     /**
      * @throws Exception
@@ -62,6 +66,11 @@ class Criterion implements Clause
         }
     }
 
+    public function setAdaptor(?CriterionAdaptor $adaptor): void
+    {
+        $this->adaptor = $adaptor;
+    }
+
     public function getComparison(): ?string
     {
         return $this->comparison;
@@ -77,20 +86,9 @@ class Criterion implements Clause
         return $this->value;
     }
 
-    /**
-     * @throws NotFoundExceptionInterface
-     */
     public function getPreparedClause(): mixed
     {
-        return $this->getAdaptor()->prepareClause($this);
-    }
-
-    /**
-     * @throws NotFoundExceptionInterface
-     */
-    private function getAdaptor(): CriterionAdaptor
-    {
-        return Injector::inst()->get(CriterionAdaptor::class);
+        return $this->adaptor?->prepareCriterion($this);
     }
 
     /**

@@ -1,11 +1,3 @@
 ---
 Name: search-config
 ---
-SilverStripe\Search\Service\SearchService:
-  index_variant: '`ENTERPRISE_SEARCH_ENGINE_PREFIX`'
-
-SilverStripe\Core\Injector\Injector:
-  SilverStripe\Search\Filter\CriteriaAdaptor:
-    class: SilverStripe\Search\Filter\Niave\NaiveCriteriaAdaptor
-  SilverStripe\Search\Filter\CriterionAdaptor:
-    class: SilverStripe\Search\Filter\Niave\NiaveCriterionAdaptor

@@ -3,9 +3,7 @@
 namespace SilverStripe\Search\Filter;
 
 use Exception;
-use Psr\Container\NotFoundExceptionInterface;
 use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\Core\Injector\Injector;
 
 /**
  * A Criteria is a collection of filter clauses. The collection (in the case of many search services, but not all), can
@@ -31,6 +29,8 @@ class Criteria implements Clause
         self::CONJUNCTION_OR,
     ];
 
+    private ?CriteriaAdaptor $adaptor = null;
+
     /**
      * A collection of Criteria and Criterion
      *
@@ -39,6 +39,15 @@ class Criteria implements Clause
     private array $clauses = [];
 
     private string $conjunction;
+
+    private static array $dependencies = [
+        'adaptor' => '%$' . CriteriaAdaptor::class,
+    ];
+
+    public function setAdaptor(?CriteriaAdaptor $adaptor): void
+    {
+        $this->adaptor = $adaptor;
+    }
 
     public static function createAny(): self
     {
@@ -64,7 +73,7 @@ class Criteria implements Clause
 
     public function getPreparedClause(): mixed
     {
-        return $this->getAdaptor()->prepareClause($this);
+        return $this->adaptor?->prepareCriteria($this);
     }
 
     public function getConjunction(): string
@@ -82,14 +91,6 @@ class Criteria implements Clause
     public function getClauses(): array
     {
         return $this->clauses;
-    }
-
-    /**
-     * @throws NotFoundExceptionInterface
-     */
-    private function getAdaptor(): CriteriaAdaptor
-    {
-        return Injector::inst()->get(CriteriaAdaptor::class);
     }
 
 }

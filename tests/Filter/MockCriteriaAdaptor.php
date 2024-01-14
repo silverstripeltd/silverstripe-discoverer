@@ -12,7 +12,7 @@ class MockCriteriaAdaptor implements TestOnly, CriteriaAdaptor
 
     use Injectable;
 
-    public function prepareClause(Criteria $criteria): string
+    public function prepareCriteria(Criteria $criteria): string
     {
         $preparedClauses = [];
 

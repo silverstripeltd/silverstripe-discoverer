@@ -9,7 +9,7 @@ use SilverStripe\Search\Filter\CriterionAdaptor;
 class MockCriterionAdaptor implements TestOnly, CriterionAdaptor
 {
 
-    public function prepareClause(Criterion $criterion): string
+    public function prepareCriterion(Criterion $criterion): string
     {
         return sprintf('%s-%s-%s', $criterion->getTarget(), $criterion->getValue(), $criterion->getComparison());
     }
