@@ -2,14 +2,22 @@
 
 namespace SilverStripe\Search\Service;
 
-use SilverStripe\Search\Query\Result;
-use SilverStripe\SearchElastic\Query\SearchQuery;
+use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Search\Query\Query;
 
-interface SearchService
+abstract class SearchService
 {
 
-    public function search(SearchQuery $query, string $indexName): Result;
+    use Injectable;
 
-    public function multiSearch(): Result;
+    abstract public function search(Query $query, ?string $indexName = null): void;
+
+    abstract public function multiSearch(): void;
+
+    abstract public function spellingSuggestions(): void;
+
+    abstract public function searchSuggestions(): void;
+
+    abstract public function logClickThrough(): void;
 
 }

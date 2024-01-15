@@ -9,6 +9,7 @@ use SilverStripe\Search\Filter\CriteriaAdaptor;
 use SilverStripe\Search\Filter\Criterion;
 use SilverStripe\Search\Filter\CriterionAdaptor;
 use SilverStripe\Search\Query\Query;
+use SilverStripe\Search\Query\ResultField;
 use SilverStripe\Search\Tests\Filter\MockCriteriaAdaptor;
 use SilverStripe\Search\Tests\Filter\MockCriterionAdaptor;
 
@@ -19,7 +20,7 @@ class QueryTest extends SapphireTest
     {
         $query = Query::create();
 
-        $this->assertEquals(Criteria::CONJUNCTION_AND, $query->getFilter()->getConjunction());
+        $this->assertEquals(Criteria::CONJUNCTION_AND, $query->getFilterCriteria()->getConjunction());
     }
 
     public function testQueryString(): void
@@ -83,20 +84,36 @@ class QueryTest extends SapphireTest
     public function testAddResultField(): void
     {
         $query = Query::create();
-        // No length specified
         $query->addResultField('field1');
-        // Length specified
         $query->addResultField('field2', 100);
-        // Length of 0 specified (should be treated as no length limit)
-        $query->addResultField('field3', 0);
+        $query->addResultField('field3', 0, true);
+        $query->addResultField('field4', 100, true);
 
-        $expected = [
-            'field1' => null,
-            'field2' => 100,
-            'field3' => null,
-        ];
+        $resultFields = $query->getResultFields();
 
-        $this->assertEquals($expected, $query->getResultFields());
+        $this->assertCount(4, $resultFields);
+
+        /** @var ResultField $resultFieldOne */
+        $resultFieldOne = array_shift($resultFields);
+        /** @var ResultField $resultFieldTwo */
+        $resultFieldTwo = array_shift($resultFields);
+        /** @var ResultField $resultFieldThree */
+        $resultFieldThree = array_shift($resultFields);
+        /** @var ResultField $resultFieldFour */
+        $resultFieldFour = array_shift($resultFields);
+
+        $this->assertEquals('field1', $resultFieldOne->getFieldName());
+        $this->assertEquals(0, $resultFieldOne->getLength());
+        $this->assertFalse($resultFieldOne->isFormatted());
+        $this->assertEquals('field2', $resultFieldTwo->getFieldName());
+        $this->assertEquals(100, $resultFieldTwo->getLength());
+        $this->assertFalse($resultFieldTwo->isFormatted());
+        $this->assertEquals('field3', $resultFieldThree->getFieldName());
+        $this->assertEquals(0, $resultFieldThree->getLength());
+        $this->assertTrue($resultFieldThree->isFormatted());
+        $this->assertEquals('field4', $resultFieldFour->getFieldName());
+        $this->assertEquals(100, $resultFieldFour->getLength());
+        $this->assertTrue($resultFieldFour->isFormatted());
     }
 
     public function testResultFields(): void
@@ -104,20 +121,43 @@ class QueryTest extends SapphireTest
         $query = Query::create();
         // Can mix/match associative and numeric
         $query->addResultFields([
-            'field1' => 0,
-            'field2' => 100,
-            'field3' => 200,
-            'field4',
+            ['field1'],
+            ['field2', 0],
+            ['field3', 100],
+            ['field4', 0, true],
+            ['field5', 100, true],
         ]);
 
-        $expected = [
-            'field1' => null,
-            'field2' => 100,
-            'field3' => 200,
-            'field4' => null,
-        ];
+        $resultFields = $query->getResultFields();
 
-        $this->assertEquals($expected, $query->getResultFields());
+        $this->assertCount(5, $resultFields);
+
+        /** @var ResultField $resultFieldOne */
+        $resultFieldOne = array_shift($resultFields);
+        /** @var ResultField $resultFieldTwo */
+        $resultFieldTwo = array_shift($resultFields);
+        /** @var ResultField $resultFieldThree */
+        $resultFieldThree = array_shift($resultFields);
+        /** @var ResultField $resultFieldFour */
+        $resultFieldFour = array_shift($resultFields);
+        /** @var ResultField $resultFieldFive */
+        $resultFieldFive = array_shift($resultFields);
+
+        $this->assertEquals('field1', $resultFieldOne->getFieldName());
+        $this->assertEquals(0, $resultFieldOne->getLength());
+        $this->assertFalse($resultFieldOne->isFormatted());
+        $this->assertEquals('field2', $resultFieldTwo->getFieldName());
+        $this->assertEquals(0, $resultFieldTwo->getLength());
+        $this->assertFalse($resultFieldTwo->isFormatted());
+        $this->assertEquals('field3', $resultFieldThree->getFieldName());
+        $this->assertEquals(100, $resultFieldThree->getLength());
+        $this->assertFalse($resultFieldThree->isFormatted());
+        $this->assertEquals('field4', $resultFieldFour->getFieldName());
+        $this->assertEquals(0, $resultFieldFour->getLength());
+        $this->assertTrue($resultFieldFour->isFormatted());
+        $this->assertEquals('field5', $resultFieldFive->getFieldName());
+        $this->assertEquals(100, $resultFieldFive->getLength());
+        $this->assertTrue($resultFieldFive->isFormatted());
     }
 
     public function testAddSearchField(): void
@@ -204,7 +244,7 @@ class QueryTest extends SapphireTest
         $query->filter($criterionOne);
         $query->filter($criterionTwo);
 
-        $clauses = $query->getFilter()->getClauses();
+        $clauses = $query->getFilterCriteria()->getClauses();
 
         $this->assertCount(2, $clauses);
 
@@ -227,7 +267,7 @@ class QueryTest extends SapphireTest
         $query->filter('field1', 'value1', Criterion::EQUAL);
         $query->filter('field2', 'value2', Criterion::EQUAL);
 
-        $clauses = $query->getFilter()->getClauses();
+        $clauses = $query->getFilterCriteria()->getClauses();
 
         $this->assertCount(2, $clauses);
 
@@ -255,7 +295,7 @@ class QueryTest extends SapphireTest
             ['field3', 'value3', Criterion::EQUAL],
         ]);
 
-        $clauses = $query->getFilter()->getClauses();
+        $clauses = $query->getFilterCriteria()->getClauses();
 
         // A filterAny() creates a new Criteria to contain all the clauses with an OR conjunction, so even though there
         // are 3 filters above, this should be within a single clause in our Query's filter

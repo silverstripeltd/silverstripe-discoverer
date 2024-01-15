@@ -111,7 +111,7 @@ class Query
         return $this;
     }
 
-    public function getFilter(): Criteria
+    public function getFilterCriteria(): Criteria
     {
         return $this->filter;
     }
@@ -159,55 +159,52 @@ class Query
     }
 
     /**
-     * @param int|null $length Optionally convert your result field to a snippet with a specific length. null or 0 will
-     * return the full/raw field result. Note: length (characters or words) is determined by the search service
+     * @return ResultField[]
      */
-    public function addResultField(string $field, ?int $length = null): self
-    {
-        // A length of 0 is treated as "no limit"
-        if ($length === 0) {
-            $length = null;
-        }
-
-        $this->resultFields[$field] = $length;
-
-        return $this;
-    }
-
-    /**
-     * @param array $resultFields An array of field names, or an associative array of $fieldName => $length, or a mix
-     * of both. Basically, if the key is an int, we'll assume the value is the fieldName, and you didn't want a length
-     * for that fieldName
-     */
-    public function addResultFields(array $resultFields): self
-    {
-        foreach ($resultFields as $key => $value) {
-            if (is_int($key)) {
-                $fieldName = $value;
-                $length = null;
-            } else {
-                $fieldName = $key;
-                $length = $value;
-            }
-
-            $this->addResultField($fieldName, $length);
-        }
-
-        return $this;
-    }
-
     public function getResultFields(): array
     {
         return $this->resultFields;
     }
 
-    public function addSearchField(string $field, ?int $weight = null): self
+    public function addResultField(string $fieldName, int $length = 0, bool $formatted = false): self
     {
-        // A weight of 0 is treated as "no weight applied"
-        if ($weight === 0) {
-            $weight = null;
+        $resultField = ResultField::create($fieldName, $length, $formatted);
+
+        $this->resultFields[] = $resultField;
+
+        return $this;
+    }
+
+    /**
+     * @param array $fieldsCollection An array of up to 3 items. [$fieldName, $length, $formatted] in that order
+     * $fieldName is required, $length and $formatted are optional, but you will need to specify a $length if you want
+     * to provide $formatted. A $length of 0 is considered to be "no limit"
+     * @throws Exception
+     */
+    public function addResultFields(array $fieldsCollection): self
+    {
+        foreach ($fieldsCollection as $resultFields) {
+            $fieldName = $resultFields[0] ?? null;
+            $length = $resultFields[1] ?? 0;
+            $formatted = $resultFields[2] ?? false;
+
+            if (!$fieldName) {
+                throw new Exception('Expected at least one array item in $resultFields');
+            }
+
+            $this->addResultField($fieldName, $length, $formatted);
         }
 
+        return $this;
+    }
+
+    public function getSearchFields(): array
+    {
+        return $this->searchFields;
+    }
+
+    public function addSearchField(string $field, int $weight = 0): self
+    {
         $this->searchFields[$field] = $weight;
 
         return $this;
@@ -223,21 +220,16 @@ class Query
         foreach ($searchFields as $key => $value) {
             if (is_int($key)) {
                 $fieldName = $value;
-                $weight = null;
+                $weight = 0;
             } else {
                 $fieldName = $key;
-                $weight = $value;
+                $weight = $value ?? 0;
             }
 
             $this->addSearchField($fieldName, $weight);
         }
 
         return $this;
-    }
-
-    public function getSearchFields(): array
-    {
-        return $this->searchFields;
     }
 
     public function setPageNum(int $pageNum): self
@@ -262,6 +254,11 @@ class Query
     public function getPageSize(): ?int
     {
         return $this->pageSize;
+    }
+
+    public function hasPagination(): bool
+    {
+        return $this->pageSize || $this->pageNum;
     }
 
     public function setPagination(int $pageSize, int $pageNum): self
