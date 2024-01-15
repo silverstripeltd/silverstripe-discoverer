@@ -4,14 +4,14 @@ namespace SilverStripe\Search\Tests\Query;
 
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Search\Filter\Criteria;
-use SilverStripe\Search\Filter\CriteriaAdaptor;
-use SilverStripe\Search\Filter\Criterion;
-use SilverStripe\Search\Filter\CriterionAdaptor;
+use SilverStripe\Search\Query\Filter\Criteria;
+use SilverStripe\Search\Query\Filter\CriteriaAdaptor;
+use SilverStripe\Search\Query\Filter\Criterion;
+use SilverStripe\Search\Query\Filter\CriterionAdaptor;
 use SilverStripe\Search\Query\Query;
 use SilverStripe\Search\Query\ResultField;
-use SilverStripe\Search\Tests\Filter\MockCriteriaAdaptor;
-use SilverStripe\Search\Tests\Filter\MockCriterionAdaptor;
+use SilverStripe\Search\Tests\Query\Filter\MockCriteriaAdaptor;
+use SilverStripe\Search\Tests\Query\Filter\MockCriterionAdaptor;
 
 class QueryTest extends SapphireTest
 {
@@ -20,7 +20,7 @@ class QueryTest extends SapphireTest
     {
         $query = Query::create();
 
-        $this->assertEquals(Criteria::CONJUNCTION_AND, $query->getFilterCriteria()->getConjunction());
+        $this->assertEquals(Criteria::CONJUNCTION_AND, $query->getFilter()->getConjunction());
     }
 
     public function testQueryString(): void
@@ -244,7 +244,7 @@ class QueryTest extends SapphireTest
         $query->filter($criterionOne);
         $query->filter($criterionTwo);
 
-        $clauses = $query->getFilterCriteria()->getClauses();
+        $clauses = $query->getFilter()->getClauses();
 
         $this->assertCount(2, $clauses);
 
@@ -267,7 +267,7 @@ class QueryTest extends SapphireTest
         $query->filter('field1', 'value1', Criterion::EQUAL);
         $query->filter('field2', 'value2', Criterion::EQUAL);
 
-        $clauses = $query->getFilterCriteria()->getClauses();
+        $clauses = $query->getFilter()->getClauses();
 
         $this->assertCount(2, $clauses);
 
@@ -295,7 +295,7 @@ class QueryTest extends SapphireTest
             ['field3', 'value3', Criterion::EQUAL],
         ]);
 
-        $clauses = $query->getFilterCriteria()->getClauses();
+        $clauses = $query->getFilter()->getClauses();
 
         // A filterAny() creates a new Criteria to contain all the clauses with an OR conjunction, so even though there
         // are 3 filters above, this should be within a single clause in our Query's filter

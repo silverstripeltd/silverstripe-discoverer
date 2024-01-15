@@ -1,11 +1,13 @@
 <?php
 
-namespace SilverStripe\Search\Query;
+namespace SilverStripe\Search\Service\Result;
 
 use Psr\Http\Message\ResponseInterface;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\PaginatedList;
+use SilverStripe\Search\Query\Facet\Facet;
+use SilverStripe\Search\Query\Query;
 use SilverStripe\View\ViewableData;
 
 class Results

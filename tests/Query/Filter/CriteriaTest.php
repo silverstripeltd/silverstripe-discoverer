@@ -1,13 +1,13 @@
 <?php
 
-namespace SilverStripe\Search\Tests\Filter;
+namespace SilverStripe\Search\Tests\Query\Filter;
 
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Search\Filter\Criteria;
-use SilverStripe\Search\Filter\CriteriaAdaptor;
-use SilverStripe\Search\Filter\Criterion;
-use SilverStripe\Search\Filter\CriterionAdaptor;
+use SilverStripe\Search\Query\Filter\Criteria;
+use SilverStripe\Search\Query\Filter\CriteriaAdaptor;
+use SilverStripe\Search\Query\Filter\Criterion;
+use SilverStripe\Search\Query\Filter\CriterionAdaptor;
 
 class CriteriaTest extends SapphireTest
 {

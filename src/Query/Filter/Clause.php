@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\Search\Filter;
+namespace SilverStripe\Search\Query\Filter;
 
 /**
  * The idea behind a Clause is that Criteria (collections) and Criterion (single comparisons) can be mixed

@@ -4,9 +4,11 @@ namespace SilverStripe\Search\Query;
 
 use Exception;
 use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\Search\Filter\Clause;
-use SilverStripe\Search\Filter\Criteria;
-use SilverStripe\Search\Filter\Criterion;
+use SilverStripe\Search\Query\Facet\Facet;
+use SilverStripe\Search\Query\Facet\FacetCollection;
+use SilverStripe\Search\Query\Filter\Clause;
+use SilverStripe\Search\Query\Filter\Criteria;
+use SilverStripe\Search\Query\Filter\Criterion;
 
 class Query
 {
@@ -34,7 +36,7 @@ class Query
      */
     private Criteria $filter;
 
-    private array $facets = [];
+    private FacetCollection $facets;
 
     private ?int $pageNum = null;
 
@@ -50,6 +52,7 @@ class Query
     {
         // See the docblock on self::$filter for some details
         $this->filter = Criteria::createAll();
+        $this->facets = FacetCollection::create();
     }
 
     public function setQueryString(string $queryString): void
@@ -60,6 +63,32 @@ class Query
     public function getQueryString(): ?string
     {
         return $this->queryString;
+    }
+
+    public function getFacets(): FacetCollection
+    {
+        return $this->facets;
+    }
+
+    public function addFacet(Facet $facet): self
+    {
+        $this->facets->addFacet($facet);
+
+        return $this;
+    }
+
+    public function addFacets(array $facets): self
+    {
+        foreach ($facets as $facet) {
+            $this->addFacet($facet);
+        }
+
+        return $this;
+    }
+
+    public function getFilter(): Criteria
+    {
+        return $this->filter;
     }
 
     /**
@@ -111,11 +140,6 @@ class Query
         return $this;
     }
 
-    public function getFilterCriteria(): Criteria
-    {
-        return $this->filter;
-    }
-
     /**
      * @param string $direction use the SORT_ constants defined in this class
      * @throws Exception
@@ -149,13 +173,6 @@ class Query
     public function getSort(): array
     {
         return $this->sort;
-    }
-
-    public function setFacets(array $facets): self
-    {
-        $this->facets = $facets;
-
-        return $this;
     }
 
     /**

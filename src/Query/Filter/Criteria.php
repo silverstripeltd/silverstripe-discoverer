@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\Search\Filter;
+namespace SilverStripe\Search\Query\Filter;
 
 use Exception;
 use SilverStripe\Core\Injector\Injectable;
