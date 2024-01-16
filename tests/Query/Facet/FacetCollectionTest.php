@@ -46,7 +46,6 @@ class FacetCollectionTest extends SapphireTest
         $facetThree->setType(Facet::TYPE_RANGE);
         $facetThree->setProperty('fieldName3');
         $facetThree->setName('facetName3');
-        $facetThree->setLocation('m', 1, -1);
 
         $facetCollection->addFacet($facetOne);
         $facetCollection->addFacet($facetTwo);

@@ -2,12 +2,11 @@
 
 namespace SilverStripe\Search\Service\Result;
 
-use Psr\Http\Message\ResponseInterface;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\PaginatedList;
-use SilverStripe\Search\Query\Facet\Facet;
 use SilverStripe\Search\Query\Query;
+use SilverStripe\Search\Service\Facet\Facet;
 use SilverStripe\View\ViewableData;
 
 class Results
@@ -27,8 +26,13 @@ class Results
 
     private ?string $indexName = null;
 
-    public function __construct(private readonly Query $query, private readonly ResponseInterface $response)
+    public function __construct(private readonly Query $query)
     {
+    }
+
+    public function getQuery(): Query
+    {
+        return $this->query;
     }
 
     public function getIndexName(): ?string

@@ -1,2 +1,12 @@
-# silverstripe-search
+# Silverstripe Search
 
+## Feature support
+
+| Feature                                | Support | Future support | Rationale                                                                                                                                                                                                                                 |
+|----------------------------------------|---------|----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Filters                                | Yes     | Yes            | You should (hopefully) be able to achieve any sort of nested filtering that you require.                                                                                                                                                  |
+| Facets                                 | Partial | If desired     | Facet support differs hugely between search services. Current thinking is to try and limit what sort of Facet integrations we use (EG: no Geolocation) in the hopes that if we switch services in the future, we won't lose functionality |
+| Multi-search                           | No      | If desired     | Not supported by many other search services, and I couldn't find any existing project using the feature. It wouldn't be unreasonable effort to add this functionality though.                                                             |
+| Spelling suggestions                   | No      | Unlikely       | Part of a different API in Elastic (so it is technically possible), but the current thinking is that Elastic's typo tollerence should be sufficient for this lower tiered service.                                                        |
+| Search suggestions (aka auto-complete) | No      | Unlikely       | Features like auto-complete generate a lot of requests, and for a lower tiered shared service, that is something we want to cut down on.                                                                                                  |
+| Click through logging                  | Yes     | Yes            | Supported in Elastic, but not supported by many other Search Services. We will need to be careful about what happens to this feature if we ever switch to another service.                                                                |

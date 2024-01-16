@@ -36,7 +36,7 @@ class Query
      */
     private Criteria $filter;
 
-    private FacetCollection $facets;
+    private FacetCollection $facetCollection;
 
     private ?int $pageNum = null;
 
@@ -52,7 +52,7 @@ class Query
     {
         // See the docblock on self::$filter for some details
         $this->filter = Criteria::createAll();
-        $this->facets = FacetCollection::create();
+        $this->facetCollection = FacetCollection::create();
     }
 
     public function setQueryString(string $queryString): void
@@ -65,14 +65,14 @@ class Query
         return $this->queryString;
     }
 
-    public function getFacets(): FacetCollection
+    public function getFacetCollection(): FacetCollection
     {
-        return $this->facets;
+        return $this->facetCollection;
     }
 
     public function addFacet(Facet $facet): self
     {
-        $this->facets->addFacet($facet);
+        $this->facetCollection->addFacet($facet);
 
         return $this;
     }

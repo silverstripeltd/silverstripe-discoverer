@@ -18,9 +18,6 @@ class MockFacetAdaptor implements FacetAdaptor
                 'name' => $facet->getName(),
                 'property' => $facet->getProperty(),
                 'type' => $facet->getType(),
-                'locationUnit' => $facet->getLocation()?->getUnit(),
-                'locationLatitude' => $facet->getLocation()?->getLatitude(),
-                'locationLongitude' => $facet->getLocation()?->getLongitude(),
                 'ranges' => [],
             ];
 

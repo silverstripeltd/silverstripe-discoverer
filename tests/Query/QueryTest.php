@@ -4,6 +4,7 @@ namespace SilverStripe\Search\Tests\Query;
 
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Search\Query\Facet\Facet;
 use SilverStripe\Search\Query\Filter\Criteria;
 use SilverStripe\Search\Query\Filter\CriteriaAdaptor;
 use SilverStripe\Search\Query\Filter\Criterion;
@@ -342,6 +343,32 @@ class QueryTest extends SapphireTest
         $query = Query::create();
         // Should throw our exception
         $query->filter('field1', 'value1');
+    }
+
+    public function testAddFacet(): void
+    {
+        $query = Query::create();
+
+        $query->addFacet(Facet::create());
+        $query->addFacet(Facet::create());
+        $query->addFacet(Facet::create());
+
+        $this->assertCount(3, $query->getFacetCollection()->getFacets());
+    }
+
+    public function testAddFacets(): void
+    {
+        $query = Query::create();
+
+        $facets = [
+            Facet::create(),
+            Facet::create(),
+            Facet::create(),
+        ];
+
+        $query->addFacets($facets);
+
+        $this->assertCount(3, $query->getFacetCollection()->getFacets());
     }
 
     protected function setUp(): void

@@ -118,27 +118,4 @@ class FacetTest extends SapphireTest
         $this->assertEquals('secondName', $rangeFour->getName());
     }
 
-    public function testLocation(): void
-    {
-        $facet = Facet::create();
-
-        $facet->setLocation('m', 1, -1);
-
-        $this->assertEquals('m', $facet->getLocation()->getUnit());
-        $this->assertEquals(1, $facet->getLocation()->getLatitude());
-        $this->assertEquals(-1, $facet->getLocation()->getLongitude());
-
-        $facet->setLocation(latitude: 2);
-
-        $this->assertNull($facet->getLocation()->getUnit());
-        $this->assertEquals(2, $facet->getLocation()->getLatitude());
-        $this->assertNull($facet->getLocation()->getLongitude());
-
-        $facet->setLocation(longitude: 3);
-
-        $this->assertNull($facet->getLocation()->getUnit());
-        $this->assertNull($facet->getLocation()->getLatitude());
-        $this->assertEquals(3, $facet->getLocation()->getLongitude());
-    }
-
 }

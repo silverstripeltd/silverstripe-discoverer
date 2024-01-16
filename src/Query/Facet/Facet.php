@@ -24,8 +24,6 @@ class Facet
 
     private ?int $limit = null;
 
-    private ?FacetLocation $location = null;
-
     private ?string $name = null;
 
     private ?string $property = null;
@@ -45,23 +43,6 @@ class Facet
     public function setLimit(?int $limit): self
     {
         $this->limit = $limit;
-
-        return $this;
-    }
-
-    public function getLocation(): ?FacetLocation
-    {
-        return $this->location;
-    }
-
-    public function setLocation(
-        ?string $unit = null,
-        ?float $latitude = null,
-        ?float $longitude = null
-    ): Facet {
-        $location = FacetLocation::create($unit, $latitude, $longitude);
-
-        $this->location = $location;
 
         return $this;
     }

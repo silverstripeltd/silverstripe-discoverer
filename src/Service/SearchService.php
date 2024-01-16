@@ -4,20 +4,43 @@ namespace SilverStripe\Search\Service;
 
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Search\Query\Query;
+use SilverStripe\Search\Service\Result\Results;
 
-abstract class SearchService
+class SearchService
 {
 
     use Injectable;
 
-    abstract public function search(Query $query, ?string $indexName = null): void;
+    private ?SearchServiceAdaptor $adaptor = null;
 
-    abstract public function multiSearch(): void;
+    private static array $dependencies = [
+        'adaptor' => '%$' . SearchServiceAdaptor::class,
+    ];
 
-    abstract public function spellingSuggestions(): void;
+    public function setAdaptor(?SearchServiceAdaptor $adaptor): void
+    {
+        $this->adaptor = $adaptor;
+    }
 
-    abstract public function searchSuggestions(): void;
+    public function search(Query $query, ?string $indexName = null): Results
+    {
+        return $this->adaptor->search($query, $indexName);
+    }
 
-    abstract public function logClickThrough(): void;
+    public function multiSearch(): void
+    {
+    }
+
+    public function spellingSuggestions(): void
+    {
+    }
+
+    public function searchSuggestions(): void
+    {
+    }
+
+    public function logClickThrough(): void
+    {
+    }
 
 }
