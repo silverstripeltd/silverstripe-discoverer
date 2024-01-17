@@ -6,8 +6,6 @@ use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\PaginatedList;
 use SilverStripe\Search\Query\Query;
-use SilverStripe\Search\Service\Facet\Facet;
-use SilverStripe\View\ViewableData;
 
 class Results
 {
@@ -15,9 +13,11 @@ class Results
     use Injectable;
 
     /**
-     * @var PaginatedList|ViewableData[]|null
+     * Results (ideally) have a DataObject representing them, but that's not always the case
+     *
+     * @var PaginatedList|Record[]|null
      */
-    private ?PaginatedList $results = null;
+    private ?PaginatedList $records = null;
 
     /**
      * @var ArrayList|Facet[]|null $facets
@@ -28,6 +28,30 @@ class Results
 
     public function __construct(private readonly Query $query)
     {
+    }
+
+    public function getRecords(): ?PaginatedList
+    {
+        return $this->records;
+    }
+
+    public function addRecord(Record $record): self
+    {
+        $this->records->add($record);
+
+        return $this;
+    }
+
+    public function getFacets(): ?ArrayList
+    {
+        return $this->facets;
+    }
+
+    public function addFacet(Facet $facet): self
+    {
+        $this->facets->add($facet);
+
+        return $this;
     }
 
     public function getQuery(): Query

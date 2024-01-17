@@ -27,18 +27,6 @@ class SearchService
         return $this->adaptor->search($query, $indexName);
     }
 
-    public function multiSearch(): void
-    {
-    }
-
-    public function spellingSuggestions(): void
-    {
-    }
-
-    public function searchSuggestions(): void
-    {
-    }
-
     public function logClickThrough(): void
     {
     }

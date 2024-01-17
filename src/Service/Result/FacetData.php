@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\Search\Service\Facet;
+namespace SilverStripe\Search\Service\Result;
 
 use SilverStripe\View\ViewableData;
 
@@ -13,7 +13,7 @@ class FacetData extends ViewableData
 
     private string|int|float $to;
 
-    private string $name;
+    private string $value;
 
     public function getCount(): int
     {
@@ -51,14 +51,14 @@ class FacetData extends ViewableData
         return $this;
     }
 
-    public function getName(): string
+    public function getValue(): string
     {
-        return $this->name;
+        return $this->value;
     }
 
-    public function setName(string $name): self
+    public function setValue(string $value): self
     {
-        $this->name = $name;
+        $this->value = $value;
 
         return $this;
     }
