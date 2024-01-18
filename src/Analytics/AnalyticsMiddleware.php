@@ -4,9 +4,12 @@ namespace SilverStripe\Search\Analytics;
 
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\Middleware\HTTPMiddleware;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Dev\Debug;
 use SilverStripe\Search\Service\SearchService;
 use Throwable;
 
@@ -16,34 +19,44 @@ class AnalyticsMiddleware implements HTTPMiddleware
     use Configurable;
     use Injectable;
 
-    public ?LoggerInterface $logger = null;
+    public const ENV_ANALYTICS_ENABLED = 'SEARCH_ANALYTICS_ENABLED';
+
+    private ?LoggerInterface $logger = null;
 
     private static array $dependencies = [
         'logger' => '%$' . LoggerInterface::class . '.errorhandler',
     ];
 
-    private static bool $enable_analytics = false;
+    public function setLogger(?LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
 
     public function process(HTTPRequest $request, callable $delegate): mixed
     {
-        // If you want normal behaviour to occur, make sure you call $delegate($request)
+        /** @var HTTPResponse $response */
         $response = $delegate($request);
+
+        // This Middleware shouldn't be applied if this is false, but we should double-check
+        if (!Environment::getEnv(self::ENV_ANALYTICS_ENABLED)) {
+            return $response;
+        }
 
         try {
             $data = base64_decode($request->getVar('_searchAnalytics') ?? '');
 
             if (!$data) {
-                return $response;
+                return null;
             }
 
-            $data = json_decode($data);
+            $data = json_decode($data, true);
 
             if (!$data) {
-                return $response;
+                return null;
             }
 
             $analyticsData = AnalyticsData::create();
-            $analyticsData->setQuery($data['queryString'] ?? null);
+            $analyticsData->setQueryString($data['queryString'] ?? null);
             $analyticsData->setRequestId($data['requestId'] ?? null);
             $analyticsData->setDocumentId($data['documentId'] ?? null);
             $analyticsData->setEngineName($data['engineName'] ?? null);
@@ -51,7 +64,8 @@ class AnalyticsMiddleware implements HTTPMiddleware
             $service = SearchService::create();
             $service->processAnalytics($analyticsData);
         } catch (Throwable $e) {
-            $this->logger->error($e->getMessage());
+            // Log the error without breaking the page
+            $this->logger->error(sprintf('Elastic error: %s', $e->getMessage()), ['elastic' => $e]);
         } finally {
             return $response;
         }

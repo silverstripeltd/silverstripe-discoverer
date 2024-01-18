@@ -286,6 +286,11 @@ class Query
         return $this;
     }
 
+    public function forTemplate(): string
+    {
+        return $this->queryString;
+    }
+
     /**
      * @throws Exception
      */

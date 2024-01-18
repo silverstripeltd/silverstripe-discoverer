@@ -13,7 +13,8 @@ class Field extends ViewableData
 
     public function forTemplate(): mixed
     {
-        return $this->raw;
+        // Attempt to return the snippet (if available), or return raw as the fallback
+        return $this->snippet ?? $this->raw;
     }
 
     public function getRaw(): mixed

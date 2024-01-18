@@ -12,7 +12,7 @@ class AnalyticsData extends ViewableData
 
     private ?string $engineName = null;
 
-    private ?string $query = null;
+    private ?string $queryString = null;
 
     private mixed $documentId = null;
 
@@ -30,14 +30,14 @@ class AnalyticsData extends ViewableData
         return $this;
     }
 
-    public function getQuery(): ?string
+    public function getQueryString(): ?string
     {
-        return $this->query;
+        return $this->queryString;
     }
 
-    public function setQuery(?string $query): AnalyticsData
+    public function setQueryString(?string $queryString): AnalyticsData
     {
-        $this->query = $query;
+        $this->queryString = $queryString;
 
         return $this;
     }
@@ -68,34 +68,38 @@ class AnalyticsData extends ViewableData
 
     public function forTemplate(): ?string
     {
-        $params = [];
+        $data = [];
 
         $engineName = $this->getEngineName();
-        $query = $this->getQuery();
+        $query = $this->getQueryString();
         $documentId = $this->getDocumentId();
         $requestId = $this->getRequestId();
 
         if ($engineName) {
-            $params['engineName'] = $engineName;
+            $data['engineName'] = $engineName;
         }
 
         if ($query) {
-            $params['query'] = $query;
+            $data['queryString'] = $query;
         }
 
         if ($documentId) {
-            $params['documentId'] = $documentId;
+            $data['documentId'] = $documentId;
         }
 
         if ($requestId) {
-            $params['requestId'] = $requestId;
+            $data['requestId'] = $requestId;
         }
 
-        if (!$params) {
+        if (!$data) {
             return null;
         }
 
-        return http_build_query($params);
+        $query = [
+            '_searchAnalytics' => base64_encode(json_encode($data)),
+        ];
+
+        return http_build_query($query);
     }
 
 }

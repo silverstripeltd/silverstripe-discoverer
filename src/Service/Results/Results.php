@@ -6,28 +6,29 @@ use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\PaginatedList;
 use SilverStripe\Search\Query\Query;
+use SilverStripe\View\ViewableData;
 
-class Results
+class Results extends ViewableData
 {
 
     use Injectable;
 
     /**
-     * Results (ideally) have a DataObject representing them, but that's not always the case
-     *
-     * @var PaginatedList|Record[]|null
+     * @var PaginatedList|Record[]
      */
-    private ?PaginatedList $records = null;
+    private PaginatedList $records;
 
     /**
-     * @var ArrayList|Facet[]|null $facets
+     * @var ArrayList|Facet[]
      */
-    private ?ArrayList $facets = null;
+    private ArrayList $facets;
 
     private ?string $indexName = null;
 
     public function __construct(private readonly Query $query)
     {
+        $this->records = PaginatedList::create(ArrayList::create());
+        $this->facets = ArrayList::create();
     }
 
     public function getRecords(): ?PaginatedList
