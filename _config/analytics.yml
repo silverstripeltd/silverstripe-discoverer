@@ -1,0 +1,13 @@
+---
+Name: search-analytics
+After:
+  - requestprocessors
+Only:
+  envorconstant:
+    SEARCH_ANALYTICS_ENABLED: true
+---
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Control\Director:
+    properties:
+      Middlewares:
+        SearchAnalyticsMiddleware: '%$SilverStripe\Search\Analytics\AnalyticsMiddleware'

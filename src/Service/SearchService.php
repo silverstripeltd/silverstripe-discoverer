@@ -3,8 +3,9 @@
 namespace SilverStripe\Search\Service;
 
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Search\Analytics\AnalyticsData;
 use SilverStripe\Search\Query\Query;
-use SilverStripe\Search\Service\Result\Results;
+use SilverStripe\Search\Service\Results\Results;
 
 class SearchService
 {
@@ -27,8 +28,9 @@ class SearchService
         return $this->adaptor->search($query, $indexName);
     }
 
-    public function logClickThrough(): void
+    public function processAnalytics(AnalyticsData $analyticsData): void
     {
+        $this->adaptor->processAnalytics($analyticsData);
     }
 
 }
