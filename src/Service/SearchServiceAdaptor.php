@@ -9,7 +9,7 @@ use SilverStripe\Search\Service\Results\Results;
 interface SearchServiceAdaptor
 {
 
-    public function search(Query $query, ?string $indexName = null): Results;
+    public function search(Query $query, string $indexName): Results;
 
     public function processAnalytics(AnalyticsData $analyticsData): void;
 

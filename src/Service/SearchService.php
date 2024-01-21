@@ -23,7 +23,7 @@ class SearchService
         $this->adaptor = $adaptor;
     }
 
-    public function search(Query $query, ?string $indexName = null): Results
+    public function search(Query $query, string $indexName): Results
     {
         return $this->adaptor->search($query, $indexName);
     }

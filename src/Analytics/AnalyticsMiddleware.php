@@ -9,7 +9,6 @@ use SilverStripe\Control\Middleware\HTTPMiddleware;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\Dev\Debug;
 use SilverStripe\Search\Service\SearchService;
 use Throwable;
 

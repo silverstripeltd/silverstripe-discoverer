@@ -25,6 +25,8 @@ class Results extends ViewableData
 
     private ?string $indexName = null;
 
+    private bool $success = false;
+
     public function __construct(private readonly Query $query)
     {
         $this->records = PaginatedList::create(ArrayList::create());
@@ -68,6 +70,18 @@ class Results extends ViewableData
     public function setIndexName(?string $indexName): self
     {
         $this->indexName = $indexName;
+
+        return $this;
+    }
+
+    public function isSuccess(): bool
+    {
+        return $this->success;
+    }
+
+    public function setSuccess(bool $success): Results
+    {
+        $this->success = $success;
 
         return $this;
     }
