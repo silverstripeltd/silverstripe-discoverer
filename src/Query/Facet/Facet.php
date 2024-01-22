@@ -33,7 +33,7 @@ class Facet
      */
     private array $ranges = [];
 
-    private ?string $type = null;
+    private string $type = self::TYPE_VALUE;
 
     public function getLimit(): ?int
     {
@@ -81,6 +81,8 @@ class Facet
         string|int|float|null $to = null,
         string $name = null
     ): self {
+        // If a range is added, then we'll update the type
+        $this->type = self::TYPE_RANGE;
         $range = FacetRange::create($from, $to, $name);
 
         $this->ranges[] = $range;

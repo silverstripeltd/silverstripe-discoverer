@@ -1,14 +1,14 @@
-# Detailed usage
+# Detailed querying
 
 * [`SearchService` class](#searchservice-class)
 * [`Query` class](#query-class)
   * [Query string](#query-string)
-  * [Search fields](#query-string)
-  * [Result fields](#query-string)
-  * [Sort](#query-string)
-  * [Pagination string](#query-string)
-  * [Filters](#query-string)
-  * [Facets](#query-string)
+  * [Search fields](#search-fields)
+  * [Result fields](#result-fields)
+  * [Sort](#sort)
+  * [Pagination](#pagination)
+  * [Filters](#filters)
+  * [Facets](#facets)
 
 ## `SearchService` class
 
@@ -26,12 +26,12 @@ All searches start with the `Query` class. It provides you with the ability to s
 etc.
 
 * [Query string](#query-string)
-* [Search fields](#query-string)
-* [Result fields](#query-string)
-* [Sort](#query-string)
-* [Pagination string](#query-string)
-* [Filters](#query-string)
-* [Facets](#query-string)
+* [Search fields](#search-fields)
+* [Result fields](#result-fields)
+* [Sort](#sort)
+* [Pagination](#pagination)
+* [Filters](#filters)
+* [Facets](#facets)
 
 ### Query string
 
@@ -150,12 +150,18 @@ $query->addSorts([
 use SilverStripe\Search\Query\Query;
 
 $query = Query::create();
-// Can specify both page size (10) and page number (2) in one call
-$query->setPagination(10, 2)
+// Can specify both page size (10) and offset (20) in one call
+$query->setPagination(10, 20)
 // Or specify them separately
-$query->setPageSize(10);
-$query->setPageNum(2);
+$query->setPaginationLimit(10);
+$query->setPaginationOffset(20);
 ```
+
+**Note:** Some services (EG: Elastic) use page numbers instead of offset, but since our `PaginatedList` uses an offset
+when it creates its pagination links, it makes sense for us to similarly use offset, in order to keep things simple.
+
+**Note:** Offset starts at 0, so for the example above, if you have 10 records per page, and an offset of 20, then that
+is actually page 3.
 
 ### Filters
 
@@ -346,3 +352,44 @@ nesting is determined by the search service, but (for example), Elastic supports
 by using nested `Criteria` objects.
 
 ### Facets
+
+Facets are an area where support differs greatly between search service providers. We've tried to provide a reasonable
+level of support here, in the hope that if/when we switch to a different underlying service, we won't lose any
+functionality.
+
+We support two basic facet types: Value, and Range.
+
+Value Facets are created by default, and if you add a range, then they are automatically updated to the Range type.
+
+```php
+use SilverStripe\Search\Query\Facet\Facet;
+use SilverStripe\Search\Query\Query;
+
+// Create your Query
+$query = Query::create('query string');
+
+// Create a facet (defaults to Value type)
+$facet = Facet::create();
+// Set the property name (aka "field key")
+$facet->setProperty('fieldName1');
+// Set the facet name
+$facet->setName('facetName1');
+// Optionally set a limit
+$facet->setLimit(5);
+
+// Create a facet (defaults to Value type)
+$facetTwo = Facet::create();
+// Set the property name (aka "field key")
+$facetTwo->setProperty('fieldName2');
+// Set the facet name
+$facetTwo->setName('facetName2');
+// Convert it to a Range type simply by adding one or more ranges
+$facetTwo->addRange(100, 1000);
+
+// Add your facet (or facets) to the Query
+$query->addFacet($facet);
+$query->addFacet($facetTwo);
+
+// An array method is also available, and it expects an array of facets
+$query->addFacets([$facet, $facetTwo]);
+```

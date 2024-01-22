@@ -49,8 +49,6 @@ class FacetTest extends SapphireTest
     {
         $facet = Facet::create();
 
-        $this->assertNull($facet->getType());
-
         $facet->setType($type);
 
         $this->assertEquals($type, $facet->getType());
@@ -61,7 +59,7 @@ class FacetTest extends SapphireTest
         $tests = [];
 
         foreach (Facet::TYPES as $type) {
-            $tests = [$type];
+            $tests[] = [$type];
         }
 
         return $tests;
@@ -72,8 +70,6 @@ class FacetTest extends SapphireTest
         $this->expectExceptionMessage('Invalid type "INVALID" provided');
 
         $facet = Facet::create();
-
-        $this->assertNull($facet->getType());
 
         // Should throw our Exception
         $facet->setType('INVALID');

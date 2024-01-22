@@ -157,39 +157,44 @@ class QueryTest extends SapphireTest
         $this->assertEquals($expected, $query->getSearchFields());
     }
 
-    public function testSetPageNum(): void
+    public function testSetPaginationOffset(): void
     {
         $query = Query::create();
 
-        $this->assertNull($query->getPageNum());
+        $this->assertNull($query->getPaginationOffset());
 
-        $query->setPageNum(1);
+        $query->setPaginationOffset(1);
 
-        $this->assertEquals(1, $query->getPageNum());
+        $this->assertEquals(1, $query->getPaginationOffset());
+        // With only Offset defined, hasPagination() should be false
+        $this->assertFalse($query->hasPagination());
     }
 
-    public function testSetPageSize(): void
+    public function testSetPaginationLimit(): void
     {
         $query = Query::create();
 
-        $this->assertNull($query->getPageSize());
+        $this->assertNull($query->getPaginationLimit());
 
-        $query->setPageSize(10);
+        $query->setPaginationLimit(10);
 
-        $this->assertEquals(10, $query->getPageSize());
+        $this->assertEquals(10, $query->getPaginationLimit());
+        // With only Limit defined, hasPagination() should be false
+        $this->assertFalse($query->hasPagination());
     }
 
     public function testSetPagination(): void
     {
         $query = Query::create();
 
-        $this->assertNull($query->getPageNum());
-        $this->assertNull($query->getPageSize());
+        $this->assertNull($query->getPaginationOffset());
+        $this->assertNull($query->getPaginationLimit());
 
-        $query->setPagination(10, 1);
+        $query->setPagination(10, 20);
 
-        $this->assertEquals(1, $query->getPageNum());
-        $this->assertEquals(10, $query->getPageSize());
+        $this->assertEquals(20, $query->getPaginationOffset());
+        $this->assertEquals(10, $query->getPaginationLimit());
+        $this->assertTrue($query->hasPagination());
     }
 
     public function testFilterWithClause(): void

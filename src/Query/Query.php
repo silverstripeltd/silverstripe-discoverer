@@ -38,9 +38,9 @@ class Query
 
     private FacetCollection $facetCollection;
 
-    private ?int $pageNum = null;
+    private ?int $paginationOffset = null;
 
-    private ?int $pageSize = null;
+    private ?int $paginationLimit = null;
 
     private array $resultFields = [];
 
@@ -211,39 +211,39 @@ class Query
         return $this;
     }
 
-    public function setPageNum(int $pageNum): self
+    public function setPaginationOffset(int $paginationOffset): self
     {
-        $this->pageNum = $pageNum;
+        $this->paginationOffset = $paginationOffset;
 
         return $this;
     }
 
-    public function getPageNum(): ?int
+    public function getPaginationOffset(): ?int
     {
-        return $this->pageNum;
+        return $this->paginationOffset;
     }
 
-    public function setPageSize(int $pageSize): self
+    public function setPaginationLimit(int $paginationLimit): self
     {
-        $this->pageSize = $pageSize;
+        $this->paginationLimit = $paginationLimit;
 
         return $this;
     }
 
-    public function getPageSize(): ?int
+    public function getPaginationLimit(): ?int
     {
-        return $this->pageSize;
+        return $this->paginationLimit;
     }
 
     public function hasPagination(): bool
     {
-        return $this->pageSize || $this->pageNum;
+        return $this->paginationLimit !== null && $this->paginationOffset !== null;
     }
 
-    public function setPagination(int $pageSize, int $pageNum): self
+    public function setPagination(int $limit, int $offset): self
     {
-        $this->setPageSize($pageSize);
-        $this->setPageNum($pageNum);
+        $this->setPaginationLimit($limit);
+        $this->setPaginationOffset($offset);
 
         return $this;
     }

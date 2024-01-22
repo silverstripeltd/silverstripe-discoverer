@@ -57,9 +57,6 @@ class FacetCollectionTest extends SapphireTest
                 'name' => 'facetName1',
                 'property' => 'fieldName1',
                 'type' => Facet::TYPE_VALUE,
-                'locationUnit' => null,
-                'locationLatitude' => null,
-                'locationLongitude' => null,
                 'ranges' => [],
             ],
             [
@@ -67,9 +64,6 @@ class FacetCollectionTest extends SapphireTest
                 'name' => 'facetName2',
                 'property' => 'fieldName2',
                 'type' => Facet::TYPE_RANGE,
-                'locationUnit' => null,
-                'locationLatitude' => null,
-                'locationLongitude' => null,
                 'ranges' => [
                     [
                         'from' => 1,
@@ -88,9 +82,6 @@ class FacetCollectionTest extends SapphireTest
                 'name' => 'facetName3',
                 'property' => 'fieldName3',
                 'type' => Facet::TYPE_RANGE,
-                'locationUnit' => 'm',
-                'locationLatitude' => 1,
-                'locationLongitude' => -1,
                 'ranges' => [],
             ],
         ];

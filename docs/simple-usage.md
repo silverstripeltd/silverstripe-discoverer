@@ -1,7 +1,11 @@
 # Simple usage
 
-**Note:** This is not meant to be a feature-packed demo - just provide you the basics to get started. Once you've 
-implemented this, check out [usage.md](usage.md) to see other features that can be enabled.
+**Note:** This is not meant to be a feature-packed demo - just provide you the basics to get started.
+
+Please also read the following:
+
+* [Detailed usage](detailed-querying.md)
+* [Detailed result handling](detailed-result-handling.md)
 
 This module does not provide a search results page out of the box. You an hook it up to your existing results page, or 
 create a new one. A minimal example of a `SearchResultsController` is below, along with the Silverstripe template that 
@@ -106,6 +110,10 @@ class SearchResultsController extends PageController
     {
         // The keywords that we want to search
         $keywords = Convert::raw2xml($this->getRequest()->getVar('q'));
+        // How many records we want to display per page
+        $perPage = 10;
+        // Pagination (if supplied)
+        $start = $this->getRequest()->getVar('start') ?? 0;
 
         // No results unless we search for something
         if (!$keywords) {
@@ -115,6 +123,7 @@ class SearchResultsController extends PageController
         try {
             $service = SearchService::create();
             $query = Query::create();
+            $query->setPagination($perPage, $start);
 
             $query->setQueryString($keywords);
             // Request a formatted value (AKA a "snippet") for your Title field
@@ -167,6 +176,7 @@ fallback logic).
         <% end_loop %>
     </ul>
 
+    <%-- Pagination example --%>
     <% with $SearchResults.Records %>
         <% if $MoreThanOnePage %>
             <ul class="pagination">
