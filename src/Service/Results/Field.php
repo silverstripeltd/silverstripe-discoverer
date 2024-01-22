@@ -9,12 +9,12 @@ class Field extends ViewableData
 
     private mixed $raw = null;
 
-    private mixed $snippet = null;
+    private mixed $formatted = null;
 
     public function forTemplate(): mixed
     {
-        // Attempt to return the snippet (if available), or return raw as the fallback
-        return $this->snippet ?? $this->raw;
+        // Attempt to return the formatted value (if available), or return raw as the fallback
+        return $this->formatted ?? $this->raw;
     }
 
     public function getRaw(): mixed
@@ -29,14 +29,14 @@ class Field extends ViewableData
         return $this;
     }
 
-    public function getSnippet(): mixed
+    public function getFormatted(): mixed
     {
-        return $this->snippet;
+        return $this->formatted;
     }
 
-    public function setSnippet(mixed $snippet): self
+    public function setFormatted(mixed $formatted): self
     {
-        $this->snippet = $snippet;
+        $this->formatted = $formatted;
 
         return $this;
     }

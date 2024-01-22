@@ -117,50 +117,6 @@ class QueryTest extends SapphireTest
         $this->assertTrue($resultFieldFour->isFormatted());
     }
 
-    public function testResultFields(): void
-    {
-        $query = Query::create();
-        // Can mix/match associative and numeric
-        $query->addResultFields([
-            ['field1'],
-            ['field2', 0],
-            ['field3', 100],
-            ['field4', 0, true],
-            ['field5', 100, true],
-        ]);
-
-        $resultFields = $query->getResultFields();
-
-        $this->assertCount(5, $resultFields);
-
-        /** @var ResultField $resultFieldOne */
-        $resultFieldOne = array_shift($resultFields);
-        /** @var ResultField $resultFieldTwo */
-        $resultFieldTwo = array_shift($resultFields);
-        /** @var ResultField $resultFieldThree */
-        $resultFieldThree = array_shift($resultFields);
-        /** @var ResultField $resultFieldFour */
-        $resultFieldFour = array_shift($resultFields);
-        /** @var ResultField $resultFieldFive */
-        $resultFieldFive = array_shift($resultFields);
-
-        $this->assertEquals('field1', $resultFieldOne->getFieldName());
-        $this->assertEquals(0, $resultFieldOne->getLength());
-        $this->assertFalse($resultFieldOne->isFormatted());
-        $this->assertEquals('field2', $resultFieldTwo->getFieldName());
-        $this->assertEquals(0, $resultFieldTwo->getLength());
-        $this->assertFalse($resultFieldTwo->isFormatted());
-        $this->assertEquals('field3', $resultFieldThree->getFieldName());
-        $this->assertEquals(100, $resultFieldThree->getLength());
-        $this->assertFalse($resultFieldThree->isFormatted());
-        $this->assertEquals('field4', $resultFieldFour->getFieldName());
-        $this->assertEquals(0, $resultFieldFour->getLength());
-        $this->assertTrue($resultFieldFour->isFormatted());
-        $this->assertEquals('field5', $resultFieldFive->getFieldName());
-        $this->assertEquals(100, $resultFieldFive->getLength());
-        $this->assertTrue($resultFieldFive->isFormatted());
-    }
-
     public function testAddSearchField(): void
     {
         $query = Query::create();

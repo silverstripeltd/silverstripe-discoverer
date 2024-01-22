@@ -192,29 +192,6 @@ class Query
         return $this;
     }
 
-    /**
-     * @param array $fieldsCollection An array of up to 3 items. [$fieldName, $length, $formatted] in that order
-     * $fieldName is required, $length and $formatted are optional, but you will need to specify a $length if you want
-     * to provide $formatted. A $length of 0 is considered to be "no limit"
-     * @throws Exception
-     */
-    public function addResultFields(array $fieldsCollection): self
-    {
-        foreach ($fieldsCollection as $resultFields) {
-            $fieldName = $resultFields[0] ?? null;
-            $length = $resultFields[1] ?? 0;
-            $formatted = $resultFields[2] ?? false;
-
-            if (!$fieldName) {
-                throw new Exception('Expected at least one array item in $resultFields');
-            }
-
-            $this->addResultField($fieldName, $length, $formatted);
-        }
-
-        return $this;
-    }
-
     public function getSearchFields(): array
     {
         return $this->searchFields;
