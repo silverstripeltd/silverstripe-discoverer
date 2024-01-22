@@ -139,6 +139,55 @@ class CriteriaTest extends SapphireTest
         $this->assertEquals($expectedCombined, $criteriaParent->getPreparedClause());
     }
 
+    public function testFilterWithClause(): void
+    {
+        $criteria = Criteria::createAny();
+        $criterionOne = Criterion::create('field1', 'value1', Criterion::EQUAL);
+        $criterionTwo = Criterion::create('field2', 'value2', Criterion::EQUAL);
+
+        $criteria->filter($criterionOne);
+        $criteria->filter($criterionTwo);
+
+        $clauses = $criteria->getClauses();
+
+        $this->assertCount(2, $clauses);
+
+        /** @var Criterion $criterionOne */
+        $criterionOne = array_shift($clauses);
+        /** @var Criterion $criterionTwo */
+        $criterionTwo = array_shift($clauses);
+
+        $this->assertEquals('field1', $criterionOne->getTarget());
+        $this->assertEquals('value1', $criterionOne->getValue());
+        $this->assertEquals(Criterion::EQUAL, $criterionOne->getComparison());
+        $this->assertEquals('field2', $criterionTwo->getTarget());
+        $this->assertEquals('value2', $criterionTwo->getValue());
+        $this->assertEquals(Criterion::EQUAL, $criterionTwo->getComparison());
+    }
+
+    public function testFilterWithTarget(): void
+    {
+        $criteria = Criteria::createAny();
+        $criteria->filter('field1', 'value1', Criterion::EQUAL);
+        $criteria->filter('field2', 'value2', Criterion::EQUAL);
+
+        $clauses = $criteria->getClauses();
+
+        $this->assertCount(2, $clauses);
+
+        /** @var Criterion $criterionOne */
+        $criterionOne = array_shift($clauses);
+        /** @var Criterion $criterionTwo */
+        $criterionTwo = array_shift($clauses);
+
+        $this->assertEquals('field1', $criterionOne->getTarget());
+        $this->assertEquals('value1', $criterionOne->getValue());
+        $this->assertEquals(Criterion::EQUAL, $criterionOne->getComparison());
+        $this->assertEquals('field2', $criterionTwo->getTarget());
+        $this->assertEquals('value2', $criterionTwo->getValue());
+        $this->assertEquals(Criterion::EQUAL, $criterionTwo->getComparison());
+    }
+
     protected function setUp(): void
     {
         parent::setUp();

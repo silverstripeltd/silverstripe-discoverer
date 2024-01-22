@@ -161,7 +161,7 @@ $query->setPageNum(2);
 
 Filtering is a complicated beast, so I hope you're ready.
 
-For simple, non-nested filtering, there are some methods available to try and keep things as simple as possible.
+For basic filtering, there are some methods available to try and keep things as simple as possible.
 
 #### `filter()` method
 
@@ -182,11 +182,15 @@ $query->filter('category_id', [1, 2, 3], Criterion::IN);
 The example above would result in a filter condition that reads like:
 
 ```
-(author_id = 1 AND category_id IN (1, 2, 3))
+(
+    author_id = 1
+    AND
+    category_id IN (1, 2, 3)
+)
 ```
 
 The `filter()` method also accepts a `Criteria` or `Criterion` as the first argument. You can use this if you have
-pre-build the filter conditions that you wish to apply to your Query.
+pre-build the filter conditions that you wish to apply to your `Query`.
 
 See [Complex (EG: nested) filtering](#complex-eg-nested-filtering) for more info on that though.
 
@@ -208,7 +212,11 @@ $query->filterAny([
 The example above would result in a filter condition that reads like:
 
 ```
-(author_id = 1 OR publisher_id IN (1, 2))
+(
+    author_id = 1
+    OR
+    publisher_id IN (1, 2)
+)
 ```
 
 *Note:* Calling `filterAny()` multiple times will result in **groups** of filter conditions, and each groups of
@@ -231,7 +239,19 @@ $query->filterAny([
 The example above would result in a filter condition that reads like:
 
 ```
-((author_id = 1 OR publisher_id IN (1, 2)) AND (category_id = 1 OR subcategory_id IN (1, 2)))
+(
+    (
+        author_id = 1
+        OR
+        publisher_id IN (1, 2)
+    )
+    AND
+    (
+        category_id = 1
+        OR
+        subcategory_id IN (1, 2)
+    )
+)
 ```
 
 #### Using both `filter()` and `filterAny()`
@@ -254,7 +274,15 @@ $query->filterAny([
 The example above would result in a filter condition that reads like:
 
 ```
-(author_id = 1 AND publisher_id IN (1, 2, 3) AND (category_id = 1 OR subcategory_id IN (1, 2)))
+(
+    author_id = 1
+    AND
+    publisher_id IN (1, 2, 3)
+    AND
+    (
+        category_id = 1 OR subcategory_id IN (1, 2)
+    )
+)
 ```
 
 #### Complex (EG: nested) filtering
@@ -276,5 +304,45 @@ For this, we have two main classes (the names of which I took from from popular 
     * Or both together: `(category_id=1 OR sub_category=2) AND (author_id=1 OR publisher_id=2)`
   * The level of nesting we can achieve here is limited only by the service you are using. EG: Elastic has a nesting
     limit of 5 levels
+
+Ok, so the key is going to be to remember that the `Criteria` class is for groups of conditions. So let's say you want
+to create one group of conditions that use an OR conjunction between them.
+
+```php
+use SilverStripe\Search\Query\Filter\Criteria;
+use SilverStripe\Search\Query\Filter\Criterion;
+
+// Start by creating a `Criteria` that uses the OR conjunction
+$criteriaOne = Criteria::createAny();
+// Then you can start adding filter conditions
+// Note: Because we created the Criteria using createAny(), we will get an OR conjunction between each filter
+$criteriaOne->filter('category_id', 1, Criterion::EQUAL);
+$criteriaOne->filter('subcategory_id', 2, Criterion::EQUAL);
+// This will create a filter condition that reads like:
+// (category_id = 1 OR subcategory_id = 2)
+
+// And then maybe we have another set of Criteria, but this time we want to use the AND conjunction
+$criteriaTwo = Criteria::createAll();
+// Again, start adding filter conditions
+$criteriaTwo->filter('author_id', 1, Criterion::EQUAL);
+$criteriaTwo->filter('publisher_id', 2, Criterion::EQUAL);
+// This will create a filter condition that reads like:
+// (author_id = 1 AND publisher_id = 2)
+
+// Ok, so then we want to combine these two groups of conditions together using an OR conjunction. To do that, we
+// could create a third Criteria::createAny()
+$criteriaJoined = Criteria::createAny();
+// And then we could add both of the previous Criteria to it, creating a nested group of conditions
+$criteriaJoined->filter($criteriaOne);
+$criteriaJoined->filter($criteriaTwo);
+// This joined Criteria would now create a filter condition that reads like:
+// ((category_id = 1 OR subcategory_id = 2) OR (author_id = 1 AND publisher_id = 2))
+```
+
+`$criteriaJoined` could then also be added into another `Criteria` object, creating another level of nesting.
+
+I hope the above gives you an idea of how far you might be able to push filtering. As mentioned before, the level of
+nesting is determined by the search service, but (for example), Elastic supports 5 levels, and you could achieve this
+by using nested `Criteria` objects.
 
 ### Facets

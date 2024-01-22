@@ -34,7 +34,7 @@ class Query
      *
      * You will end up with (...conditions) AND (...otherConditions)
      */
-    private Criteria $filter;
+    private Criteria $criteria;
 
     private FacetCollection $facetCollection;
 
@@ -51,7 +51,7 @@ class Query
     public function __construct(private string $queryString = '')
     {
         // See the docblock on self::$filter for some details
-        $this->filter = Criteria::createAll();
+        $this->criteria = Criteria::createAll();
         $this->facetCollection = FacetCollection::create();
     }
 
@@ -88,7 +88,7 @@ class Query
 
     public function getFilter(): Criteria
     {
-        return $this->filter;
+        return $this->criteria;
     }
 
     /**
@@ -110,7 +110,7 @@ class Query
             $criteria->addClause($criterion);
         }
 
-        $this->filter->addClause($criteria);
+        $this->criteria->addClause($criteria);
 
         return $this;
     }
@@ -120,22 +120,7 @@ class Query
      */
     public function filter(Clause|string $targetOrClause, mixed $value = null, ?string $comparison = null): self
     {
-        if ($targetOrClause instanceof Clause) {
-            $this->filter->addClause($targetOrClause);
-
-            return $this;
-        }
-
-        if (!$value) {
-            throw new Exception('mixed $value and string $comparison expected for filter()');
-        }
-
-        if (!$comparison) {
-            throw new Exception('string $comparison expected for filter()');
-        }
-
-        $clause = Criterion::create($targetOrClause, $value, $comparison);
-        $this->filter->addClause($clause);
+        $this->criteria->filter($targetOrClause, $value, $comparison);
 
         return $this;
     }
