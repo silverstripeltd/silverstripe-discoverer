@@ -94,13 +94,13 @@ class QueryTest extends SapphireTest
 
         $this->assertCount(4, $resultFields);
 
-        /** @var ResultField $resultFieldOne */
+        /** @var ResultFieldTest $resultFieldOne */
         $resultFieldOne = array_shift($resultFields);
-        /** @var ResultField $resultFieldTwo */
+        /** @var ResultFieldTest $resultFieldTwo */
         $resultFieldTwo = array_shift($resultFields);
-        /** @var ResultField $resultFieldThree */
+        /** @var ResultFieldTest $resultFieldThree */
         $resultFieldThree = array_shift($resultFields);
-        /** @var ResultField $resultFieldFour */
+        /** @var ResultFieldTest $resultFieldFour */
         $resultFieldFour = array_shift($resultFields);
 
         $this->assertEquals('field1', $resultFieldOne->getFieldName());

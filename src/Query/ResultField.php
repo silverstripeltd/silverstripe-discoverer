@@ -11,8 +11,8 @@ class ResultField
 
     public function __construct(
         private readonly string $fieldName,
-        private readonly int $length,
-        private readonly bool $formatted
+        private readonly int $length = 0,
+        private readonly bool $formatted = false
     ) {}
 
     public function getFieldName(): string

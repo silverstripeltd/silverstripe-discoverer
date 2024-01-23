@@ -31,6 +31,7 @@ class Record extends ViewableData
     public function setAnalyticsData(?AnalyticsData $analyticsData): Record
     {
         $this->analyticsData = $analyticsData;
+
         return $this;
     }
 

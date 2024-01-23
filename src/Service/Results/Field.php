@@ -7,9 +7,10 @@ use SilverStripe\View\ViewableData;
 class Field extends ViewableData
 {
 
-    private mixed $raw = null;
-
-    private mixed $formatted = null;
+    public function __construct(private mixed $raw = null, private mixed $formatted = null)
+    {
+        parent::__construct();
+    }
 
     public function forTemplate(): mixed
     {
