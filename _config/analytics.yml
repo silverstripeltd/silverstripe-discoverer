@@ -10,4 +10,4 @@ SilverStripe\Core\Injector\Injector:
   SilverStripe\Control\Director:
     properties:
       Middlewares:
-        SearchAnalyticsMiddleware: '%$SilverStripe\Search\Analytics\AnalyticsMiddleware'
+        SearchAnalyticsMiddleware: '%$SilverStripe\Discoverer\Analytics\AnalyticsMiddleware'

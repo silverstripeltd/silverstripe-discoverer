@@ -1,10 +1,10 @@
 <?php
 
-namespace SilverStripe\Search\Tests\Query\Facet;
+namespace SilverStripe\Discoverer\Tests\Query\Facet;
 
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Search\Query\Facet\Facet;
-use SilverStripe\Search\Query\Facet\FacetRange;
+use SilverStripe\Discoverer\Query\Facet\Facet;
+use SilverStripe\Discoverer\Query\Facet\FacetRange;
 
 class FacetTest extends SapphireTest
 {

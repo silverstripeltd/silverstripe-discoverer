@@ -1,9 +1,9 @@
 {
-    "name": "silverstripeltd/silverstripe-search",
+    "name": "silverstripeltd/discoverer",
     "description": "Service agnostic abstraction of search querying requirements",
     "type": "silverstripe-vendormodule",
     "license": "proprietary",
-    "homepage": "https://github.com/silverstripeltd/silverstripe-search",
+    "homepage": "https://github.com/silverstripeltd/discoverer",
     "authors": [
         {
             "name": "Christopher David Penny",
@@ -25,8 +25,8 @@
     },
     "autoload": {
         "psr-4": {
-            "SilverStripe\\Search\\": "src/",
-            "SilverStripe\\Search\\Tests\\": "tests/"
+            "SilverStripe\\Discoverer\\": "src/",
+            "SilverStripe\\Discoverer\\Tests\\": "tests/"
         }
     },
     "config": {

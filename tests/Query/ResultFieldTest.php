@@ -1,9 +1,9 @@
 <?php
 
-namespace SilverStripe\Search\Tests\Query;
+namespace SilverStripe\Discoverer\Tests\Query;
 
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Search\Query\ResultField;
+use SilverStripe\Discoverer\Query\ResultField;
 
 class ResultFieldTest extends SapphireTest
 {

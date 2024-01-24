@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\Search\Query;
+namespace SilverStripe\Discoverer\Query;
 
 use SilverStripe\Core\Injector\Injectable;
 

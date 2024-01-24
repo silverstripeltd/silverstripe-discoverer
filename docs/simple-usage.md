@@ -53,16 +53,7 @@ This Controller provides 2 methods:
 
 namespace App\Pages;
 
-use PageController;
-use Psr\Log\LoggerInterface;
-use SilverStripe\Core\Convert;
-use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\Form;
-use SilverStripe\Forms\FormAction;
-use SilverStripe\Forms\TextField;
-use SilverStripe\Search\Query\Query;
-use SilverStripe\Search\Service\Results\Results;
-use SilverStripe\Search\Service\SearchService;
+use PageController;use Psr\Log\LoggerInterface;use SilverStripe\Core\Convert;use SilverStripe\Discoverer\Query\Query;use SilverStripe\Discoverer\Service\Results\Results;use SilverStripe\Discoverer\Service\SearchService;use SilverStripe\Forms\FieldList;use SilverStripe\Forms\Form;use SilverStripe\Forms\FormAction;use SilverStripe\Forms\TextField;
 
 class SearchResultsController extends PageController
 {

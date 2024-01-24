@@ -1,9 +1,9 @@
 <?php
 
-namespace SilverStripe\Search\Tests\Analytics;
+namespace SilverStripe\Discoverer\Tests\Analytics;
 
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Search\Analytics\AnalyticsData;
+use SilverStripe\Discoverer\Analytics\AnalyticsData;
 
 class AnalyticsDataTest extends SapphireTest
 {

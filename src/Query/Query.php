@@ -1,14 +1,14 @@
 <?php
 
-namespace SilverStripe\Search\Query;
+namespace SilverStripe\Discoverer\Query;
 
 use Exception;
 use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\Search\Query\Facet\Facet;
-use SilverStripe\Search\Query\Facet\FacetCollection;
-use SilverStripe\Search\Query\Filter\Clause;
-use SilverStripe\Search\Query\Filter\Criteria;
-use SilverStripe\Search\Query\Filter\Criterion;
+use SilverStripe\Discoverer\Query\Facet\Facet;
+use SilverStripe\Discoverer\Query\Facet\FacetCollection;
+use SilverStripe\Discoverer\Query\Filter\Clause;
+use SilverStripe\Discoverer\Query\Filter\Criteria;
+use SilverStripe\Discoverer\Query\Filter\Criterion;
 
 class Query
 {

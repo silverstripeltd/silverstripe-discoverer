@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\Search\Query\Filter;
+namespace SilverStripe\Discoverer\Query\Filter;
 
 interface CriterionAdaptor
 {

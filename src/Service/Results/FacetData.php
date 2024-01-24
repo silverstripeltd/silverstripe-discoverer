@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\Search\Service\Results;
+namespace SilverStripe\Discoverer\Service\Results;
 
 use SilverStripe\View\ViewableData;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\Search\Analytics;
+namespace SilverStripe\Discoverer\Analytics;
 
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\HTTPRequest;
@@ -9,7 +9,7 @@ use SilverStripe\Control\Middleware\HTTPMiddleware;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\Search\Service\SearchService;
+use SilverStripe\Discoverer\Service\SearchService;
 use Throwable;
 
 class AnalyticsMiddleware implements HTTPMiddleware

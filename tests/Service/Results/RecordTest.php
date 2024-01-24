@@ -1,9 +1,11 @@
 <?php
 
+namespace SilverStripe\Discoverer\Tests\Service\Results;
+
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Search\Analytics\AnalyticsData;
-use SilverStripe\Search\Service\Results\Field;
-use SilverStripe\Search\Service\Results\Record;
+use SilverStripe\Discoverer\Analytics\AnalyticsData;
+use SilverStripe\Discoverer\Service\Results\Field;
+use SilverStripe\Discoverer\Service\Results\Record;
 
 class RecordTest extends SapphireTest
 {
@@ -28,9 +30,7 @@ class RecordTest extends SapphireTest
 
     public function testInvalidDynamicField(): void
     {
-        $this->expectExceptionMessage(
-            'Field value must be an instance of SilverStripe\\Search\\Service\\Result\\Field'
-        );
+        $this->expectExceptionMessage(sprintf('Field value must be an instance of %s', Field::class));
 
         $record = Record::create();
         // This should throw our Exception

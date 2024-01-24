@@ -1,12 +1,12 @@
 <?php
 
-namespace SilverStripe\Search\Tests\Query\Facet;
+namespace SilverStripe\Discoverer\Tests\Query\Facet;
 
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Search\Query\Facet\Facet;
-use SilverStripe\Search\Query\Facet\FacetAdaptor;
-use SilverStripe\Search\Query\Facet\FacetCollection;
+use SilverStripe\Discoverer\Query\Facet\Facet;
+use SilverStripe\Discoverer\Query\Facet\FacetAdaptor;
+use SilverStripe\Discoverer\Query\Facet\FacetCollection;
 
 class FacetCollectionTest extends SapphireTest
 {

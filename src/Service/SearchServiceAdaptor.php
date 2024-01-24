@@ -1,10 +1,10 @@
 <?php
 
-namespace SilverStripe\Search\Service;
+namespace SilverStripe\Discoverer\Service;
 
-use SilverStripe\Search\Analytics\AnalyticsData;
-use SilverStripe\Search\Query\Query;
-use SilverStripe\Search\Service\Results\Results;
+use SilverStripe\Discoverer\Analytics\AnalyticsData;
+use SilverStripe\Discoverer\Query\Query;
+use SilverStripe\Discoverer\Service\Results\Results;
 
 interface SearchServiceAdaptor
 {

@@ -1,7 +1,9 @@
 <?php
 
+namespace SilverStripe\Discoverer\Tests\Service\Results;
+
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Search\Service\Results\Field;
+use SilverStripe\Discoverer\Service\Results\Field;
 
 class FieldTest extends SapphireTest
 {

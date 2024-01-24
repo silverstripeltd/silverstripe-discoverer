@@ -1,11 +1,11 @@
 <?php
 
-namespace SilverStripe\Search\Service\Results;
+namespace SilverStripe\Discoverer\Service\Results;
 
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Discoverer\Query\Query;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\PaginatedList;
-use SilverStripe\Search\Query\Query;
 use SilverStripe\View\ViewableData;
 
 class Results extends ViewableData

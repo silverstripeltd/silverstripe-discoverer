@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\Search\Analytics;
+namespace SilverStripe\Discoverer\Analytics;
 
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\View\ViewableData;

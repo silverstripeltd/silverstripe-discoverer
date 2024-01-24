@@ -1,9 +1,9 @@
 <?php
 
-namespace SilverStripe\Search\Service\Results;
+namespace SilverStripe\Discoverer\Service\Results;
 
 use Exception;
-use SilverStripe\Search\Analytics\AnalyticsData;
+use SilverStripe\Discoverer\Analytics\AnalyticsData;
 use SilverStripe\View\ViewableData;
 
 class Record extends ViewableData
@@ -17,7 +17,7 @@ class Record extends ViewableData
     public function __set($property, $value)
     {
         if (!$value instanceof Field) {
-            throw new Exception('Field value must be an instance of SilverStripe\\Search\\Service\\Result\\Field');
+            throw new Exception(sprintf('Field value must be an instance of %s', Field::class));
         }
 
         parent::__set($property, $value);

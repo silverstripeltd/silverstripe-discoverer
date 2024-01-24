@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\Search\Query\Facet;
+namespace SilverStripe\Discoverer\Query\Facet;
 
 interface FacetAdaptor
 {

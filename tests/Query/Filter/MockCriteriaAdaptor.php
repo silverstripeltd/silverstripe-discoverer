@@ -1,11 +1,11 @@
 <?php
 
-namespace SilverStripe\Search\Tests\Query\Filter;
+namespace SilverStripe\Discoverer\Tests\Query\Filter;
 
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Dev\TestOnly;
-use SilverStripe\Search\Query\Filter\Criteria;
-use SilverStripe\Search\Query\Filter\CriteriaAdaptor;
+use SilverStripe\Discoverer\Query\Filter\Criteria;
+use SilverStripe\Discoverer\Query\Filter\CriteriaAdaptor;
 
 class MockCriteriaAdaptor implements TestOnly, CriteriaAdaptor
 {

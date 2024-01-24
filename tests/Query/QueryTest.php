@@ -1,18 +1,17 @@
 <?php
 
-namespace SilverStripe\Search\Tests\Query;
+namespace SilverStripe\Discoverer\Tests\Query;
 
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Search\Query\Facet\Facet;
-use SilverStripe\Search\Query\Filter\Criteria;
-use SilverStripe\Search\Query\Filter\CriteriaAdaptor;
-use SilverStripe\Search\Query\Filter\Criterion;
-use SilverStripe\Search\Query\Filter\CriterionAdaptor;
-use SilverStripe\Search\Query\Query;
-use SilverStripe\Search\Query\ResultField;
-use SilverStripe\Search\Tests\Query\Filter\MockCriteriaAdaptor;
-use SilverStripe\Search\Tests\Query\Filter\MockCriterionAdaptor;
+use SilverStripe\Discoverer\Query\Facet\Facet;
+use SilverStripe\Discoverer\Query\Filter\Criteria;
+use SilverStripe\Discoverer\Query\Filter\CriteriaAdaptor;
+use SilverStripe\Discoverer\Query\Filter\Criterion;
+use SilverStripe\Discoverer\Query\Filter\CriterionAdaptor;
+use SilverStripe\Discoverer\Query\Query;
+use SilverStripe\Discoverer\Tests\Query\Filter\MockCriteriaAdaptor;
+use SilverStripe\Discoverer\Tests\Query\Filter\MockCriterionAdaptor;
 
 class QueryTest extends SapphireTest
 {

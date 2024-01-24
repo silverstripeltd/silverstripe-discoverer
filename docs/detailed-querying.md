@@ -39,7 +39,7 @@ The `Query` class accepts a `string` paramter during instantiation, which it wil
 
 ```php
 
-use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create('search query');
 ```
@@ -47,7 +47,7 @@ $query = Query::create('search query');
 Or it can be set separately, after instantiation:
 
 ```php
-use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create();
 $query->setQueryString('search query');
@@ -58,7 +58,7 @@ $query->setQueryString('search query');
 Limit which fields in your index are searched with your provided query string. For example:
 
 ```php
-use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create();
 $query->setQueryString('search query');
@@ -74,7 +74,7 @@ $query->addSearchField('summary', 0);
 An array method is also available, and it expects to receive key/value pairs of `$fieldName => $weight`:
 
 ```php
-use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create();
 // Note that you also need to explicitly specify weights of 0 for fields that you don't want to apply weighting to
@@ -94,7 +94,7 @@ Limit what fields are returned to you as part of your search results. This is al
 length, and request "formatted" result fields (aka "snippets" for some services).
 
 ```php
-use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create();
 // The "raw" unshortened result for the title field
@@ -107,7 +107,7 @@ $query->addResultField('description', 100, true)
 with both the formatted and unformatted result.
 
 ```php
-use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create();
 // The "raw" unshortened result for the title field
@@ -122,7 +122,7 @@ but for Algolia it is words. This module does make any determinations.
 ### Sort
 
 ```php
-use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create();
 // Default is ASC
@@ -134,7 +134,7 @@ $query->addSort('last_edited', Query::SORT_DESC);
 An array method is also available, and it expects to receive key/value pairs of `$fieldName => $direction`:
 
 ```php
-use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create();
 // Note that you also need to explicitly specify ASC (even though it is the default when using addSort())
@@ -147,7 +147,7 @@ $query->addSorts([
 ### Pagination
 
 ```php
-use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create();
 // Can specify both page size (10) and offset (20) in one call
@@ -175,8 +175,7 @@ The default `filter()` method accepts a single filter condition. Calling the `fi
 result in filter conditions that use the AND conjunction between them. "This AND that AND those".
 
 ```php
-use SilverStripe\Search\Query\Filter\Criterion;
-use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Filter\Criterion;use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create();
 // Where the author_id is specifically 1
@@ -206,7 +205,7 @@ Each time you call `filterAny()`, you can provide an array of filtering conditio
 conjuntion between them.
 
 ```php
-use SilverStripe\Search\Query\Filter\Criterion;use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Filter\Criterion;use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create();
 $query->filterAny([
@@ -229,7 +228,7 @@ The example above would result in a filter condition that reads like:
 conditions will use the AND conjunction between them.
 
 ```php
-use SilverStripe\Search\Query\Filter\Criterion;use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Filter\Criterion;use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create();
 $query->filterAny([
@@ -266,7 +265,7 @@ Absolutely you can do this. The main thing to remember is that each call to `fil
 conjunction between them.
 
 ```php
-use SilverStripe\Search\Query\Filter\Criterion;use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Filter\Criterion;use SilverStripe\Discoverer\Query\Query;
 
 $query = Query::create();
 $query->filter('author_id', 1, Criterion::EQUAL);
@@ -315,8 +314,7 @@ Ok, so the key is going to be to remember that the `Criteria` class is for group
 to create one group of conditions that use an OR conjunction between them.
 
 ```php
-use SilverStripe\Search\Query\Filter\Criteria;
-use SilverStripe\Search\Query\Filter\Criterion;
+use SilverStripe\Discoverer\Query\Filter\Criteria;use SilverStripe\Discoverer\Query\Filter\Criterion;
 
 // Start by creating a `Criteria` that uses the OR conjunction
 $criteriaOne = Criteria::createAny();
@@ -362,8 +360,7 @@ We support two basic facet types: Value, and Range.
 Value Facets are created by default, and if you add a range, then they are automatically updated to the Range type.
 
 ```php
-use SilverStripe\Search\Query\Facet\Facet;
-use SilverStripe\Search\Query\Query;
+use SilverStripe\Discoverer\Query\Facet\Facet;use SilverStripe\Discoverer\Query\Query;
 
 // Create your Query
 $query = Query::create('query string');
