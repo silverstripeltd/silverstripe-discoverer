@@ -2,15 +2,16 @@
 
 namespace SilverStripe\Discoverer\Service\Results;
 
+use SilverStripe\ORM\ArrayList;
 use SilverStripe\View\ViewableData;
 
 class Facet extends ViewableData
 {
 
     /**
-     * @var FacetData[]
+     * @var ArrayList|FacetData[]
      */
-    private array $data = [];
+    private ArrayList $data;
 
     private ?string $name = null;
 
@@ -18,14 +19,21 @@ class Facet extends ViewableData
 
     private ?string $type = null;
 
-    public function getData(): array
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->data = ArrayList::create();
+    }
+
+    public function getData(): ArrayList
     {
         return $this->data;
     }
 
     public function addData(FacetData $facetData): void
     {
-        $this->data[] = $facetData;
+        $this->data->add($facetData);
     }
 
     public function getName(): ?string

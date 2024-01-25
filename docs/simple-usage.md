@@ -167,6 +167,23 @@ fallback logic).
         <% end_loop %>
     </ul>
 
+    <%-- Facet example --%>
+    <% if $SearchResults.Facets %>
+        <ul class="facets">
+                <% loop $SearchResults.Facets %>
+                    <% if $Data %>
+                    <li>Field: $Property
+                        <ul>
+                                <% loop $Data %>
+                                <li>$Value: $Count</li>
+                                <% end_loop %>
+                        </ul>
+                    </li>
+                    <% end_if %>
+                <% end_loop %>
+        </ul>
+    <% end_if %>
+
     <%-- Pagination example --%>
     <% with $SearchResults.Records %>
         <% if $MoreThanOnePage %>
