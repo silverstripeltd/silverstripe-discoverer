@@ -5,11 +5,13 @@ namespace SilverStripe\Discoverer\Tests\Query;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Query\Facet\Facet;
+use SilverStripe\Discoverer\Query\Facet\FacetAdaptor;
 use SilverStripe\Discoverer\Query\Filter\Criteria;
 use SilverStripe\Discoverer\Query\Filter\CriteriaAdaptor;
 use SilverStripe\Discoverer\Query\Filter\Criterion;
 use SilverStripe\Discoverer\Query\Filter\CriterionAdaptor;
 use SilverStripe\Discoverer\Query\Query;
+use SilverStripe\Discoverer\Tests\Query\Facet\MockFacetAdaptor;
 use SilverStripe\Discoverer\Tests\Query\Filter\MockCriteriaAdaptor;
 use SilverStripe\Discoverer\Tests\Query\Filter\MockCriterionAdaptor;
 
@@ -337,6 +339,7 @@ class QueryTest extends SapphireTest
 
         Injector::inst()->registerService(new MockCriteriaAdaptor(), CriteriaAdaptor::class);
         Injector::inst()->registerService(new MockCriterionAdaptor(), CriterionAdaptor::class);
+        Injector::inst()->registerService(new MockFacetAdaptor(), FacetAdaptor::class);
     }
 
 }
