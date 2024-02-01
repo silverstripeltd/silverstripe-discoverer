@@ -7,6 +7,9 @@ use SilverStripe\Core\Injector\Injectable;
 
 /**
  * A Criterion is a single filter clause. EG: field1 = value1, or value1 IN (array, of, values), etc
+ *
+ * Query DSL docs:
+ * https://www.elastic.co/guide/en/elasticsearch/reference/master/query-dsl.html
  */
 class Criterion implements Clause
 {
@@ -92,6 +95,8 @@ class Criterion implements Clause
     }
 
     /**
+     * Note: Ranges are considered to be *inclusive* of your "to" and "from" values
+     *
      * @throws Exception
      */
     private function validateRange(): void

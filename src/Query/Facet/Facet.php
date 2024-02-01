@@ -26,6 +26,9 @@ class Facet
 
     private ?string $name = null;
 
+    /**
+     * Usually a field_name
+     */
     private ?string $property = null;
 
     /**
