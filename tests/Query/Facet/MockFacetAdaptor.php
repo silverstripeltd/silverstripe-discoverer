@@ -16,7 +16,7 @@ class MockFacetAdaptor implements FacetAdaptor
             $preparedFacet = [
                 'limit' => $facet->getLimit(),
                 'name' => $facet->getName(),
-                'property' => $facet->getProperty(),
+                'property' => $facet->getFieldName(),
                 'type' => $facet->getType(),
                 'ranges' => [],
             ];

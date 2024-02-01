@@ -7,8 +7,8 @@ Please also read the following:
 * [Detailed usage](detailed-querying.md)
 * [Detailed result handling](detailed-result-handling.md)
 
-This module does not provide a search results page out of the box. You an hook it up to your existing results page, or 
-create a new one. A minimal example of a `SearchResultsController` is below, along with the Silverstripe template that 
+This module does not provide a search results page out of the box. You an hook it up to your existing results page, or
+create a new one. A minimal example of a `SearchResultsController` is below, along with the Silverstripe template that
 might go alongside it.
 
 ## `SearchResults.php`
@@ -45,7 +45,7 @@ This Controller provides 2 methods:
   * The important bit here is that it uses a query param `q` to pass the search query to the search method.
 * `SearchResults()`: If the `q` query param is present, then this method will attempt to search, and return results for
   the template to process.
-  * A `Results` object is what is returned, and this has a few key method, like `getRecords()` (which is a 
+  * A `Results` object is what is returned, and this has a few key method, like `getRecords()` (which is a
     `PaginatedList`), `isSuccess()` (boolean), and `getFacets()` (an `ArrayList`).
 
 ```php
@@ -172,7 +172,7 @@ fallback logic).
         <ul class="facets">
                 <% loop $SearchResults.Facets %>
                     <% if $Data %>
-                    <li>Field: $Property
+                    <li>Field: $FieldName
                         <ul>
                                 <% loop $Data %>
                                 <li>$Value: $Count</li>

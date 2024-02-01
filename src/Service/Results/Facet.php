@@ -15,7 +15,7 @@ class Facet extends ViewableData
 
     private ?string $name = null;
 
-    private ?string $property = null;
+    private ?string $fieldName = null;
 
     private ?string $type = null;
 
@@ -48,14 +48,14 @@ class Facet extends ViewableData
         return $this;
     }
 
-    public function getProperty(): ?string
+    public function getFieldName(): ?string
     {
-        return $this->property;
+        return $this->fieldName;
     }
 
-    public function setProperty(?string $property): self
+    public function setFieldName(?string $fieldName): self
     {
-        $this->property = $property;
+        $this->fieldName = $fieldName;
 
         return $this;
     }

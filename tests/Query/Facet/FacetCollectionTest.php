@@ -31,20 +31,20 @@ class FacetCollectionTest extends SapphireTest
 
         $facetOne = Facet::create();
         $facetOne->setType(Facet::TYPE_VALUE);
-        $facetOne->setProperty('fieldName1');
+        $facetOne->setFieldName('fieldName1');
         $facetOne->setName('facetName1');
         $facetOne->setLimit(2);
 
         $facetTwo = Facet::create();
         $facetTwo->setType(Facet::TYPE_RANGE);
-        $facetTwo->setProperty('fieldName2');
+        $facetTwo->setFieldName('fieldName2');
         $facetTwo->setName('facetName2');
         $facetTwo->addRange(1, 2, 'rangeNameOne');
         $facetTwo->addRange(3, 4, 'rangeNameTwo');
 
         $facetThree = Facet::create();
         $facetThree->setType(Facet::TYPE_RANGE);
-        $facetThree->setProperty('fieldName3');
+        $facetThree->setFieldName('fieldName3');
         $facetThree->setName('facetName3');
 
         $facetCollection->addFacet($facetOne);

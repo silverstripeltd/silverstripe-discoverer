@@ -31,15 +31,15 @@ class FacetTest extends SapphireTest
         $this->assertEquals('facetName', $facet->getName());
     }
 
-    public function testProperty(): void
+    public function testFieldName(): void
     {
         $facet = Facet::create();
 
-        $this->assertNull($facet->getProperty());
+        $this->assertNull($facet->getFieldName());
 
-        $facet->setProperty('fieldName');
+        $facet->setFieldName('fieldName');
 
-        $this->assertEquals('fieldName', $facet->getProperty());
+        $this->assertEquals('fieldName', $facet->getFieldName());
     }
 
     /**

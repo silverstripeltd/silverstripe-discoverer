@@ -367,8 +367,8 @@ $query = Query::create('query string');
 
 // Create a facet (defaults to Value type)
 $facet = Facet::create();
-// Set the property name (aka "field key")
-$facet->setProperty('fieldName1');
+// Set the property name (aka "field name")
+$facet->setFieldName('fieldName1');
 // Set the facet name
 $facet->setName('facetName1');
 // Optionally set a limit
@@ -376,8 +376,8 @@ $facet->setLimit(5);
 
 // Create a facet (defaults to Value type)
 $facetTwo = Facet::create();
-// Set the property name (aka "field key")
-$facetTwo->setProperty('fieldName2');
+// Set the property name (aka "field name")
+$facetTwo->setFieldName('fieldName2');
 // Set the facet name
 $facetTwo->setName('facetName2');
 // Convert it to a Range type simply by adding one or more ranges
