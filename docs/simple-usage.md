@@ -1,13 +1,14 @@
 # Simple usage
 
-**Note:** This is not meant to be a feature-packed demo - just provide you the basics to get started.
+**Note:** This is not meant to be a feature-packed demo or a prescription for how you should implement search. This is
+just here to give a basic idea of how you might interact with the service components that this module provides.
 
 Please also read the following:
 
 * [Detailed usage](detailed-querying.md)
 * [Detailed result handling](detailed-result-handling.md)
 
-This module does not provide a search results page out of the box. You an hook it up to your existing results page, or
+This module does not provide a search results page out of the box. You can hook it up to your existing results page, or
 create a new one. A minimal example of a `SearchResultsController` is below, along with the Silverstripe template that
 might go alongside it.
 
@@ -43,6 +44,8 @@ This Controller provides 2 methods:
 
 * `SearchForm()`: Output a basic `<form></form>` that can be used to submit a search request.
   * The important bit here is that it uses a query param `q` to pass the search query to the search method.
+  * Not covered in this demo is filtering. You will likely want to add additional form fields for any filters, and pass
+    those values along within your query params.
 * `SearchResults()`: If the `q` query param is present, then this method will attempt to search, and return results for
   the template to process.
   * A `Results` object is what is returned, and this has a few key method, like `getRecords()` (which is a
@@ -99,7 +102,11 @@ class SearchResultsController extends PageController
      */
     public function SearchResults(): ?Results
     {
-        // The keywords that we want to search
+        // The index suffix that you wish to search. If you are using (eg) subsites, or Fluent, then this might need to
+        // be dynamic, and based on which site or Locale a user is browsing
+        $index = 'main';
+        // The keywords that we want to search. raw2xml() will ensure that search strings are escaped with special
+        // characters converted
         $keywords = Convert::raw2xml($this->getRequest()->getVar('q'));
         // How many records we want to display per page
         $perPage = 10;
@@ -113,16 +120,22 @@ class SearchResultsController extends PageController
 
         try {
             $service = SearchService::create();
-            $query = Query::create();
+            // Instantiate a new Query, and provide the search terms that we wish to search for
+            $query = Query::create($keywords);
+            // Set pagination requirements
             $query->setPagination($perPage, $start);
 
-            $query->setQueryString($keywords);
-            // Request a formatted value (AKA a "snippet") for your Title field
-            $query->addResultField('title', 20, true);
-            // You'll need to have a "link" to each record in your Documents
-            $query->addResultField('page_link');
+            // You must also specify which fields you would like included in your results
+            // Request an unformatted title field
+            $query->addResultField('title');
+            // Request a formatted value (AKA a "snippet") for your Content field
+            $query->addResultField('content', 200, true);
+            // You'll need to have a "link" to each record in your Documents - this module does not automatically
+            // connect Documents to DataObjects. Your Documents should really include all of the information that you
+            // require for creating a search result output
+            $query->addResultField('link');
 
-            return $service->search($query, 'main');
+            return $service->search($query, $index);
         } catch (Throwable $e) {
             // Log the error without breaking the page
             $this->logger->error(sprintf('Elastic error: %s', $e->getMessage()), ['elastic' => $e]);
@@ -142,8 +155,8 @@ search Documents that was returned from your search service.
 
 The `Record` object contains one `Field` for each result field from your search service. The exact format of the field
 names is determined by the plugin module that you are using, but the **general rule** is that we try to turn your field
-names into Silverstripe's standard PascalCase. So, for example, if your search service had a field called
-`summary_field`, then this would (ideally) have been converted into `$SummaryField` for you to use in your template.
+names into PascalCase. So, for example, if your search service had a field called `summary_field`, then this would
+(ideally) have been converted into `$SummaryField` for you to use in your template.
 
 Each `Field` can have a `Raw` and `Formatted` value (depending on what you requested during your search). By default,
 within a Silverstripe template, we will attempt to display the `Formatted` value first, and then we'll fallback to the

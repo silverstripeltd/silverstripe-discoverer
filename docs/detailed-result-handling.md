@@ -28,8 +28,8 @@ the data you need access to as part of your search Documents. That way, you don'
 in your database.
 
 You will notice that there is only one pre-defined property in this class - `$analyticsData`. All other fields are
-dynamic properties - because we have no way of programmatically knowing what fields you might have for any particular
-record.
+dynamic properties - because we have no way of programmatically knowing what fields you might have in your search
+index.
 
 ### How fields are made available to you
 
@@ -38,22 +38,24 @@ we can do is provide you with a predictable pattern to follow in order to access
 
 We ask that plugin modules for services match the requirements outlined in [Field conversions](field-convensions.md).
 
-**TL;DR:** All of your fields should be available through PascalCase, with abbreviations **also** using PascalCase (EG: 
-ID = Id, IDs = Ids, URL = Url, etc).
+**TL;DR:** All of your fields should be available through PascalCase, with abbreviations being treated as one word, and
+so similarly getting PascalCase applied (EG: ID = Id, IDs = Ids, URL = Url, etc).
 
-Here are some examples for an Elastic index (where Elastic uses snake_case for its field names):
+Here are some examples for an Elastic App Search index (where App Search uses snake_case for its field names):
 
-* `title` will be available through `$Title`
-* `elemental_area` will be available through `$ElementalArea`
-* `record_id` will be available through `$RecordId`
+* `id`: `$Id`
+* `_id` (this is from Elasticsearch, rather than App Search): `$Id`
+* `title`: `$Title`
+* `elemental_area`: `$ElementalArea`
+* `record_id`: `$RecordId`
 
-If you have analytics enabled, then you will also have a field available called `$AnalyticsData`. See 
+If you have analytics enabled, then you will also have a field available called `$AnalyticsData`. See
 [Adding analytics](#adding-analytics).
 
 ### Pagination
 
-The `Results` object provides you with a `PaginatedList` of `Records`, that `PaginatedList` can be used like any other
-to create your pagination.
+Your `Records` are provided in a `PaginatedList`, so this can be used like any other `PaginatedList` to create your
+pagination.
 
 For an example, see the template code in [Simple usage](simple-usage.md).
 
@@ -74,9 +76,15 @@ The following example assumes that you have indexed a `title` and `link` for eac
 <a href="{$Link}<% if $AnalyticsData %>?$AnalyticsData<% end_if %>">$Title</a>
 ```
 
-**Note:** You need to specify the `?` yourself. We don't include this so that you can append it to other query 
+**Note:** You need to specify the `?` yourself. We don't include this so that you can append it to other query
 parameter requirements that you might have. EG:
 
 ```silverstripe
 <a href="{$Link}?{$OtherQueryParams}&{$AnalyticsData}">$Title</a>
 ```
+
+**Also note:** Analytics is perhaps the most likely feature to be missing from search service providers. EG: It is
+available through Elastic App Search, but not currently available through Elasticsearch. The goal of this module would
+be that if you switched to a new service that did not support analytics, then that portion of your search would be
+silently excluded - allowing the core functionality of search to remain functioning without any code changes. **At
+some point**, it would be great if Analytics became a CMS feature, rather than us relying on our service providers.
