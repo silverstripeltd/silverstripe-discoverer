@@ -1,5 +1,11 @@
 # Detailed result handling
 
+* [`Results` class](#results-class)
+* [`Record` class](#record-class)
+  * [How fields are made available to you](#how-fields-are-made-available-to-you)
+  * [Pagination](#pagination)
+  * [Adding analytics](#adding-analytics)
+
 Ok, so you've written some queries and run some searches, and now you want to understand how that information is going
 to be made available for use in (say) a Silverstripe template.
 

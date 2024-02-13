@@ -1,5 +1,9 @@
 # Simple usage
 
+* [`SearchResults.php`](#searchresultsphp)
+* [`SearchResultsController.php`](#searchresultscontrollerphp)
+* [`SearchResults.ss`](#searchresultsss)
+
 **Note:** This is not meant to be a feature-packed demo or a prescription for how you should implement search. This is
 just here to give a basic idea of how you might interact with the service components that this module provides.
 

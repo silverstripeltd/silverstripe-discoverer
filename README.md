@@ -1,5 +1,13 @@
 # Silverstripe Search
 
+* [Purpose](#purpose)
+* [Delivery](#delivery)
+* [Feature support](#feature-support)
+* [Getting started](#getting-started)
+  * [Simple usage](docs/simple-usage.md)
+  * [Detailed result handling](docs/detailed-result-handling.md)
+  * [Detailed querying](docs/detailed-querying.md)
+
 ## Purpose
 
 To provide you (a Silverstripe developer) with search interfaces that **do not change**, even when you switch between
