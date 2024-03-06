@@ -42,7 +42,7 @@ class AnalyticsMiddleware implements HTTPMiddleware
         }
 
         try {
-            $data = base64_decode($request->getVar('_searchAnalytics') ?? '');
+            $data = base64_decode($request->getVar('_searchAnalytics') ?? '', true);
 
             if (!$data) {
                 return null;

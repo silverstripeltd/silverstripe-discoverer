@@ -131,7 +131,7 @@ class Query
      */
     public function addSort(string $fieldName, string $direction = self::SORT_ASC): self
     {
-        if (!in_array($direction, self::SORTS)) {
+        if (!in_array($direction, self::SORTS, true)) {
             throw new Exception(sprintf('Invalid sort $direction "%s"', $direction));
         }
 

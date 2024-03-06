@@ -82,7 +82,7 @@ class Facet
     public function addRange(
         string|int|float|null $from = null,
         string|int|float|null $to = null,
-        string $name = null
+        ?string $name = null
     ): self {
         // If a range is added, then we'll update the type
         $this->type = self::TYPE_RANGE;
@@ -103,7 +103,7 @@ class Facet
      */
     public function setType(?string $type): self
     {
-        if (!in_array($type, self::TYPES)) {
+        if (!in_array($type, self::TYPES, true)) {
             throw new Exception(sprintf('Invalid type "%s" provided', $type));
         }
 

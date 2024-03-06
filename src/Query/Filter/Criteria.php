@@ -38,15 +38,18 @@ class Criteria implements Clause
      */
     private array $clauses = [];
 
-    private string $conjunction;
-
     private static array $dependencies = [
         'adaptor' => '%$' . CriteriaAdaptor::class,
     ];
 
-    public function setAdaptor(?CriteriaAdaptor $adaptor): void
+    /**
+     * @throws Exception
+     */
+    public function __construct(private readonly string $conjunction)
     {
-        $this->adaptor = $adaptor;
+        if (!in_array($conjunction, self::CONJUNCTIONS, true)) {
+            throw new Exception(sprintf('Invalid conjunction provided "%s"', $conjunction));
+        }
     }
 
     public static function createAny(): self
@@ -59,16 +62,9 @@ class Criteria implements Clause
         return static::create(self::CONJUNCTION_AND);
     }
 
-    /**
-     * @throws Exception
-     */
-    public function __construct(string $conjunction)
+    public function setAdaptor(?CriteriaAdaptor $adaptor): void
     {
-        if (!in_array($conjunction, self::CONJUNCTIONS)) {
-            throw new Exception(sprintf('Invalid conjunction provided "%s"', $conjunction));
-        }
-
-        $this->conjunction = $conjunction;
+        $this->adaptor = $adaptor;
     }
 
     public function getPreparedClause(): mixed

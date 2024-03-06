@@ -141,6 +141,7 @@ class QueryTest extends SapphireTest
     {
         $query = Query::create();
         // Can mix/match associative and numeric
+        // phpcs:ignore SlevomatCodingStandard.Arrays.DisallowPartiallyKeyed.DisallowedPartiallyKeyed
         $query->addSearchFields([
             'field1' => 0,
             'field2' => 1,
