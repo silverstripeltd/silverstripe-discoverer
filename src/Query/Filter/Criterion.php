@@ -56,16 +56,21 @@ class Criterion implements Clause
         private readonly mixed $value,
         private readonly string $comparison
     ) {
-        if (!in_array($this->comparison, self::COMPARISONS)) {
+        if (!in_array($this->comparison, self::COMPARISONS, true)) {
             throw new Exception(sprintf('Invalid comparison provided: "%s"', $this->comparison));
         }
 
-        if ($this->comparison === self::RANGE) {
-            $this->validateRange();
-        }
+        switch ($this->comparison) {
+            case self::RANGE:
+                $this->validateRange();
 
-        if ($this->comparison === self::IN || $this->comparison === self::NOT_IN) {
-            $this->validateIn();
+                break;
+
+            case self::IN:
+            case self::NOT_IN:
+                $this->validateIn();
+
+                break;
         }
     }
 

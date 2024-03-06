@@ -14,15 +14,6 @@ class Record extends ViewableData
      */
     private ?AnalyticsData $analyticsData = null;
 
-    public function __set($property, $value)
-    {
-        if (!$value instanceof Field) {
-            throw new Exception(sprintf('Field value must be an instance of %s', Field::class));
-        }
-
-        parent::__set($property, $value);
-    }
-
     public function getAnalyticsData(): ?AnalyticsData
     {
         return $this->analyticsData;
@@ -33,6 +24,21 @@ class Record extends ViewableData
         $this->analyticsData = $analyticsData;
 
         return $this;
+    }
+
+    /**
+     * @param string $property
+     * @param mixed $value
+     * @throws Exception
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
+     */
+    public function __set($property, $value): void
+    {
+        if (!$value instanceof Field) {
+            throw new Exception(sprintf('Field value must be an instance of %s', Field::class));
+        }
+
+        parent::__set($property, $value);
     }
 
 }

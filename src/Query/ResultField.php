@@ -13,7 +13,8 @@ class ResultField
         private readonly string $fieldName,
         private readonly int $length = 0,
         private readonly bool $formatted = false
-    ) {}
+    ) {
+    }
 
     public function getFieldName(): string
     {
