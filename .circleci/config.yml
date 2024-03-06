@@ -1,0 +1,328 @@
+# PHP CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-php/ for more details
+#
+version: 2.1
+
+#
+# GLOBAL PARAMETERS
+# -----------------
+#
+parameters:
+  image:
+    type: string
+    description: The image to use for the build. Details of what this image contains available at https://github.com/silverstripeltd/bespoke-ci-base/
+    default: "ghcr.io/silverstripeltd/bespoke-ci-base:4.1.0"
+  db_image:
+    type: string
+    description: The image to use for the database.
+    default: "cimg/mysql:5.7"
+  php_version:
+    type: string
+    description: The version of PHP to use.
+    default: "8.1"
+
+#
+# CONTAINER CONFIGURATION
+# -----------------------
+#
+# Defines the two standard containers to execute the pipelines with
+# - docker-executor: for building the application (default size; small)
+# - docker-executor-with-mysql: for running the application (default size; small)
+#
+executors:
+  #
+  # The basic VM for running tasks
+  #
+  # @see https://circleci.com/docs/using-docker
+  #
+  docker-executor:
+    parameters:
+      size:
+        description: "The resource class to use"
+        default: "small"
+        type: enum
+        enum:
+          - "small"   # 1 cpu, 2GB
+          - "medium"  # 2 cpu, 4GB
+          - "medium+" # 3 cpu, 6GB
+          - "large"   # 4 cpu, 8GB
+          - "xlarge"  # 8 cpu, 16GB
+    docker:
+      - image: << pipeline.parameters.image >>
+        environment:
+          DISPLAY: :99
+          CHROME_BIN: /usr/bin/google-chrome-stable
+          BASH_ENV: /home/vagrant/.bashrc
+    resource_class: << parameters.size >>
+    working_directory: /var/www/mysite/www
+  #
+  # The VM for running tasks which require a database
+  #
+  docker-executor-with-mysql:
+    parameters:
+      size:
+        description: "The resource class to use"
+        default: "small"
+        type: enum
+        enum: ["small", "medium", "medium+", "large", "xlarge"]
+    docker:
+      - image: << pipeline.parameters.image >>
+        environment:
+          DISPLAY: :99
+          CHROME_BIN: /usr/bin/google-chrome-stable
+          BASH_ENV: /home/vagrant/.bashrc
+      - image: << pipeline.parameters.db_image >>
+        environment:
+          MYSQL_ROOT_PASSWORD: ubuntu
+          MYSQL_DATABASE: circle_test
+          MYSQL_HOST: 127.0.0.1
+    resource_class: << parameters.size >>
+    working_directory: /var/www/mysite/www
+
+#
+# REUSABLE COMMANDS
+# -----------------
+#
+# Define the functions which trigger different tasks on the pipeline
+#
+commands:
+  #
+  # Start the processes we need to run in the background
+  #
+  background-services:
+    description: Start Apache, Nginx and Xvfb
+    steps:
+      - run:
+          name: Starting virtual framebuffer
+          command: Xvfb :99 -screen 0 1280x1024x24
+          background: true
+      - run:
+          name: Starting apache
+          command: sudo service apache2 start
+      - run:
+          name: Starting nginx
+          command: sudo service nginx start
+
+  #
+  # Install server-side and client-side dependencies
+  # Using cached copies where possible
+  #
+  dependencies:
+    description: Install dependencies
+    steps:
+      - run:
+          name: Installing composer dependencies
+          command: |
+            composer install --prefer-dist --no-interaction
+            # always expose: cached content is never exposed automatically
+            composer vendor-expose
+
+  #
+  # Set the correct PHP version, as defined in the pipeline parameters
+  #
+  php-switch:
+    description: Switch to the correct PHP version
+    steps:
+      - run:
+          name: Setting PHP version to << pipeline.parameters.php_version >>
+          command: php-switch << pipeline.parameters.php_version >>
+
+  #
+  # Set the projects environment variables, specific to CircleCI execution
+  #
+  env-vars:
+    description: Set environment variables
+    steps:
+      - run:
+          name: Setting environment variables
+          command: mv .circleci/.env.circleci .env
+
+  #
+  # Check that required environment variables are set
+  # accepts an comma seperated array of environment variables names
+  #
+  check_env_vars:
+    description: Check that required environment variables are set
+    parameters:
+      service:
+        description: The service to check environment variables for
+        type: string
+      env_vars:
+        description: CSV of environment variable names to check
+        type: string
+    steps:
+      - run:
+          name: Checking environment variables for << parameters.service >>
+          command: |
+            # Split env_vars string into an array
+            env_vars_array=($(echo << parameters.env_vars >> | tr "," "\n"))
+            for env_var in "${env_vars_array[@]}"
+            do
+              # Check if the environment variable is set and not empty
+              if [ -z "${!env_var}" ]; then
+                echo "Environment variable $env_var is not set or is empty."
+                exit 1
+              fi
+            done
+
+  #
+  # Check that environment variables match a given pattern
+  # accepts an comma seperated array of environment variables names and regex patterns
+  # e.g. "DB_HOST=^localhost$,DB_PORT=^\d+$"
+  #
+  validate_env_vars:
+    description: Check environment variables match a given pattern
+    parameters:
+      service:
+        description: The service to check environment variable patterns for
+        type: string
+      env_vars_regex:
+        description: CSV of environment variable names and regex patterns to check
+        type: string
+    steps:
+      - run:
+          name: Validate environment variable values for << parameters.service >>
+          command: |
+            # Split env_vars string into an array
+            env_vars_regex_array=($(echo << parameters.env_vars_regex >> | tr "," "\n"))
+            for env_var_regex in "${env_vars_regex_array[@]}"
+            do
+              # Split the env_var_regex string into a variable name and regex pattern
+              env_var="${env_var_regex%=*}"
+              regex="${env_var_regex#*=}"
+              # Test the environment variable matches the regex
+              if ! [[ "${!env_var}" =~ $regex ]]; then
+                echo "Environment variable $env_var value does not match the expected pattern: $regex."
+                exit 1
+              fi
+            done
+
+  #
+  # Make sure the correct permissions are set
+  #
+  setup-permissions:
+    steps:
+      - run:
+          name: Setting permissions
+          command: |
+            chown -R vagrant:vagrant /var/www/mysite/www
+            chmod g+s /var/www/mysite/www/public
+
+  #
+  # Build the database structure and graphql cache
+  #
+  dev-build:
+    description: Build the database with dev/build task
+    steps:
+      - run:
+          name: Building database
+          command: sudo -u vagrant vendor/bin/sake dev/build flush=1
+
+  #
+  # Check the code linting for Script, Styles and Code
+  #
+  silverstripe-standards:
+    description: PHP Linting
+    steps:
+      - run:
+          name: Checking against Silverstripe standards
+          command: composer phpcs
+
+  #
+  # Run the PHP unit and functional tests in phpunit
+  #
+  # Allows for optional generation of code coverage,
+  #
+  php-tests:
+    description: phpunit tests
+    parameters:
+      coverage:
+        type: boolean
+        default: true
+      pcov:
+        type: boolean
+        # Disabled due to issues with Composer v1
+        default: false
+    steps:
+      - run:
+          name: Running phpunit tests
+          command: |
+            if << parameters.pcov >>;
+            then
+              phpdismod xdebug
+            fi
+            PHPUNITARGS=""
+            if << parameters.coverage >>;
+            then
+              if << parameters.pcov >>;
+              then
+                # enable the line below if you are requiring private repos (e.g. silverstripeltd/elasticsearchapp)
+                # see https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token
+                # composer config http-basic.github.com $SERVICE_ACCOUNT_USERNAME $SERVICE_ACCOUNT_GITHUB_API_TOKEN
+                phpenmod -v << pipeline.parameters.php_version >> pcov
+                COMPOSER_MEMORY_LIMIT=-1 composer require pcov/clobber --no-plugins
+                vendor/bin/pcov clobber
+              fi
+              PHPUNITARGS=" --coverage-html coverage/php  --coverage-clover coverage/php/clover.xml --log-junit reports/phpunit/junit.xml"
+            fi
+            vendor/bin/phpunit --verbose $PHPUNITARGS
+
+#
+# PIPELINE JOBS
+# -------------
+#
+# Define the specific commands to perform CI processes.
+#
+jobs:
+  #
+  # Build the application and lint
+  #
+  build:
+    executor:
+      name: docker-executor-with-mysql
+      size: medium
+
+
+    steps:
+      - checkout
+
+      # setup
+      - php-switch
+      - env-vars
+      - background-services
+      - dependencies
+      - setup-permissions
+
+      # linting
+      - silverstripe-standards
+
+      # build database
+      - dev-build
+
+      # run test suites
+      - php-tests
+
+      - store_artifacts:
+          path: coverage
+
+      - store_artifacts:
+          path: silverstripe.log
+
+      # Store test results for use in CircleCI
+      - store_test_results:
+          path: reports
+
+#
+# WORKFLOWS
+# ---------
+#
+# Define the continuous integration model
+#
+# Branch masks can be added and removed as is applicable to the project
+#
+workflows:
+  build_and_deploy:
+    jobs:
+      # Build the application
+      - build
