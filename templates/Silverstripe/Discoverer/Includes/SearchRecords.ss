@@ -1,5 +1,5 @@
 <ul>
-    <% loop $Records %>
+    <% loop $Searchresults.Records %>
         <li>
             <a href="{$Link}<% if $AnalyticsData %>?$AnalyticsData<% end_if %>">$Title</a>
 
