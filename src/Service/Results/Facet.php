@@ -3,6 +3,7 @@
 namespace SilverStripe\Discoverer\Service\Results;
 
 use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\View\ViewableData;
 
 class Facet extends ViewableData
@@ -24,6 +25,11 @@ class Facet extends ViewableData
         parent::__construct();
 
         $this->data = ArrayList::create();
+    }
+
+    public function forTemplate(): DBHTMLText
+    {
+        return $this->renderWith(static::class);
     }
 
     public function getData(): ArrayList
