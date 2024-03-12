@@ -5,7 +5,7 @@ namespace SilverStripe\Discoverer\Service\Results;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Discoverer\Query\Query;
 use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\PaginatedList;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\View\ViewableData;
 
 class Results extends ViewableData
@@ -14,14 +14,14 @@ class Results extends ViewableData
     use Injectable;
 
     /**
-     * @var PaginatedList|Record[]
+     * @var Records|Record[]
      */
-    private PaginatedList $records;
+    private Records $records;
 
     /**
-     * @var ArrayList|Facet[]
+     * @var Facets|Facet[]
      */
-    private ArrayList $facets;
+    private Facets $facets;
 
     private ?string $indexName = null;
 
@@ -29,11 +29,16 @@ class Results extends ViewableData
 
     public function __construct(private readonly Query $query)
     {
-        $this->records = PaginatedList::create(ArrayList::create());
-        $this->facets = ArrayList::create();
+        $this->records = Records::create(ArrayList::create());
+        $this->facets = Facets::create();
     }
 
-    public function getRecords(): ?PaginatedList
+    public function forTemplate(): DBHTMLText
+    {
+        return $this->renderWith(static::class);
+    }
+
+    public function getRecords(): ?Records
     {
         return $this->records;
     }
@@ -45,7 +50,7 @@ class Results extends ViewableData
         return $this;
     }
 
-    public function getFacets(): ?ArrayList
+    public function getFacets(): ?Facets
     {
         return $this->facets;
     }
