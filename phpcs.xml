@@ -32,6 +32,12 @@
     <rule ref="Generic.Arrays.ArrayIndent"/>
     <!-- Makes sure that any use of double quotes strings are warranted -->
     <rule ref="Squiz.Strings.DoubleQuoteUsage"/>
+    <!-- Require one space after casting -->
+    <rule ref="Generic.Formatting.SpaceAfterCast">
+        <properties>
+            <property name="spacing" value="1" />
+        </properties>
+    </rule>
 
     <!-- All "use" statements must be used in the code. -->
     <rule ref="./vendor/slevomat/coding-standard/SlevomatCodingStandard/ruleset.xml">
