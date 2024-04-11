@@ -182,6 +182,8 @@ $query = Query::create();
 $query->filter('author_id', 1, Criterion::EQUAL);
 // Where the category_id is any of 1, 2, or 3
 $query->filter('category_id', [1, 2, 3], Criterion::IN);
+// Where the category_id is not 1, 2, or 3
+$query->filter('category_id', [1, 2, 3], Criterion::NOT_IN);
 ```
 
 The example above would result in a filter condition that reads like:
@@ -196,6 +198,26 @@ The example above would result in a filter condition that reads like:
 
 The `filter()` method also accepts a `Criteria` or `Criterion` as the first argument. You can use this if you have
 pre-build the filter conditions that you wish to apply to your `Query`.
+
+More filter methods
+```php
+// Where category_id is not null
+$query->filter('category_id', [[]], Criterion::IS_NULL);
+// Where category_id is not null
+$query->filter('category_id', [[]], Criterion::IS_NOT_NULL);
+```
+Date or Number range filter
+```php
+// Where created date is in between range $dateFrom to $dateTo
+$query->filter('created', ['from' => $dateFrom, 'to' => $dateTo], Criterion::RANGE);
+// Other filters
+$query->filter('created', $date, Criterion::EQUAL);
+$query->filter('created', $date, Criterion::NOT_EQUAL);
+$query->filter('created', $date, Criterion::GREATER_EQUAL);
+$query->filter('created', $date, Criterion::GREATER_THAN);
+$query->filter('created', $date, Criterion::LESS_EQUAL);
+$query->filter('created', $date, Criterion::LESS_THAN);
+```
 
 See [Complex (EG: nested) filtering](#complex-eg-nested-filtering) for more info on that though.
 
