@@ -1,0 +1,7 @@
+{
+    "name": "discoverer",
+    "description": "Service agnostic abstraction of search querying requirements",
+    "main": "README.md",
+    "repository": "https://github.com/silverstripeltd/discoverer.git",
+    "author": "Silverstripe Ltd"
+  }
