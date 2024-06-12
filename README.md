@@ -1,4 +1,4 @@
-# Silverstripe Search
+# 🧭 Silverstripe Discoverer > Search Query module
 
 * [Purpose](#purpose)
 * [Delivery](#delivery)
@@ -10,7 +10,7 @@
 
 ## Purpose
 
-To provide you (a Silverstripe developer) with search interfaces that **do not change**, even when you switch between
+To provide you (a Silverstripe developer) with interfaces for search querying that **do not change**, even when you switch between
 different search service providers.
 
 ## Delivery
