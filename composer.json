@@ -1,5 +1,5 @@
 {
-    "name": "silverstripeltd/silverstripe-discoverer",
+    "name": "silverstripe/silverstripe-discoverer",
     "description": "Service agnostic abstraction of search querying requirements",
     "type": "silverstripe-vendormodule",
     "license": "proprietary",
