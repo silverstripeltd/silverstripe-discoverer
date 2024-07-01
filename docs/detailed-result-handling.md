@@ -69,7 +69,7 @@ For an example, see the template code in [Simple usage](simple-usage.md).
 
 This module comes with an HTTP middleware that you can apply by setting the following env var:
 
-* `SEARCH_ANALYTICS_ENABLED=true`
+* `SEARCH_ANALYTICS_ENABLED=1`
 
 If you do this, then you will have access to `$AnalyticsData` for your `Record` objects. This can then be added to any
 link as a query parameter.
