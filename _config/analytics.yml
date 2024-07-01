@@ -4,7 +4,7 @@ After:
   - requestprocessors
 Only:
   envorconstant:
-    SEARCH_ANALYTICS_ENABLED: true
+    SEARCH_ANALYTICS_ENABLED: 1
 ---
 SilverStripe\Core\Injector\Injector:
   SilverStripe\Control\Director:
