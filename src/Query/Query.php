@@ -48,6 +48,8 @@ class Query
 
     private array $sort = [];
 
+    private array $tags = [];
+
     public function __construct(private string $queryString = '')
     {
         // See the docblock on self::$filter for some details
@@ -158,6 +160,25 @@ class Query
     public function getSort(): array
     {
         return $this->sort;
+    }
+
+    public function addTag(string $tag): self
+    {
+        $this->tags[] = $tag;
+
+        return $this;
+    }
+
+    public function setTags(array $tags): self
+    {
+        $this->tags = $tags;
+
+        return $this;
+    }
+
+    public function getTags(): array
+    {
+        return $this->tags;
     }
 
     /**
