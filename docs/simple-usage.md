@@ -180,24 +180,34 @@ fallback logic).
 
     <ul>
         <% loop $SearchResults.Records %>
-            <li><a href="{$Link}<% if $AnalyticsData %>?$AnalyticsData<% end_if %>">$Title.Raw: $Description</a></li>
+            <li>
+                <%-- The following assumes that you have fields in your index called `link`, `title`, and `description` --%>
+                <%-- $AnalyticsData is the only predefined field available to all Records. All other fields are based on what fields are in your index--%>
+                <h2><a href="{$Link}<% if $AnalyticsData %>?$AnalyticsData<% end_if %>">$Title.Raw: $Description</a></h2>
+
+                <%-- An example of looping through a field that contains an array of primitives --%>
+                <%-- The following assumes that you have a field in your index called `taxonomy_terms` --%>
+                <% loop $TaxonomyTerms %>
+                    $Me
+                <% end_loop %>
+            </li>
         <% end_loop %>
     </ul>
 
     <%-- Facet example --%>
     <% if $SearchResults.Facets %>
         <ul class="facets">
-                <% loop $SearchResults.Facets %>
-                    <% if $Data %>
+            <% loop $SearchResults.Facets %>
+                <% if $Data %>
                     <li>Field: $FieldName
                         <ul>
-                                <% loop $Data %>
+                            <% loop $Data %>
                                 <li>$Value: $Count</li>
-                                <% end_loop %>
+                            <% end_loop %>
                         </ul>
                     </li>
-                    <% end_if %>
-                <% end_loop %>
+                <% end_if %>
+            <% end_loop %>
         </ul>
     <% end_if %>
 
@@ -212,6 +222,7 @@ fallback logic).
                         <span title="View previous page of results" class="pagination-prev-link pagination-prev-link--disabled">&laquo;</span>
                     <% end_if %>
                 </li>
+
                 <% loop $PaginationSummary(4) %>
                     <% if $CurrentBool %>
                         <li class="pagination-item pagination-item--active">
@@ -229,6 +240,7 @@ fallback logic).
                         <% end_if %>
                     <% end_if %>
                 <% end_loop %>
+
                 <li class="pagination-item pagination-item--next">
                     <% if $NotLastPage %>
                         <a title="View next page of results" class="pagination-next-link" href="$NextLink">&raquo;</a>
