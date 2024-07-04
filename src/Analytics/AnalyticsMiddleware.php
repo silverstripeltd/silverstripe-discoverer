@@ -64,7 +64,7 @@ class AnalyticsMiddleware implements HTTPMiddleware
             $service->processAnalytics($analyticsData);
         } catch (Throwable $e) {
             // Log the error without breaking the page
-            $this->logger->error(sprintf('Elastic error: %s', $e->getMessage()), ['elastic' => $e]);
+            $this->logger->error(sprintf('Message: %s', $e->getMessage()), ['exception' => $e]);
         } finally {
             return $response;
         }
