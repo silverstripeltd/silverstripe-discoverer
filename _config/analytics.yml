@@ -3,8 +3,7 @@ Name: search-analytics
 After:
   - requestprocessors
 Only:
-  envorconstant:
-    SEARCH_ANALYTICS_ENABLED: 1
+  envvarset: SEARCH_ANALYTICS_ENABLED
 ---
 SilverStripe\Core\Injector\Injector:
   SilverStripe\Control\Director:

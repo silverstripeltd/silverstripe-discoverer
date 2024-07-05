@@ -45,13 +45,13 @@ class AnalyticsMiddleware implements HTTPMiddleware
             $data = base64_decode($request->getVar('_searchAnalytics') ?? '', true);
 
             if (!$data) {
-                return null;
+                return $response;
             }
 
             $data = json_decode($data, true);
 
             if (!$data) {
-                return null;
+                return $response;
             }
 
             $analyticsData = AnalyticsData::create();
