@@ -49,9 +49,13 @@ class Field extends ViewableData
         // Attempt to use the formatted value (if available), or use the raw value as the fallback
         $value = $this->formatted ?? $this->raw;
 
+        if (!$value) {
+            return new ArrayIterator();
+        }
+
         $arrayValue = is_array($value)
             ? $this->convertArrayForTemplate($value)
-            : [$value];
+            : [$this];
 
         return new ArrayIterator($arrayValue);
     }
