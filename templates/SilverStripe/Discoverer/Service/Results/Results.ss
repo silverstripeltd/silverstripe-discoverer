@@ -1,7 +1,3 @@
-<% if $Facets %>
-    $Facets
-<% end_if %>
-
 <% if $Records %>
     <% with $Records %>
         <% include SilverStripe\Discoverer\Includes\Summary %>
