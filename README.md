@@ -15,24 +15,23 @@ different search service providers.
 
 ## Delivery
 
-The deliver on our purpose, the way that you perform filtering, faceting, and certainly the way that you display
+To deliver on our purpose, the way that you perform filtering, faceting, and certainly the way that you display
 results, is very likely going to change. We hope that the learning curve is reasonable, and that the majority of
 developer interactions with this code is intuative (once you understand the mentality behind it).
 
 ## Feature support
 
-Whether or not certain features are supported **by this module**. Noting that if a service provider does not have any
-way for us to integrate with such a feature, then that feature (in this module) will just silently [do nothing] if you
-switch to that new provider.
+Whether or not certain features are supported **by this module**. Noting that different search providers often do things
+in very different ways, and often have different levels of support for features. This module attempts to provide a level
+of functionality that is commonly supported by many different services.
 
-| Feature                                | Module support | Future module support | Rationale                                                                                                                                                                                                                                   |
-|----------------------------------------|----------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Filters                                | Yes            | Yes                   | You should (hopefully) be able to achieve any sort of nested filtering that you require.                                                                                                                                                    |
-| Facets                                 | Partial        | If desired            | Facet support differs hugely between search services. Current thinking is to try and limit what sort of Facet integrations we use (EG: no Geolocation) in the hopes that if we switch services in the future, we won't lose functionality   |
-| Multi-search                           | No             | If desired            | Not supported by many other search services, and I couldn't find any existing project using the feature. It wouldn't be unreasonable effort to add this functionality though.                                                               |
-| Spelling suggestions                   | No             | Unlikely              | Part of a different API in Elastic (so it is technically possible), but the current thinking is that the typo tollerence provided by (most) search services should be sufficient for this lower tiered service.                             |
-| Search suggestions (aka auto-complete) | No             | Unlikely              | Features like auto-complete generate a lot of requests, and for a lower tiered shared service, that is something we want to cut down on.                                                                                                    |
-| Click through logging                  | Yes            | Yes                   | Supported in Elastic App Search, but not supported by many other Search Services (including Elasticsearch). This feature in particular is an example of the "silent treatment" we apply when a feature disappears between service providers |
+| Feature                                                     | Module support | Future module support | Rationale                                                                                                                                                                                                                                   |
+|-------------------------------------------------------------|----------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Filters                                                     | Yes            | Yes                   | You should (hopefully) be able to achieve any sort of nested filtering that you require.                                                                                                                                                    |
+| Facets                                                      | Partial        | If desired            | Facet support differs hugely between search services. Current thinking is to try and limit what sort of Facet integrations we use (EG: no Geolocation) in the hopes that if we switch services in the future, we won't lose functionality   |
+| Multi-search                                                | No             | If desired            | Not supported by many other search services. It wouldn't be unreasonable effort to add this functionality though.                                                                                                                           |
+| Search suggestions (aka auto-complete, "did you mean", etc) | Yes            | Yes                   | Features like auto-complete generate a lot of requests, and for a lower tiered shared service, that is something we want to cut down on.                                                                                                    |
+| Click through logging                                       | Yes            | Yes                   | Supported in Elastic App Search, but not supported by many other Search Services (including Elasticsearch). This feature in particular is an example of the "silent treatment" we apply when a feature disappears between service providers |
 
 ## Getting started
 

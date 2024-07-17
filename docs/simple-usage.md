@@ -12,11 +12,15 @@ Please also read the following:
 * [Detailed usage](detailed-querying.md)
 * [Detailed result handling](detailed-result-handling.md)
 
-This module does not provide a search results page out of the box. You can hook it up to your existing results page, or
-create a new one. A minimal example of a `SearchResultsController` is below, along with the Silverstripe template that
-might go alongside it.
+This module does not provide a search results page out of the box. Why? Because we do not want to prescribe the way that
+you have to interact with search.
+
+That said, below we have some examples on how you could set up search using a basic Page (managed through the CMS like
+any other Page), and Controller.
 
 ## `SearchResults.php`
+
+A basic Page type that can be managed through the CMS.
 
 ```php
 <?php
@@ -36,7 +40,7 @@ class SearchResults extends Page
 
     private static string $plural_name = 'Search results pages';
 
-    private static string $description = 'Display search results from Elastic search';
+    private static string $description = 'Display search results';
 
 }
 
@@ -60,21 +64,18 @@ This Controller provides 2 methods:
 
 namespace App\Pages;
 
-use PageController;use Psr\Log\LoggerInterface;use SilverStripe\Core\Convert;use SilverStripe\Discoverer\Query\Query;use SilverStripe\Discoverer\Service\Results\Results;use SilverStripe\Discoverer\Service\SearchService;use SilverStripe\Forms\FieldList;use SilverStripe\Forms\Form;use SilverStripe\Forms\FormAction;use SilverStripe\Forms\TextField;
+use PageController;
+use SilverStripe\Core\Convert;
+use SilverStripe\Discoverer\Query\Query;
+use SilverStripe\Discoverer\Service\Results\Results;
+use SilverStripe\Discoverer\Service\SearchService;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\Form;
+use SilverStripe\Forms\FormAction;
+use SilverStripe\Forms\TextField;
 
 class SearchResultsController extends PageController
 {
-
-    private ?LoggerInterface $logger = null;
-
-    private static array $dependencies = [
-        'logger' => '%$' . LoggerInterface::class . '.errorhandler',
-    ];
-
-    public function setLogger(?LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-    }
 
     private static array $allowed_actions = [
         'SearchForm',
@@ -122,30 +123,23 @@ class SearchResultsController extends PageController
             return null;
         }
 
-        try {
-            $service = SearchService::create();
-            // Instantiate a new Query, and provide the search terms that we wish to search for
-            $query = Query::create($keywords);
-            // Set pagination requirements
-            $query->setPagination($perPage, $start);
+        $service = SearchService::create();
+        // Instantiate a new Query, and provide the search terms that we wish to search for
+        $query = Query::create($keywords);
+        // Set pagination requirements
+        $query->setPagination($perPage, $start);
 
-            // You must also specify which fields you would like included in your results
-            // Request an unformatted title field
-            $query->addResultField('title');
-            // Request a formatted value (AKA a "snippet") for your Content field
-            $query->addResultField('content', 200, true);
-            // You'll need to have a "link" to each record in your Documents - this module does not automatically
-            // connect Documents to DataObjects. Your Documents should really include all of the information that you
-            // require for creating a search result output
-            $query->addResultField('link');
+        // You must also specify which fields you would like included in your results
+        // Request an unformatted title field
+        $query->addResultField('title');
+        // Request a formatted value (AKA a "snippet") for your Content field
+        $query->addResultField('content', 400, true);
+        // You'll need to have a "link" to each record in your Documents - this module does not automatically
+        // connect Documents to DataObjects. Your Documents should really include all the information that you
+        // require for creating a search result output
+        $query->addResultField('link');
 
-            return $service->search($query, $index);
-        } catch (Throwable $e) {
-            // Log the error without breaking the page
-            $this->logger->error(sprintf('Elastic error: %s', $e->getMessage()), ['elastic' => $e]);
-        }
-
-        return null;
+        return $service->search($query, $index);
     }
 
 }
@@ -154,105 +148,78 @@ class SearchResultsController extends PageController
 
 ## `SearchResults.ss`
 
-`SearchResults::getRecords()` contains a `PaginatedList` of `Record` objects. Each `Record` object represents one of the
-search Documents that was returned from your search service.
+**Note:** There is also a [basic theme](https://github.com/silverstripeltd/silverstripe-discoverer-theme) available for
+Discoverer, which you might be interested in.
 
-The `Record` object contains one `Field` for each result field from your search service. The exact format of the field
-names is determined by the plugin module that you are using, but the **general rule** is that we try to turn your field
-names into PascalCase. So, for example, if your search service had a field called `summary_field`, then this would
-(ideally) have been converted into `$SummaryField` for you to use in your template.
+Assuming you have a `SearchResults` page with the namespace `App\Pages` (if not, then update the location accordingly):
+`themes/your-theme/templates/App/Pages/Layout/SearchResults.ss`
 
-Each `Field` can have a `Raw` and `Formatted` value (depending on what you requested during your search). By default,
-within a Silverstripe template, we will attempt to display the `Formatted` value first, and then we'll fallback to the
-`Raw` value. However, you can also explictly call `.Raw` or `.Formatted` for just those values (without any programmatic
-fallback logic).
+When you return `$service->search()` from your `SearchResultsController`, a `Results` object is returned, and this comes
+out of the box with a basic default `Results.ss` template.
 
-`$AnalyticsData` is the only predictable field in a `Record` object, and it is enabled with the
-`SEARCH_ANALYTICS_ENABLED` environment variable.
+For your `SearchResults.ss` template, the only two variables you need to output are `$SearchForm` (which will have the
+search interface for your users), and `$SearchResults`, which will output the OotB results template.
 
 ```silverstripe
-<div class="search-form">$SearchForm</div>
+<div class="form">
+    $SearchForm
+</div>
 
-<% if $SearchResults %>
-    <% with $SearchResults %>
-        <p class="_summary">Displaying $Records.FirstItem - $Records.LastItem results of $Records.TotalItems for "$Query"</p>
-    <% end_with %>
-
-    <ul>
-        <% loop $SearchResults.Records %>
-            <li>
-                <%-- The following assumes that you have fields in your index called `link`, `title`, and `description` --%>
-                <%-- $AnalyticsData is the only predefined field available to all Records. All other fields are based on what fields are in your index--%>
-                <h2><a href="{$Link}<% if $AnalyticsData %>?$AnalyticsData<% end_if %>">$Title.Raw: $Description</a></h2>
-
-                <%-- An example of looping through a field that contains an array of primitives --%>
-                <%-- The following assumes that you have a field in your index called `taxonomy_terms` --%>
-                <% loop $TaxonomyTerms %>
-                    $Me
-                <% end_loop %>
-            </li>
-        <% end_loop %>
-    </ul>
-
-    <%-- Facet example --%>
-    <% if $SearchResults.Facets %>
-        <ul class="facets">
-            <% loop $SearchResults.Facets %>
-                <% if $Data %>
-                    <li>Field: $FieldName
-                        <ul>
-                            <% loop $Data %>
-                                <li>$Value: $Count</li>
-                            <% end_loop %>
-                        </ul>
-                    </li>
-                <% end_if %>
-            <% end_loop %>
-        </ul>
-    <% end_if %>
-
-    <%-- Pagination example --%>
-    <% with $SearchResults.Records %>
-        <% if $MoreThanOnePage %>
-            <ul class="pagination">
-                <li class="pagination-item pagination-item--prev">
-                    <% if $NotFirstPage %>
-                        <a title="View previous page of results" class="pagination-prev-link" href="$PrevLink">&laquo;</a>
-                    <% else %>
-                        <span title="View previous page of results" class="pagination-prev-link pagination-prev-link--disabled">&laquo;</span>
-                    <% end_if %>
-                </li>
-
-                <% loop $PaginationSummary(4) %>
-                    <% if $CurrentBool %>
-                        <li class="pagination-item pagination-item--active">
-                            <a title="Viewing page $PageNum of results" class="pagination-link pagination-link--disabled">$PageNum</a>
-                        </li>
-                    <% else %>
-                        <% if $Link %>
-                            <li class="pagination-item">
-                                <a title="View page $PageNum of results" class="pagination-link" href="$Link">$PageNum</a>
-                            </li>
-                        <% else %>
-                            <li class="pagination-item">
-                                <a class="pagination-link pagination-link--disabled">&hellip;</a>
-                            </li>
-                        <% end_if %>
-                    <% end_if %>
-                <% end_loop %>
-
-                <li class="pagination-item pagination-item--next">
-                    <% if $NotLastPage %>
-                        <a title="View next page of results" class="pagination-next-link" href="$NextLink">&raquo;</a>
-                    <% else %>
-                        <span title="View next page of results" class="pagination-next-link pagination-next-link--disabled">&raquo;</span>
-                    <% end_if %>
-                </li>
-            </ul>
-        <% end_if %>
-    <% end_with %>
-<% else %>
-    <p class="error">Sorry, there was an error or you didn't enter a keyword.</p>
-<% end_if %>
+$SearchResults
 
 ```
+
+## `Records.ss`
+
+Ok, the "hard" bit.
+
+This module has no idea what fields you have in your search index, so there is really no reasonable way for us to
+predict what fields you would want to display in your results. As such, you need to implement the template that
+indicates how a single "result" should be displayed.
+
+Save your template in:
+`themes/your-theme/templates/SilverStripe/Discoverer/Service/Results/Records.ss`
+
+The following example assumes that you have the following fields in your search index, but you should update the
+template as you need to:
+
+* `Title`: Your record title (EG: Page title, File title, etc)
+* `Link`: A link to the record (EG: Page link, File link, etc)
+* `Content`: The primary content of the record (EG: the `Content` field on your Page, or the text content of a File)
+
+`$AnalyticsData` is a special property that is available on all `Records`, and it is populated whenever the env var
+`SEARCH_ANALYTICS_ENABLED` is set to `1`. If you are not using any sort of analytics tracking from your search service,
+then you can likely leave this out.
+
+The module will automatically display formatted values (aka "snippets") where available - falling back to unformatted
+values where formatted isn't available.
+
+```silverstripe
+<ul>
+    <% loop $Me %>
+        <li>
+            <h2>
+                <a href="{$Link}<% if $AnalyticsData %>?$AnalyticsData<% end_if %>">$Title</a>
+            </h2>
+
+            <% if $Content %>
+                $Content
+            <% end_if %>
+        </li>
+    <% end_loop %>
+</ul>
+
+```
+
+The following default templates are provided by this module, and you can please feel free to override any and all of
+them:
+
+* `Includes\`
+  * `Pagination.ss`
+  * `Summary.ss`
+* `Service\`
+  * `Results\`
+    * `Facet.ss`
+    * `Facets.ss`
+    * `Records.ss` (it's empty, you always have to implement this template yourself, as noted above)
+    * `Results.ss`
