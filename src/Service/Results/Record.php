@@ -4,6 +4,7 @@ namespace SilverStripe\Discoverer\Service\Results;
 
 use Exception;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
+use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\View\ViewableData;
 
 class Record extends ViewableData
@@ -13,6 +14,11 @@ class Record extends ViewableData
      * This is the one field that we attempt to make predictable
      */
     private ?AnalyticsData $analyticsData = null;
+
+    public function forTemplate(): DBHTMLText
+    {
+        return $this->renderWith(static::class);
+    }
 
     public function getAnalyticsData(): ?AnalyticsData
     {

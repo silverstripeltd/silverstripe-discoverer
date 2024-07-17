@@ -178,7 +178,7 @@ predict what fields you would want to display in your results. As such, you need
 indicates how a single "result" should be displayed.
 
 Save your template in:
-`themes/your-theme/templates/SilverStripe/Discoverer/Service/Results/Records.ss`
+`themes/your-theme/templates/SilverStripe/Discoverer/Service/Results/Record.ss`
 
 The following example assumes that you have the following fields in your search index, but you should update the
 template as you need to:
@@ -195,21 +195,20 @@ The module will automatically display formatted values (aka "snippets") where av
 values where formatted isn't available.
 
 ```silverstripe
-<ul>
-    <% loop $Me %>
-        <li>
-            <h2>
-                <a href="{$Link}<% if $AnalyticsData %>?$AnalyticsData<% end_if %>">$Title</a>
-            </h2>
+<li>
+    <h2>
+        <a href="{$Link}<% if $AnalyticsData %>?$AnalyticsData<% end_if %>">$Title</a>
+    </h2>
 
-            <% if $Content %>
-                $Content
-            <% end_if %>
-        </li>
-    <% end_loop %>
-</ul>
+    <% if $Content %>
+        $Content
+    <% end_if %>
+</li>
 
 ```
+
+Each `Record` is (by default) housed in a `ul`. You can override this behaviour by implementing your own `Records.ss`
+(plural) template.
 
 The following default templates are provided by this module, and you can please feel free to override any and all of
 them:
@@ -221,5 +220,6 @@ them:
   * `Results\`
     * `Facet.ss`
     * `Facets.ss`
-    * `Records.ss` (it's empty, you always have to implement this template yourself, as noted above)
-    * `Results.ss`
+    * `Record.ss` - Which you will have implemented above
+    * `Records.ss` - Houses the default `ul` wrapper for your results
+    * `Results.ss` - Contains the template holding the search summary, results, and pagination
