@@ -13,7 +13,12 @@
     "keywords": [
         "Silverstripe",
         "Silverstripe CMS",
-        "Search"
+        "Search",
+        "Searching",
+        "Filter",
+        "Filtering",
+        "Query",
+        "Querying"
     ],
     "require": {
         "php": "^8.1",
