@@ -2,7 +2,7 @@
     "name": "silverstripe/silverstripe-discoverer",
     "description": "Service agnostic abstraction of search querying requirements",
     "type": "silverstripe-vendormodule",
-    "license": "proprietary",
+    "license": "BSD-3-Clause",
     "homepage": "https://github.com/silverstripeltd/silverstripe-discoverer",
     "authors": [
         {
