@@ -1,22 +1,24 @@
 # Simple usage
 
-* [`SearchResults.php`](#searchresultsphp)
-* [`SearchResultsController.php`](#searchresultscontrollerphp)
-* [`SearchResults.ss`](#searchresultsss)
-
-**Note:** This is not meant to be a feature-packed demo or a prescription for how you should implement search. This is
-just here to give a basic idea of how you might interact with the service components that this module provides.
-
-Please also read the following:
-
-* [Detailed usage](detailed-querying.md)
-* [Detailed result handling](detailed-result-handling.md)
-
 This module does not provide a search results page out of the box. Why? Because we do not want to prescribe the way that
 you have to interact with search.
 
 That said, below we have some examples on how you could set up search using a basic Page (managed through the CMS like
 any other Page), and Controller.
+
+**Note:** If you read through these examples, and you think they fit your use case, then you might want to consider
+using [Silverstripe Discoverer > Search UI](https://github.com/silverstripeltd/silverstripe-discoverer-search-ui),
+as this module provides most of what is described below out of the box.
+
+* [`SearchResults.php`](#searchresultsphp)
+* [`SearchResultsController.php`](#searchresultscontrollerphp)
+* [`SearchResults.ss`](#searchresultsss)
+* [`Record.ss`](#recordss)
+
+Please also read the following:
+
+* [Detailed usage](detailed-querying.md)
+* [Detailed result handling](detailed-result-handling.md)
 
 ## `SearchResults.php`
 
@@ -169,7 +171,7 @@ $SearchResults
 
 ```
 
-## `Records.ss`
+## `Record.ss`
 
 Ok, the "hard" bit.
 

@@ -1,12 +1,14 @@
-# 🧭 Silverstripe Discoverer > Search query module
+# 🧭 Silverstripe Discoverer: Search and querying module for Silverstripe CMS
 
 * [Purpose](#purpose)
 * [Delivery](#delivery)
+* [Installation](#installation)
 * [Feature support](#feature-support)
 * [Getting started](#getting-started)
   * [Simple usage](docs/simple-usage.md)
   * [Detailed result handling](docs/detailed-result-handling.md)
   * [Detailed querying](docs/detailed-querying.md)
+* [Available service integration modules](#available-service-integration-modules)
 
 ## Purpose
 
@@ -32,19 +34,22 @@ composer require "silverstripe/silverstripe-discoverer"
 *Note* this module is not functional without an
 [integration module](#available-service-integration-modules)
 
+If you are planning to search through a page and controller, then you might also want to consider using
+[Silverstripe Discoverer > Search UI](https://github.com/silverstripeltd/silverstripe-discoverer-search-ui)
+
 ## Feature support
 
 Whether or not certain features are supported **by this module**. Noting that different search providers often do things
 in different ways, and often have different levels of support for features. This module attempts to provide a level
 of functionality that is commonly supported by many different services.
 
-| Feature                                                     | Module support | Future module support | Rationale                                                                                                                                                                                                                                   |
-|-------------------------------------------------------------|----------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Filters                                                     | Yes            | Yes                   | You should (hopefully) be able to achieve any sort of nested filtering that you require.                                                                                                                                                    |
-| Facets                                                      | Partial        | If desired            | Facet support differs hugely between search services. Current thinking is to try and limit what sort of Facet integrations we use (EG: no Geolocation) in the hopes that if we switch services in the future, we won't lose functionality   |
-| Multi-search                                                | No             | If desired            | Not supported by many search services. It wouldn't be unreasonable effort to add this functionality though.                                                                                                                                 |
-| Search suggestions (aka auto-complete, "did you mean", etc) | Yes            | Yes                   | Features like auto-complete generate a lot of requests, and for a lower tiered shared service, that is something we want to cut down on.                                                                                                    |
-| Click through logging                                       | Yes            | Yes                   | Supported in Elastic App Search, but not supported by many other Search Services (including Elasticsearch). This feature in particular is an example of the "silent treatment" we apply when a feature disappears between service providers |
+| Feature                                                     | Module support | Future module support | Rationale                                                                                                                                                                                                                                                 |
+|-------------------------------------------------------------|----------------|-----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Filters                                                     | Yes            | Yes                   | You should (hopefully) be able to achieve any sort of nested filtering that you require.                                                                                                                                                                  |
+| Facets                                                      | Partial        | Partial               | Facet support differs hugely between search services. Current thinking is to try and limit what sort of Facet integrations we support (EG: no Geolocation) in the hopes that if you switch services in the future, you won't lose functionality.          |
+| Multi-search                                                | No             | If desired            | Not supported by many search services. It wouldn't be unreasonable effort to add this functionality though. Plugin modules for services without mult-search could manually perform 2 searches and combine the results.                                    |
+| Search suggestions (aka auto-complete, "did you mean", etc) | No             | Yes                   | This feature comes in many different shapes and sizes between services, we do plan to add support for this feature in the very near future.                                                                                                               |
+| Click through logging                                       | Yes            | Yes                   | Supported in Elastic App Search, but not supported by many other Search Services (including Elasticsearch). This feature in particular is an example of the "silent treatment" that might be applied when a feature disappears between service providers. |
 
 ## Getting started
 
