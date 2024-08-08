@@ -71,7 +71,7 @@ class Suggestions extends ViewableData
         return $this;
     }
 
-    public function addSuggestion(string $suggestions): static
+    public function addSuggestion(string $suggestions): self
     {
         $this->suggestions[] = $suggestions;
 

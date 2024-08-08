@@ -40,6 +40,13 @@ class Suggestion
         return $this->fields;
     }
 
+    public function setFields(array $fields): self
+    {
+        $this->fields = $fields;
+
+        return $this;
+    }
+
     public function addField(string $fieldName): self
     {
         $this->fields[] = $fieldName;
