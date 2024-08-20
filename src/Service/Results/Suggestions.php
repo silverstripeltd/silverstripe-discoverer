@@ -9,7 +9,7 @@ use SilverStripe\View\ViewableData;
 use Traversable;
 
 /**
- * $desired* fields:
+ * $targetQueryStringField and $targetQueryUrl fields:
  *
  * Search suggestions are often used as links back to a search form. In order to do that, you need to know where the
  * form is localed (a page URL in many cases) and what field is used for holding the search query string. These fields
@@ -22,9 +22,9 @@ use Traversable;
 class Suggestions extends ViewableData
 {
 
-    private string $desiredQueryStringField = '';
+    private string $targetQueryStringField = '';
 
-    private string $desiredLinkUrl = '';
+    private string $targetQueryUrl = '';
 
     private bool $success = false;
 
@@ -35,26 +35,26 @@ class Suggestions extends ViewableData
         return $this->renderWith(static::class);
     }
 
-    public function getDesiredQueryStringField(): string
+    public function getTargetQueryStringField(): string
     {
-        return $this->desiredQueryStringField;
+        return $this->targetQueryStringField;
     }
 
-    public function setDesiredQueryStringField(string $desiredQueryStringField): self
+    public function setTargetQueryStringField(string $targetQueryStringField): self
     {
-        $this->desiredQueryStringField = $desiredQueryStringField;
+        $this->targetQueryStringField = $targetQueryStringField;
 
         return $this;
     }
 
-    public function getDesiredLinkUrl(): string
+    public function getTargetQueryUrl(): string
     {
-        return $this->desiredLinkUrl;
+        return $this->targetQueryUrl;
     }
 
-    public function setDesiredLinkUrl(string $desiredLinkUrl): self
+    public function setTargetQueryUrl(string $targetQueryUrl): self
     {
-        $this->desiredLinkUrl = $desiredLinkUrl;
+        $this->targetQueryUrl = $targetQueryUrl;
 
         return $this;
     }
