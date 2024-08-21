@@ -1,4 +1,4 @@
-<nav aria-label="<%t SilverStripe\Discoverer\Includes\Pagination.PaginationLabel 'Search paginaiton' %>">
+<nav aria-label="<%t SilverStripe\Discoverer\Includes\Pagination.PaginationLabel 'Search pagination' %>">
     <ul class="pagination">
         <li class="pagination-item pagination-item--prev">
             <% if $NotFirstPage %>
