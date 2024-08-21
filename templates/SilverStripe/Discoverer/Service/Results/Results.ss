@@ -9,5 +9,5 @@
         <% end_if %>
     <% end_with %>
 <% else %>
-    <p class="error">No search results.</p>
+    <p class="error"><%t SilverStripe\Discoverer\Service\Results\Results.NoResults 'No search results.' %></p>
 <% end_if %>
