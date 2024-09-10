@@ -27,12 +27,14 @@ between services.
 
 ## Installation
 
+**Note:** this module does not function without an
+[integration module](#available-service-integration-modules)
+
+If you want to install this module for developing your own integration module, then you can install it with:
+
 ```
 composer require "silverstripe/silverstripe-discoverer"
 ```
-
-*Note* this module is not functional without an
-[integration module](#available-service-integration-modules)
 
 If you are planning to search through a page and controller, then you might also want to consider using
 [Silverstripe Discoverer > Search UI](https://github.com/silverstripeltd/silverstripe-discoverer-search-ui)

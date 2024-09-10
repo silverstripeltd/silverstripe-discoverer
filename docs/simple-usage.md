@@ -1,13 +1,16 @@
 # Simple usage
 
+**Note:** this module does not function without an
+[integration module](#available-service-integration-modules)
+
 This module does not provide a search results page out of the box. Why? Because we do not want to prescribe the way that
 you have to interact with search.
 
 That said, below we have some examples on how you could set up search using a basic Page (managed through the CMS like
 any other Page), and Controller.
 
-**Note:** If you read through these examples, and you think they fit your use case, then you might want to consider
-using [Silverstripe Discoverer > Search UI](https://github.com/silverstripeltd/silverstripe-discoverer-search-ui),
+**Note:** If these examples fit your use case, then you might want to consider using
+[Silverstripe Discoverer > Search UI](https://github.com/silverstripeltd/silverstripe-discoverer-search-ui),
 as this module provides most of what is described below out of the box.
 
 * [`SearchResults.php`](#searchresultsphp)
