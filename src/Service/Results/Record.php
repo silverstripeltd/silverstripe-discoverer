@@ -10,14 +10,38 @@ use SilverStripe\View\ViewableData;
 class Record extends ViewableData
 {
 
-    /**
-     * This is the one field that we attempt to make predictable
-     */
     private ?AnalyticsData $analyticsData = null;
 
     public function forTemplate(): DBHTMLText
     {
         return $this->renderWith(static::class);
+    }
+
+    public function getDecoratedLink(?string $link = null): ?string
+    {
+        // Explicit null check, because an empty link ('') is valid
+        if ($link === null) {
+            return null;
+        }
+
+        $analyticsData = $this->getAnalyticsData();
+
+        if (!$analyticsData) {
+            return $link;
+        }
+
+        $analyticsQueryParam = $analyticsData->forTemplate();
+
+        // Trim any trailing "?" or "&", to rule out any links that have completely empty query params
+        $link = rtrim($link, '&');
+        $link = rtrim($link, '?');
+
+        // If there are existing query params, then use '&' to concatenate, otherwise use '?'
+        $concatenation = parse_url($link, PHP_URL_QUERY)
+            ? '&'
+            : '?';
+
+        return sprintf('%s%s%s', $link, $concatenation, $analyticsQueryParam);
     }
 
     public function getAnalyticsData(): ?AnalyticsData
