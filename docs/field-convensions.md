@@ -3,8 +3,17 @@
 Different search services use different naming convensions for fields, but most like to use either kebab-case or
 snake_case.
 
-In order to provide a consistent pattern for interacting with `Record` objects in this module, all field names from
-search services should be converted into a standard that is more familiar to Silverstripe developers.
+The `FieldService` class provides a method can be used to convert your index fields into a format that is more familiar
+to Silverstripe developers.
+
+```php
+$converted = FieldService::singleton()->getConvertedFieldName($fieldName);
+```
+
+I would recommend having a look at the example conversions in `FieldServiceTest` to understand how we transform
+different naming patterns.
+
+We should all try to following these standards when developing our service integrations:
 
 * PascalCase
 * Abbreviations like "ID", "IDs", "URL", etc, should be presented as "Id", "Ids", "Url", etc
@@ -17,15 +26,3 @@ equally impossible for this module to then guess whether you use that abbreviati
 
 The easiest, and most consistent way to solve this issue is to simply say that each portion of a field name that is
 separated by (eg) `-` or `_` is one word, and therefor treated as PascalCase, and not PascalCASE.
-
-Another reason for this standard is because PHP provides us with the `ucwords` function, and that's a really easy and
-consistent way to turn snake_case and kebab-case (which is a common field pattern for search services) into PascalCase.
-
-EG:
-
-```php
-// Convert snake_case to PascalCase
-str_replace('_', '', ucwords('snake_case', '_'));
-// Convert kebab-case to PascalCase
-str_replace('_', '', ucwords('kebab-case', '-'));
-```
