@@ -79,6 +79,14 @@ Additional documentation can also be found below:
   * Lots more information about filters, facets, sorts, and (hopefully) everything else you need to know to perform
     whatever sort of search you require.
 
+## Protected field names
+
+You're **mostly** free to use any field names you would like when configuring your data sources, however, there are
+2 methods provided in our `Record` class that will effectively override any field that is made available under:
+
+* `AnalyticsData`
+* `DecoratedLink`
+
 ## Available service integration modules
 
 * [Silverstripe Discoverer > Elastic Enterprise Search](https://github.com/silverstripeltd/silverstripe-discoverer-elastic-enterprise)

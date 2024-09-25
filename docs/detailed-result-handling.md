@@ -33,9 +33,9 @@ that are returned by your search service, and to make those fields available to 
 the data you need access to as part of your search Documents. That way, you don't have to perform additional look ups
 in your database.
 
-You will notice that there is only one pre-defined property in this class - `$analyticsData`. All other fields are
-dynamic properties - because we have no way of programmatically knowing what fields you might have in your search
-index.
+You will notice that there are only a couple of pre-defined methods in this class - `getAnalyticsData()`, and
+`getDecoratedLink()`. All other fields are dynamic properties - because we have no way of programmatically knowing what
+fields you might have in your search index.
 
 ### How fields are made available to you
 
@@ -55,8 +55,8 @@ Here are some examples for an Elastic App Search index (where App Search uses sn
 * `elemental_area`: `$ElementalArea`
 * `record_id`: `$RecordId`
 
-If you have analytics enabled, then you will also have a field available called `$AnalyticsData`. See
-[Adding analytics](#adding-analytics).
+If you have analytics enabled, then you will also have a field available called `$AnalyticsData`, and a method called
+`$getDecoratedLink()`. See [Adding analytics](#adding-analytics).
 
 ### Pagination
 
@@ -71,25 +71,17 @@ This module comes with an HTTP middleware that you can apply by setting the foll
 
 * `SEARCH_ANALYTICS_ENABLED=1`
 
-If you do this, then you will have access to `$AnalyticsData` for your `Record` objects. This can then be added to any
-link as a query parameter.
+If you do this, then you will have access to `$AnalyticsData` and `$getDecoratedLink()` for your `Record` objects.
+Eiter of these can be used to add analytics tracking data to your link (though, `$getDecoratedLink()` is the easier of
+the two, as it will automatically consider whether there are existing GET params in the link before appending more).
 
 The following example assumes that you have indexed a `title` and `link` for each search Document.
 
 ```silverstripe
-<a href="{$Link}?{$AnalyticsData}">$Title</a>
-<%-- Or perhaps with an if condition --%>
-<a href="{$Link}<% if $AnalyticsData %>?$AnalyticsData<% end_if %>">$Title</a>
+<a href="{$getDecoratedLink($Link)}">$Title</a>
 ```
 
-**Note:** You need to specify the `?` yourself. We don't include this so that you can append it to other query
-parameter requirements that you might have. EG:
-
-```silverstripe
-<a href="{$Link}?{$OtherQueryParams}&{$AnalyticsData}">$Title</a>
-```
-
-**Also note:** Analytics is perhaps the most likely feature to be missing from search service providers. EG: It is
+**Note:** Analytics is perhaps the most likely feature to be missing from search service providers. EG: It is
 available through Elastic App Search, but not currently available through Elasticsearch. The goal of this module would
 be that if you switched to a new service that did not support analytics, then that portion of your search would be
 silently excluded - allowing the core functionality of search to remain functioning without any code changes. **At
