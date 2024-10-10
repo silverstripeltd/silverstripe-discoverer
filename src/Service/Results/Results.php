@@ -13,14 +13,8 @@ class Results extends ViewableData
 
     use Injectable;
 
-    /**
-     * @var Records|Record[]
-     */
     private Records $records;
 
-    /**
-     * @var Facets|Facet[]
-     */
     private Facets $facets;
 
     private ?string $indexName = null;
