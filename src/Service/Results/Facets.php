@@ -5,6 +5,9 @@ namespace SilverStripe\Discoverer\Service\Results;
 use SilverStripe\ORM\ArrayList;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 
+/**
+ * @extends ArrayList<Facet>
+ */
 class Facets extends ArrayList
 {
 

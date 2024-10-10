@@ -10,7 +10,7 @@ class Facet extends ViewableData
 {
 
     /**
-     * @var ArrayList|FacetData[]
+     * @var ArrayList<FacetData>
      */
     private ArrayList $data;
 
@@ -32,6 +32,9 @@ class Facet extends ViewableData
         return $this->renderWith(static::class);
     }
 
+    /**
+     * @return ArrayList<FacetData>
+     */
     public function getData(): ArrayList
     {
         return $this->data;
