@@ -2,6 +2,10 @@
 
 namespace SilverStripe\Discoverer\Tests\Service\Results;
 
+use Composer\InstalledVersions;
+use Composer\Semver\VersionParser;
+use SilverStripe\Control\Controller;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
 use SilverStripe\Discoverer\Service\Results\Field;
@@ -23,6 +27,14 @@ class RecordTest extends SapphireTest
      */
     public function testGetDecoratedLink(?AnalyticsData $analyticsData, string $link, string $expectedLink): void
     {
+        if (InstalledVersions::satisfies(new VersionParser(), 'silverstripe/framework', '<5.2.20') && strpos(
+            $link,
+            'www'
+        ) !== false) {
+            // skip external link tests on older versions as the behaviour has changed
+            return;
+        }
+
         $record = Record::create();
         $record->setAnalyticsData($analyticsData);
 
@@ -49,13 +61,13 @@ class RecordTest extends SapphireTest
             [null, '/page/', '/page/'],
             [null, '/page?one=two', '/page?one=two'],
             [null, '/page/?one=two', '/page/?one=two'],
-            [$analyticsData, '', sprintf('?%s', $expectedAnalytics)],
+            [$analyticsData, '', sprintf('/?%s', $expectedAnalytics)],
             [$analyticsData, '/', sprintf('/?%s', $expectedAnalytics)],
-            [$analyticsData, '?one=two', sprintf('?one=two&%s', $expectedAnalytics)],
+            [$analyticsData, '?one=two', sprintf('/?one=two&%s', $expectedAnalytics)],
             [$analyticsData, '/?one=two', sprintf('/?one=two&%s', $expectedAnalytics)],
-            [$analyticsData, '/page', sprintf('/page?%s', $expectedAnalytics)],
+            [$analyticsData, '/page', sprintf('/page/?%s', $expectedAnalytics)],
             [$analyticsData, '/page/', sprintf('/page/?%s', $expectedAnalytics)],
-            [$analyticsData, '/page?one=two', sprintf('/page?one=two&%s', $expectedAnalytics)],
+            [$analyticsData, '/page?one=two', sprintf('/page/?one=two&%s', $expectedAnalytics)],
             [$analyticsData, '/page/?one=two', sprintf('/page/?one=two&%s', $expectedAnalytics)],
             [
                 $analyticsData,
@@ -69,8 +81,8 @@ class RecordTest extends SapphireTest
             ],
             [
                 $analyticsData,
-                'https://www.localhost.com?one=two',
-                sprintf('https://www.localhost.com?one=two&%s', $expectedAnalytics),
+                'https://www.example.com?one=two',
+                sprintf('https://www.example.com?one=two&%s', $expectedAnalytics),
             ],
             [
                 $analyticsData,
@@ -117,6 +129,21 @@ class RecordTest extends SapphireTest
         $record = Record::create();
         // This should throw our Exception
         $record->Title = 'Invalid';
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Config::nest();
+        Controller::config()->set('add_trailing_slash', true);
+    }
+
+    protected function tearDown(): void
+    {
+        Config::unnest();
+
+        parent::tearDown();
     }
 
 }

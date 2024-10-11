@@ -3,6 +3,7 @@
 namespace SilverStripe\Discoverer\Service\Results;
 
 use Exception;
+use SilverStripe\Control\Controller;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\View\ViewableData;
@@ -32,16 +33,7 @@ class Record extends ViewableData
 
         $analyticsQueryParam = $analyticsData->forTemplate();
 
-        // Trim any trailing "?" or "&", to rule out any links that have completely empty query params
-        $link = rtrim($link, '&');
-        $link = rtrim($link, '?');
-
-        // If there are existing query params, then use '&' to concatenate, otherwise use '?'
-        $concatenation = parse_url($link, PHP_URL_QUERY)
-            ? '&'
-            : '?';
-
-        return sprintf('%s%s%s', $link, $concatenation, $analyticsQueryParam);
+        return Controller::join_links($link, '?' . $analyticsQueryParam);
     }
 
     public function getAnalyticsData(): ?AnalyticsData
