@@ -23,6 +23,3 @@ Why "Id" and not "ID"?
 Well.. ID is an easy one to predict because we know that Silverstripe uses that capitalised, but beyond that, it's
 impossible for this module to programmatically know what other abbreviations you might be using in your project, and
 equally impossible for this module to then guess whether you use that abbreviation fully capitalised or not.
-
-The easiest, and most consistent way to solve this issue is to simply say that each portion of a field name that is
-separated by (eg) `-` or `_` is one word, and therefor treated as PascalCase, and not PascalCASE.

@@ -33,10 +33,15 @@ class FieldServiceTest extends SapphireTest
             ['Record-Id', 'RecordId'],
             ['recordId', 'RecordId'],
             ['RecordId', 'RecordId'],
+            ['RecordID', 'RecordId'],
+            ['recordID', 'RecordId'],
             ['tag_ids', 'TagIds'],
             ['tag-ids', 'TagIds'],
             ['tagIds', 'TagIds'],
             ['TagIds', 'TagIds'],
+            ['TagIDs', 'TagIds'],
+            ['tagIDs', 'TagIds'],
+            ['IDs', 'Ids'],
         ];
     }
 
