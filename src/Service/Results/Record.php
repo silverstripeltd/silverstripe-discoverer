@@ -28,7 +28,8 @@ class Record extends ViewableData
         $analyticsData = $this->getAnalyticsData();
 
         if (!$analyticsData) {
-            return $link;
+            // All links should be standardised, even if they don't contain analytics data
+            return Controller::join_links($link);
         }
 
         $analyticsQueryParam = $analyticsData->forTemplate();
