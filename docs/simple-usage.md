@@ -192,17 +192,31 @@ template as you need to:
 * `Link`: A link to the record (EG: Page link, File link, etc)
 * `Content`: The primary content of the record (EG: the `Content` field on your Page, or the text content of a File)
 
-`$AnalyticsData` is a special property that is available on all `Records`, and it is populated whenever the env var
-`SEARCH_ANALYTICS_ENABLED` is set to `1`. If you are not using any sort of analytics tracking from your search service,
-then you can likely leave this out.
-
 The module will automatically display formatted values (aka "snippets") where available - falling back to unformatted
 values where formatted isn't available.
 
 ```silverstripe
 <li>
     <h2>
-        <a href="{$Link}<% if $AnalyticsData %>?$AnalyticsData<% end_if %>">$Title</a>
+        <a href="{$Link}">$Title</a>
+    </h2>
+
+    <% if $Content %>
+        $Content
+    <% end_if %>
+</li>
+
+```
+
+`$getDecoratedLink()` is a special method that is available on all `Records`, and it is populated whenever the env var
+`SEARCH_ANALYTICS_ENABLED` is set to `1`. If you are not using any sort of analytics tracking from your search service,
+then you can likely leave this out. Using `$getDecoratedLink()` will automatically add analytics tracking info to your
+link - and it will consider any existing GET params that you might have on your links.
+
+```silverstripe
+<li>
+    <h2>
+        <a href="{$getDecoratedLink($Link)}">$Title</a>
     </h2>
 
     <% if $Content %>

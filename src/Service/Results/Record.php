@@ -3,6 +3,7 @@
 namespace SilverStripe\Discoverer\Service\Results;
 
 use Exception;
+use SilverStripe\Control\Controller;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
 use SilverStripe\ORM\FieldType\DBHTMLText;
 use SilverStripe\View\ViewableData;
@@ -10,14 +11,30 @@ use SilverStripe\View\ViewableData;
 class Record extends ViewableData
 {
 
-    /**
-     * This is the one field that we attempt to make predictable
-     */
     private ?AnalyticsData $analyticsData = null;
 
     public function forTemplate(): DBHTMLText
     {
         return $this->renderWith(static::class);
+    }
+
+    public function getDecoratedLink(?string $link = null): ?string
+    {
+        // Explicit null check, because an empty link ('') is valid
+        if ($link === null) {
+            return null;
+        }
+
+        $analyticsData = $this->getAnalyticsData();
+
+        if (!$analyticsData) {
+            // All links should be standardised, even if they don't contain analytics data
+            return Controller::join_links($link);
+        }
+
+        $analyticsQueryParam = $analyticsData->forTemplate();
+
+        return Controller::join_links($link, '?' . $analyticsQueryParam);
     }
 
     public function getAnalyticsData(): ?AnalyticsData
