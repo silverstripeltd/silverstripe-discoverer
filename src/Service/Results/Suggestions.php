@@ -83,6 +83,16 @@ class Suggestions extends ViewableData
         return $this->suggestions;
     }
 
+    public function setSuggestions(array $suggestions): self
+    {
+        // Specifically using a loop and addSuggestion() to make sure that all items are of type string
+        foreach ($suggestions as $suggestion) {
+            $this->addSuggestion($suggestion);
+        }
+
+        return $this;
+    }
+
     public function getIterator(): Traversable
     {
         if (!$this->suggestions) {
