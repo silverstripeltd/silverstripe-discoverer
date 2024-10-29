@@ -1,0 +1,6 @@
+---
+Name: discoverer-adaptors
+---
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Discoverer\Service\Interfaces\SpellingSuggestionAdaptor:
+    class: SilverStripe\Discoverer\Service\Adaptors\SpellingSuggestionAdaptor
