@@ -9,8 +9,12 @@ class Suggestion
 
     use Injectable;
 
-    public function __construct(private string $queryString, private ?int $limit = null, private array $fields = [])
-    {
+    public function __construct(
+        private string $queryString,
+        private ?int $limit = null,
+        private array $fields = [],
+        private bool $formatted = false
+    ) {
     }
 
     public function getQueryString(): string
@@ -50,6 +54,18 @@ class Suggestion
     public function addField(string $fieldName): self
     {
         $this->fields[] = $fieldName;
+
+        return $this;
+    }
+
+    public function isFormatted(): bool
+    {
+        return $this->formatted;
+    }
+
+    public function setFormatted(bool $formatted): Suggestion
+    {
+        $this->formatted = $formatted;
 
         return $this;
     }

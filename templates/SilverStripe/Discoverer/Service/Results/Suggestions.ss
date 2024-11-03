@@ -1,7 +1,7 @@
 <ul>
     <% loop $Me %>
         <% if $Up.TargetQueryUrl && $Up.TargetQueryStringField %>
-            <li><a href="{$Up.TargetQueryUrl}?{$Up.TargetQueryStringField}={$Me}">$Me</a></li>
+            <li><a href="{$Up.TargetQueryUrl}?{$Up.TargetQueryStringField}={$Me.Raw}">$Me</a></li>
         <% else %>
             <li>$Me</li>
         <% end_if %>

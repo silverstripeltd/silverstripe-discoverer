@@ -28,6 +28,9 @@ class Suggestions extends ViewableData
 
     private bool $success = false;
 
+    /**
+     * @var Field[]
+     */
     private array $suggestions = [];
 
     public function forTemplate(): DBHTMLText
@@ -71,9 +74,9 @@ class Suggestions extends ViewableData
         return $this;
     }
 
-    public function addSuggestion(string $suggestions): self
+    public function addSuggestion(Field $suggestion): self
     {
-        $this->suggestions[] = $suggestions;
+        $this->suggestions[] = $suggestion;
 
         return $this;
     }
@@ -85,7 +88,7 @@ class Suggestions extends ViewableData
 
     public function setSuggestions(array $suggestions): self
     {
-        // Specifically using a loop and addSuggestion() to make sure that all items are of type string
+        // Specifically using a loop and addSuggestion() to make sure that all items are of type Field
         foreach ($suggestions as $suggestion) {
             $this->addSuggestion($suggestion);
         }
@@ -99,29 +102,7 @@ class Suggestions extends ViewableData
             return new ArrayIterator();
         }
 
-        return new ArrayIterator($this->convertArrayForTemplate());
-    }
-
-    /**
-     * Silverstripe 5.3 will have native support for looping primitives in templates:
-     * https://github.com/silverstripe/silverstripe-framework/issues/11196
-     *
-     * We need to support versions of Silverstripe below 5.3 though, so we need this polyfill. It emulates the
-     * template implementation method from Silverstripe 5.3, so we should be able to remove this later without
-     * negatively impacting any project's template implementation
-     */
-    private function convertArrayForTemplate(): array
-    {
-        $arrayList = [];
-
-        foreach ($this->suggestions as $suggestion) {
-            $text = DBText::create('suggestion');
-            $text->setValue($suggestion);
-
-            $arrayList[] = $text;
-        }
-
-        return $arrayList;
+        return new ArrayIterator($this->getSuggestions());
     }
 
 }
