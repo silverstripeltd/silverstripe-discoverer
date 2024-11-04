@@ -4,7 +4,6 @@ namespace SilverStripe\Discoverer\Service\Results;
 
 use ArrayIterator;
 use SilverStripe\ORM\FieldType\DBHTMLText;
-use SilverStripe\ORM\FieldType\DBText;
 use SilverStripe\View\ViewableData;
 use Traversable;
 
