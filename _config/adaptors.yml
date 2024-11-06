@@ -1,0 +1,12 @@
+---
+Name: discoverer-adaptors
+---
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Discoverer\Service\Interfaces\ProcessAnalyticsAdaptor:
+    class: SilverStripe\Discoverer\Service\Adaptors\ProcessAnalyticsAdaptor
+  SilverStripe\Discoverer\Service\Interfaces\QuerySuggestionAdaptor:
+    class: SilverStripe\Discoverer\Service\Adaptors\QuerySuggestionAdaptor
+  SilverStripe\Discoverer\Service\Interfaces\SearchAdaptor:
+    class: SilverStripe\Discoverer\Service\Adaptors\SearchAdaptor
+  SilverStripe\Discoverer\Service\Interfaces\SpellingSuggestionAdaptor:
+    class: SilverStripe\Discoverer\Service\Adaptors\SpellingSuggestionAdaptor
