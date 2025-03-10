@@ -100,7 +100,7 @@ class Criteria implements Clause
             return $this;
         }
 
-        if (!$value) {
+        if (!isset($value) || $value === null) {
             throw new Exception('mixed $value and string $comparison expected for filter()');
         }
 
