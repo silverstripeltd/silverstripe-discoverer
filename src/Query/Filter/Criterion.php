@@ -42,6 +42,11 @@ class Criterion implements Clause
         self::RANGE,
     ];
 
+    public const NULL_COMPARISONS = [
+        self::IS_NULL,
+        self::IS_NOT_NULL,
+    ];
+
     private ?CriterionAdaptor $adaptor = null;
 
     private static array $dependencies = [
