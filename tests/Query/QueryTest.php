@@ -204,18 +204,26 @@ class QueryTest extends SapphireTest
         $query = Query::create();
         $criterionOne = Criterion::create('field1', 'value1', Criterion::EQUAL);
         $criterionTwo = Criterion::create('field2', 'value2', Criterion::EQUAL);
+        $criterionThree = Criterion::create('field3', null, Criterion::NOT_EQUAL);
+        $criterionFour = Criterion::create('field4', 0, Criterion::NOT_EQUAL);
 
         $query->filter($criterionOne);
         $query->filter($criterionTwo);
+        $query->filter($criterionThree);
+        $query->filter($criterionFour);
 
         $clauses = $query->getFilter()->getClauses();
 
-        $this->assertCount(2, $clauses);
+        $this->assertCount(4, $clauses);
 
         /** @var Criterion $criterionOne */
         $criterionOne = array_shift($clauses);
         /** @var Criterion $criterionTwo */
         $criterionTwo = array_shift($clauses);
+        /** @var Criterion $criterionThree */
+        $criterionThree = array_shift($clauses);
+        /** @var Criterion $criterionFour */
+        $criterionFour = array_shift($clauses);
 
         $this->assertEquals('field1', $criterionOne->getTarget());
         $this->assertEquals('value1', $criterionOne->getValue());
@@ -223,6 +231,12 @@ class QueryTest extends SapphireTest
         $this->assertEquals('field2', $criterionTwo->getTarget());
         $this->assertEquals('value2', $criterionTwo->getValue());
         $this->assertEquals(Criterion::EQUAL, $criterionTwo->getComparison());
+        $this->assertEquals('field3', $criterionThree->getTarget());
+        $this->assertNull($criterionThree->getValue());
+        $this->assertEquals(Criterion::NOT_EQUAL, $criterionThree->getComparison());
+        $this->assertEquals('field4', $criterionFour->getTarget());
+        $this->assertEquals(0, $criterionFour->getValue());
+        $this->assertEquals(Criterion::NOT_EQUAL, $criterionFour->getComparison());
     }
 
     public function testFilterWithTarget(): void
@@ -256,7 +270,8 @@ class QueryTest extends SapphireTest
         $query->filterAny([
             $criterion,
             ['field2', 'value2', Criterion::EQUAL],
-            ['field3', 'value3', Criterion::EQUAL],
+            ['field3', null, Criterion::NOT_EQUAL],
+            ['field4', 0, Criterion::NOT_EQUAL],
         ]);
 
         $clauses = $query->getFilter()->getClauses();
@@ -278,6 +293,8 @@ class QueryTest extends SapphireTest
         $criterionTwo = array_shift($clauses);
         /** @var Criterion $criterionThree */
         $criterionThree = array_shift($clauses);
+        /** @var Criterion $criterionFour */
+        $criterionFour = array_shift($clauses);
 
         $this->assertEquals('field1', $criterionOne->getTarget());
         $this->assertEquals('value1', $criterionOne->getValue());
@@ -286,17 +303,11 @@ class QueryTest extends SapphireTest
         $this->assertEquals('value2', $criterionTwo->getValue());
         $this->assertEquals(Criterion::EQUAL, $criterionTwo->getComparison());
         $this->assertEquals('field3', $criterionThree->getTarget());
-        $this->assertEquals('value3', $criterionThree->getValue());
-        $this->assertEquals(Criterion::EQUAL, $criterionThree->getComparison());
-    }
-
-    public function testFilterNoValue(): void
-    {
-        $this->expectExceptionMessage('mixed $value and string $comparison expected for filter()');
-
-        $query = Query::create();
-        // Should throw our exception
-        $query->filter('field1');
+        $this->assertNull($criterionThree->getValue());
+        $this->assertEquals(Criterion::NOT_EQUAL, $criterionThree->getComparison());
+        $this->assertEquals('field4', $criterionFour->getTarget());
+        $this->assertEquals(0, $criterionFour->getValue());
+        $this->assertEquals(Criterion::NOT_EQUAL, $criterionFour->getComparison());
     }
 
     public function testFilterNoComparison(): void
