@@ -100,8 +100,9 @@ class Criteria implements Clause
             return $this;
         }
 
-        if (!$value) {
-            throw new Exception('mixed $value and string $comparison expected for filter()');
+        // Only NULL_COMPARISONS support a $value of null. All other falsy values are allowed
+        if ($value === null && !in_array($comparison, Criterion::NULL_COMPARISONS, true)) {
+            throw new Exception('mixed $value of null is not supported outside of NULL_COMPARISON filters');
         }
 
         if (!$comparison) {
