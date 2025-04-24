@@ -13,7 +13,9 @@ class FacetData extends ViewableData
 
     private string|int|float $to;
 
-    private string $value;
+    private string $name;
+
+    private string|int|float $value;
 
     public function getCount(): int
     {
@@ -51,12 +53,24 @@ class FacetData extends ViewableData
         return $this;
     }
 
-    public function getValue(): string
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getValue(): string|int|float
     {
         return $this->value;
     }
 
-    public function setValue(string $value): self
+    public function setValue(string|int|float $value): self
     {
         $this->value = $value;
 
