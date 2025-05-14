@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Discoverer\Tests\Service\Results;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
 use SilverStripe\Discoverer\Service\Results\Field;
@@ -18,9 +19,7 @@ class RecordTest extends SapphireTest
         $this->assertInstanceOf(AnalyticsData::class, $record->getAnalyticsData());
     }
 
-    /**
-     * @dataProvider provideLinks
-     */
+    #[DataProvider('provideLinks')]
     public function testGetDecoratedLink(?AnalyticsData $analyticsData, string $link, string $expectedLink): void
     {
         $record = Record::create();
@@ -29,7 +28,7 @@ class RecordTest extends SapphireTest
         $this->assertEquals($expectedLink, $record->getDecoratedLink($link));
     }
 
-    public function provideLinks(): array
+    public static function provideLinks(): array
     {
         // SapphireTest doesn't like the use of injector in data providers
         $analyticsData = new AnalyticsData();

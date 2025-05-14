@@ -5,15 +5,14 @@ namespace SilverStripe\Discoverer\Service\Results;
 use Exception;
 use SilverStripe\Control\Controller;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
-use SilverStripe\ORM\FieldType\DBHTMLText;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 
-class Record extends ViewableData
+class Record extends ModelData
 {
 
     private ?AnalyticsData $analyticsData = null;
 
-    public function forTemplate(): DBHTMLText
+    public function forTemplate(): string
     {
         return $this->renderWith(static::class);
     }

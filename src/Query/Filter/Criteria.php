@@ -21,10 +21,10 @@ class Criteria implements Clause
 
     use Injectable;
 
-    public const CONJUNCTION_AND = 'AND';
-    public const CONJUNCTION_OR = 'OR';
+    public const string CONJUNCTION_AND = 'AND';
+    public const string CONJUNCTION_OR = 'OR';
 
-    public const CONJUNCTIONS = [
+    public const array CONJUNCTIONS = [
         self::CONJUNCTION_AND,
         self::CONJUNCTION_OR,
     ];

@@ -18,7 +18,7 @@ class AnalyticsMiddleware implements HTTPMiddleware
     use Configurable;
     use Injectable;
 
-    public const ENV_ANALYTICS_ENABLED = 'SEARCH_ANALYTICS_ENABLED';
+    public const string ENV_ANALYTICS_ENABLED = 'SEARCH_ANALYTICS_ENABLED';
 
     private ?LoggerInterface $logger = null;
 

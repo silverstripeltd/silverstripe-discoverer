@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Discoverer\Tests\Query\Facet;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Query\Facet\Facet;
 use SilverStripe\Discoverer\Query\Facet\FacetRange;
@@ -42,9 +43,7 @@ class FacetTest extends SapphireTest
         $this->assertEquals('fieldName', $facet->getFieldName());
     }
 
-    /**
-     * @dataProvider provideTypes
-     */
+    #[DataProvider('provideTypes')]
     public function testType(string $type): void
     {
         $facet = Facet::create();
@@ -54,7 +53,7 @@ class FacetTest extends SapphireTest
         $this->assertEquals($type, $facet->getType());
     }
 
-    public function provideTypes(): array
+    public static function provideTypes(): array
     {
         $tests = [];
 

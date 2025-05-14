@@ -3,8 +3,7 @@
 namespace SilverStripe\Discoverer\Service\Results;
 
 use ArrayIterator;
-use SilverStripe\ORM\FieldType\DBHTMLText;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 use Traversable;
 
 /**
@@ -18,7 +17,7 @@ use Traversable;
  *
  * See also: Suggestions.ss for an example of how these fields are implemented to create links back to a search form
  */
-class Suggestions extends ViewableData
+class Suggestions extends ModelData
 {
 
     private string $targetQueryStringField = '';
@@ -32,7 +31,7 @@ class Suggestions extends ViewableData
      */
     private array $suggestions = [];
 
-    public function forTemplate(): DBHTMLText
+    public function forTemplate(): string
     {
         return $this->renderWith(static::class);
     }

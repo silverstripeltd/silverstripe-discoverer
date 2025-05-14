@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Discoverer\Tests\Query\Filter;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Query\Filter\Criteria;
@@ -12,9 +13,7 @@ use SilverStripe\Discoverer\Query\Filter\CriterionAdaptor;
 class CriteriaTest extends SapphireTest
 {
 
-    /**
-     * @dataProvider provideValidConjunctions
-     */
+    #[DataProvider('provideValidConjunctions')]
     public function testValidConjunctions(string $conjunction): void
     {
         $criteria = Criteria::create($conjunction);
@@ -22,7 +21,7 @@ class CriteriaTest extends SapphireTest
         $this->assertEquals($conjunction, $criteria->getConjunction());
     }
 
-    public function provideValidConjunctions(): array
+    public static function provideValidConjunctions(): array
     {
         $data = [];
 

@@ -14,10 +14,10 @@ class Facet
 
     use Injectable;
 
-    public const TYPE_VALUE = 'VALUE';
-    public const TYPE_RANGE = 'RANGE';
+    public const string TYPE_VALUE = 'VALUE';
+    public const string TYPE_RANGE = 'RANGE';
 
-    public const TYPES = [
+    public const array TYPES = [
         self::TYPE_VALUE,
         self::TYPE_RANGE,
     ];

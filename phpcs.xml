@@ -5,6 +5,8 @@
     <file>src</file>
     <file>tests</file>
 
+    <!-- Don't sniff test classes, because they include PHP attributes that cause Slevomat to throw errors -->
+    <exclude-pattern>./tests/*</exclude-pattern>
     <!-- Don't sniff third party libraries -->
     <exclude-pattern>./vendor/*</exclude-pattern>
     <exclude-pattern>*/thirdparty/*</exclude-pattern>
@@ -146,6 +148,8 @@
         <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.MissingTraversableTypeHintSpecification"/>
         <exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingTraversableTypeHintSpecification"/>
         <exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingTraversableTypeHintSpecification"/>
+        <!-- Leave the order up to us to decide -->
+        <exclude name="SlevomatCodingStandard.Classes.ClassStructure.IncorrectGroupOrder"/>
     </rule>
 
     <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses">

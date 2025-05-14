@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Discoverer\Tests\Query\Filter;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Query\Filter\Criterion;
@@ -10,9 +11,7 @@ use SilverStripe\Discoverer\Query\Filter\CriterionAdaptor;
 class CriterionTest extends SapphireTest
 {
 
-    /**
-     * @dataProvider provideValidComparisons
-     */
+    #[DataProvider('provideValidComparisons')]
     public function testValidComparisons(string $comparison): void
     {
         $value = 'fieldValue';
@@ -36,7 +35,7 @@ class CriterionTest extends SapphireTest
         $this->assertEquals($comparison, $criterion->getComparison());
     }
 
-    public function provideValidComparisons(): array
+    public static function provideValidComparisons(): array
     {
         $data = [];
 
@@ -87,9 +86,7 @@ class CriterionTest extends SapphireTest
         Criterion::create('fieldName', $range, Criterion::RANGE);
     }
 
-    /**
-     * @dataProvider provideInComparisons
-     */
+    #[DataProvider('provideInComparisons')]
     public function testInvalidInValueComparison(): void
     {
         $this->expectExceptionMessage('$value of type array expected for IN and NOT_IN comparisons');
@@ -98,7 +95,7 @@ class CriterionTest extends SapphireTest
         Criterion::create('fieldName', 'not an array', Criterion::IN);
     }
 
-    public function provideInComparisons(): array
+    public static function provideInComparisons(): array
     {
         return [
             [Criterion::IN],

@@ -2,11 +2,10 @@
 
 namespace SilverStripe\Discoverer\Service\Results;
 
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\FieldType\DBHTMLText;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Model\ModelData;
 
-class Facet extends ViewableData
+class Facet extends ModelData
 {
 
     /**
@@ -27,7 +26,7 @@ class Facet extends ViewableData
         $this->data = ArrayList::create();
     }
 
-    public function forTemplate(): DBHTMLText
+    public function forTemplate(): string
     {
         return $this->renderWith(static::class);
     }

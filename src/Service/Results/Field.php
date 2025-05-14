@@ -3,10 +3,10 @@
 namespace SilverStripe\Discoverer\Service\Results;
 
 use ArrayIterator;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 use Traversable;
 
-class Field extends ViewableData
+class Field extends ModelData
 {
 
     public function __construct(private mixed $raw = null, private mixed $formatted = null)
@@ -14,7 +14,7 @@ class Field extends ViewableData
         parent::__construct();
     }
 
-    public function forTemplate(): mixed
+    public function forTemplate(): string
     {
         // Attempt to use the formatted value (if available), or use the raw value as the fallback
         return $this->formatted ?? $this->raw;
@@ -73,7 +73,7 @@ class Field extends ViewableData
         $arrayList = [];
 
         foreach ($array as $item) {
-            // Each item being looped needs to be a viewable data record. Reusing this class means that we also get
+            // Each item being looped needs to be a ModelData record. Reusing this class means that we also get
             // support for any nested arrays
             $arrayList[] = Field::create($item);
         }
