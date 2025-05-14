@@ -11,13 +11,13 @@ class AnalyticsDataTest extends SapphireTest
     public function testForTemplate(): void
     {
         $data = AnalyticsData::create();
-        $data->setEngineName('elastic-engine-main');
+        $data->setIndexName('our-index-main');
         $data->setQueryString('search string');
         $data->setDocumentId('abc123');
         $data->setRequestId('123abc');
 
         $expectedData = [
-            'engineName' => 'elastic-engine-main',
+            'indexName' => 'our-index-main',
             'queryString' => 'search string',
             'documentId' => 'abc123',
             'requestId' => '123abc',
@@ -34,7 +34,7 @@ class AnalyticsDataTest extends SapphireTest
     {
         $data = AnalyticsData::create();
 
-        $this->assertNull($data->forTemplate());
+        $this->assertEquals($data->forTemplate(), '');
     }
 
 }

@@ -2,9 +2,9 @@
 
 namespace SilverStripe\Discoverer\Service\Results;
 
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 
-class FacetData extends ViewableData
+class FacetData extends ModelData
 {
 
     private int $count;
@@ -22,7 +22,7 @@ class FacetData extends ViewableData
         return $this->count;
     }
 
-    public function setCount(int $count): self
+    public function setCount(int $count): static
     {
         $this->count = $count;
 
@@ -34,7 +34,7 @@ class FacetData extends ViewableData
         return $this->from;
     }
 
-    public function setFrom(float|int|string $from): self
+    public function setFrom(float|int|string $from): static
     {
         $this->from = $from;
 
@@ -46,7 +46,7 @@ class FacetData extends ViewableData
         return $this->to;
     }
 
-    public function setTo(float|int|string $to): self
+    public function setTo(float|int|string $to): static
     {
         $this->to = $to;
 
@@ -58,7 +58,7 @@ class FacetData extends ViewableData
         return $this->name;
     }
 
-    public function setName(string $name): self
+    public function setName(string $name): static
     {
         $this->name = $name;
 
@@ -70,7 +70,7 @@ class FacetData extends ViewableData
         return $this->value;
     }
 
-    public function setValue(string|int|float $value): self
+    public function setValue(string|int|float $value): static
     {
         $this->value = $value;
 

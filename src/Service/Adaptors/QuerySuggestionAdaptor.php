@@ -10,7 +10,7 @@ use SilverStripe\Discoverer\Service\Results\Suggestions;
 class QuerySuggestionAdaptor implements QuerySuggestionAdaptorInterface
 {
 
-    public function process(Suggestion $suggestion, string $indexName): Suggestions
+    public function process(Suggestion $suggestion, string $indexSuffix): Suggestions
     {
         throw new BadMethodCallException('Query suggestion adaptor has not been implemented');
     }

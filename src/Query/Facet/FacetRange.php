@@ -21,7 +21,7 @@ class FacetRange
         return $this->from;
     }
 
-    public function setFrom(float|int|string|null $from): self
+    public function setFrom(float|int|string|null $from): static
     {
         $this->from = $from;
 
@@ -33,7 +33,7 @@ class FacetRange
         return $this->to;
     }
 
-    public function setTo(float|int|string|null $to): self
+    public function setTo(float|int|string|null $to): static
     {
         $this->to = $to;
 
@@ -45,7 +45,7 @@ class FacetRange
         return $this->name;
     }
 
-    public function setName(?string $name): self
+    public function setName(?string $name): static
     {
         $this->name = $name;
 

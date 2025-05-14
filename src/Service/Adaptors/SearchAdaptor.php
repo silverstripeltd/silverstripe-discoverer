@@ -10,7 +10,7 @@ use SilverStripe\Discoverer\Service\Results\Results;
 class SearchAdaptor implements SearchAdaptorInterface
 {
 
-    public function process(Query $query, string $indexName): Results
+    public function process(Query $query, string $indexSuffix): Results
     {
         throw new BadMethodCallException('Search adaptor has not been implemented');
     }

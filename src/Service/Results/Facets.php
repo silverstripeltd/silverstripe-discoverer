@@ -2,8 +2,7 @@
 
 namespace SilverStripe\Discoverer\Service\Results;
 
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\FieldType\DBHTMLText;
+use SilverStripe\Model\List\ArrayList;
 
 /**
  * @extends ArrayList<Facet>
@@ -11,7 +10,7 @@ use SilverStripe\ORM\FieldType\DBHTMLText;
 class Facets extends ArrayList
 {
 
-    public function forTemplate(): DBHTMLText
+    public function forTemplate(): string
     {
         return $this->renderWith(static::class);
     }

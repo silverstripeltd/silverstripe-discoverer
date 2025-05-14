@@ -8,6 +8,6 @@ use SilverStripe\Discoverer\Service\Results\Results;
 interface SearchAdaptor
 {
 
-    public function process(Query $query, string $indexName): Results;
+    public function process(Query $query, string $indexSuffix): Results;
 
 }

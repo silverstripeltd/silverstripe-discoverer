@@ -3,14 +3,14 @@
 namespace SilverStripe\Discoverer\Analytics;
 
 use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 
-class AnalyticsData extends ViewableData
+class AnalyticsData extends ModelData
 {
 
     use Injectable;
 
-    private ?string $engineName = null;
+    private ?string $indexName = null;
 
     private ?string $queryString = null;
 
@@ -18,14 +18,14 @@ class AnalyticsData extends ViewableData
 
     private mixed $requestId = null;
 
-    public function getEngineName(): ?string
+    public function getIndexName(): ?string
     {
-        return $this->engineName;
+        return $this->indexName;
     }
 
-    public function setEngineName(?string $engineName): AnalyticsData
+    public function setIndexName(?string $indexName): AnalyticsData
     {
-        $this->engineName = $engineName;
+        $this->indexName = $indexName;
 
         return $this;
     }
@@ -66,17 +66,17 @@ class AnalyticsData extends ViewableData
         return $this;
     }
 
-    public function forTemplate(): ?string
+    public function forTemplate(): string
     {
         $data = [];
 
-        $engineName = $this->getEngineName();
+        $indexName = $this->getIndexName();
         $query = $this->getQueryString();
         $documentId = $this->getDocumentId();
         $requestId = $this->getRequestId();
 
-        if ($engineName) {
-            $data['engineName'] = $engineName;
+        if ($indexName) {
+            $data['indexName'] = $indexName;
         }
 
         if ($query) {
@@ -92,7 +92,7 @@ class AnalyticsData extends ViewableData
         }
 
         if (!$data) {
-            return null;
+            return '';
         }
 
         $query = [

@@ -10,7 +10,7 @@ use SilverStripe\Discoverer\Service\Results\Suggestions;
 class SpellingSuggestionAdaptor implements SpellingSuggestionAdaptorInterface
 {
 
-    public function process(Suggestion $suggestion, string $indexName): Suggestions
+    public function process(Suggestion $suggestion, string $indexSuffix): Suggestions
     {
         throw new BadMethodCallException('Spelling suggestion adaptor has not been implemented');
     }

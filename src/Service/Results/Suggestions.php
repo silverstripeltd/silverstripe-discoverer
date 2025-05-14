@@ -3,8 +3,7 @@
 namespace SilverStripe\Discoverer\Service\Results;
 
 use ArrayIterator;
-use SilverStripe\ORM\FieldType\DBHTMLText;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 use Traversable;
 
 /**
@@ -18,7 +17,7 @@ use Traversable;
  *
  * See also: Suggestions.ss for an example of how these fields are implemented to create links back to a search form
  */
-class Suggestions extends ViewableData
+class Suggestions extends ModelData
 {
 
     private string $targetQueryStringField = '';
@@ -27,12 +26,14 @@ class Suggestions extends ViewableData
 
     private bool $success = false;
 
+    private ?int $statusCode = null;
+
     /**
      * @var Field[]
      */
     private array $suggestions = [];
 
-    public function forTemplate(): DBHTMLText
+    public function forTemplate(): string
     {
         return $this->renderWith(static::class);
     }
@@ -42,7 +43,7 @@ class Suggestions extends ViewableData
         return $this->targetQueryStringField;
     }
 
-    public function setTargetQueryStringField(string $targetQueryStringField): self
+    public function setTargetQueryStringField(string $targetQueryStringField): static
     {
         $this->targetQueryStringField = $targetQueryStringField;
 
@@ -54,7 +55,7 @@ class Suggestions extends ViewableData
         return $this->targetQueryUrl;
     }
 
-    public function setTargetQueryUrl(string $targetQueryUrl): self
+    public function setTargetQueryUrl(string $targetQueryUrl): static
     {
         $this->targetQueryUrl = $targetQueryUrl;
 
@@ -66,14 +67,12 @@ class Suggestions extends ViewableData
         return $this->success;
     }
 
-    public function setSuccess(bool $success): self
+    public function setStatusCode(int $statusCode): static
     {
-        $this->success = $success;
-
-        return $this;
+        $this->statusCode = $statusCode;
     }
 
-    public function addSuggestion(Field $suggestion): self
+    public function addSuggestion(Field $suggestion): static
     {
         $this->suggestions[] = $suggestion;
 
@@ -85,7 +84,7 @@ class Suggestions extends ViewableData
         return $this->suggestions;
     }
 
-    public function setSuggestions(array $suggestions): self
+    public function setSuggestions(array $suggestions): static
     {
         // Specifically using a loop and addSuggestion() to make sure that all items are of type Field
         foreach ($suggestions as $suggestion) {

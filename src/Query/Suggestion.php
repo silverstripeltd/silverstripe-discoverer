@@ -32,7 +32,7 @@ class Suggestion
         return $this->limit;
     }
 
-    public function setLimit(?int $limit): self
+    public function setLimit(?int $limit): static
     {
         $this->limit = $limit;
 
@@ -44,14 +44,14 @@ class Suggestion
         return $this->fields;
     }
 
-    public function setFields(array $fields): self
+    public function setFields(array $fields): static
     {
         $this->fields = $fields;
 
         return $this;
     }
 
-    public function addField(string $fieldName): self
+    public function addField(string $fieldName): static
     {
         $this->fields[] = $fieldName;
 

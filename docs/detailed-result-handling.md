@@ -21,12 +21,12 @@ simple methods available that you can access anywhere.
 * `getRecords()`: A `PaginatedList` of `Record` objects that were returned by the search service based on your `Query`.
 * `getFacets`: An `ArrayList` of `Facet` objects that were returned by the search service based on your `Query`.
 
-The `Results` class is also a `ViewableData` object, so these methods can be access in your template with `$isSuccess`,
+The `Results` class is also a `ModelData` object, so these methods can be access in your template with `$isSuccess`,
 `$Records`, and `$Facets`.
 
 ## `Record` class
 
-The `Record` class is a simple `ViewableData` class, and the purpose of it is to provide you with access to the fields
+The `Record` class is a simple `ModelData` class, and the purpose of it is to provide you with access to the fields
 that are returned by your search service, and to make those fields available to you in (EG) Silverstripe templates.
 
 **Note:** A `Record` is not assumed to have a linked `DataObject`. The recommendation would be for you to index all of

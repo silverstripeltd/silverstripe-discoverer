@@ -30,7 +30,7 @@ class FacetCollection
         return $this->facets;
     }
 
-    public function addFacet(Facet $facet): self
+    public function addFacet(Facet $facet): static
     {
         $this->facets[] = $facet;
 

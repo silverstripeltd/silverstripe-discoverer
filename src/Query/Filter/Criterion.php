@@ -16,19 +16,19 @@ class Criterion implements Clause
 
     use Injectable;
 
-    public const EQUAL = 'EQUAL';
-    public const NOT_EQUAL = 'NOT_EQUAL';
-    public const GREATER_EQUAL = 'GREATER_EQUAL';
-    public const GREATER_THAN = 'GREATER_THAN';
-    public const LESS_EQUAL = 'LESS_EQUAL';
-    public const LESS_THAN = 'LESS_THAN';
-    public const IN = 'IN';
-    public const NOT_IN = 'NOT_IN';
-    public const IS_NULL = 'IS_NULL';
-    public const IS_NOT_NULL = 'IS_NOT_NULL';
-    public const RANGE = 'RANGE';
+    public const string EQUAL = 'EQUAL';
+    public const string NOT_EQUAL = 'NOT_EQUAL';
+    public const string GREATER_EQUAL = 'GREATER_EQUAL';
+    public const string GREATER_THAN = 'GREATER_THAN';
+    public const string LESS_EQUAL = 'LESS_EQUAL';
+    public const string LESS_THAN = 'LESS_THAN';
+    public const string IN = 'IN';
+    public const string NOT_IN = 'NOT_IN';
+    public const string IS_NULL = 'IS_NULL';
+    public const string IS_NOT_NULL = 'IS_NOT_NULL';
+    public const string RANGE = 'RANGE';
 
-    public const COMPARISONS = [
+    public const array COMPARISONS = [
         self::EQUAL,
         self::NOT_EQUAL,
         self::GREATER_EQUAL,
@@ -42,7 +42,7 @@ class Criterion implements Clause
         self::RANGE,
     ];
 
-    public const NULL_COMPARISONS = [
+    public const array NULL_COMPARISONS = [
         self::IS_NULL,
         self::IS_NOT_NULL,
     ];

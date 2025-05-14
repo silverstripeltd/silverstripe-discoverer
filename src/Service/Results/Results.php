@@ -4,11 +4,10 @@ namespace SilverStripe\Discoverer\Service\Results;
 
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Discoverer\Query\Query;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\FieldType\DBHTMLText;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Model\ModelData;
 
-class Results extends ViewableData
+class Results extends ModelData
 {
 
     use Injectable;
@@ -23,11 +22,13 @@ class Results extends ViewableData
 
     public function __construct(private readonly Query $query)
     {
+        parent::__construct();
+
         $this->records = Records::create(ArrayList::create());
         $this->facets = Facets::create();
     }
 
-    public function forTemplate(): DBHTMLText
+    public function forTemplate(): string
     {
         return $this->renderWith(static::class);
     }
@@ -37,7 +38,7 @@ class Results extends ViewableData
         return $this->records;
     }
 
-    public function addRecord(Record $record): self
+    public function addRecord(Record $record): static
     {
         $this->records->add($record);
 
@@ -49,7 +50,7 @@ class Results extends ViewableData
         return $this->facets;
     }
 
-    public function addFacet(Facet $facet): self
+    public function addFacet(Facet $facet): static
     {
         $this->facets->add($facet);
 
@@ -66,7 +67,7 @@ class Results extends ViewableData
         return $this->indexName;
     }
 
-    public function setIndexName(?string $indexName): self
+    public function setIndexName(?string $indexName): static
     {
         $this->indexName = $indexName;
 

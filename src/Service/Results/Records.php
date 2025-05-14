@@ -2,9 +2,8 @@
 
 namespace SilverStripe\Discoverer\Service\Results;
 
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\FieldType\DBHTMLText;
-use SilverStripe\ORM\PaginatedList;
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Model\List\PaginatedList;
 
 /**
  * @extends PaginatedList<ArrayList<Record>, Record>
@@ -12,7 +11,7 @@ use SilverStripe\ORM\PaginatedList;
 class Records extends PaginatedList
 {
 
-    public function forTemplate(): DBHTMLText
+    public function forTemplate(): string
     {
         return $this->renderWith(static::class);
     }
