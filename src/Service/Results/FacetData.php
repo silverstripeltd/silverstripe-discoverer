@@ -2,9 +2,9 @@
 
 namespace SilverStripe\Discoverer\Service\Results;
 
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 
-class FacetData extends ViewableData
+class FacetData extends ModelData
 {
 
     private int $count;

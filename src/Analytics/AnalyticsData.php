@@ -3,9 +3,9 @@
 namespace SilverStripe\Discoverer\Analytics;
 
 use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
 
-class AnalyticsData extends ViewableData
+class AnalyticsData extends ModelData
 {
 
     use Injectable;
@@ -66,7 +66,7 @@ class AnalyticsData extends ViewableData
         return $this;
     }
 
-    public function forTemplate(): ?string
+    public function forTemplate(): string
     {
         $data = [];
 
@@ -92,7 +92,7 @@ class AnalyticsData extends ViewableData
         }
 
         if (!$data) {
-            return null;
+            return '';
         }
 
         $query = [

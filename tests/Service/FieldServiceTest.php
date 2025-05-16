@@ -2,21 +2,20 @@
 
 namespace SilverStripe\Discoverer\Tests\Service;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Service\FieldService;
 
 class FieldServiceTest extends SapphireTest
 {
 
-    /**
-     * @dataProvider provideFieldNames
-     */
+    #[DataProvider('provideFieldNames')]
     public function testGetConvertedFieldName(string $fieldName, string $expectedFieldName): void
     {
         $this->assertEquals(FieldService::singleton()->getConvertedFieldName($fieldName), $expectedFieldName);
     }
 
-    public function provideFieldNames(): array
+    public static function provideFieldNames(): array
     {
         return [
             ['title', 'Title'],

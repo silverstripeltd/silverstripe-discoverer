@@ -34,7 +34,7 @@ class AnalyticsDataTest extends SapphireTest
     {
         $data = AnalyticsData::create();
 
-        $this->assertNull($data->forTemplate());
+        $this->assertEquals($data->forTemplate(), '');
     }
 
 }

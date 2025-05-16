@@ -15,10 +15,10 @@ class Query
 
     use Injectable;
 
-    public const SORT_ASC = 'ASC';
-    public const SORT_DESC = 'DESC';
+    public const string SORT_ASC = 'ASC';
+    public const string SORT_DESC = 'DESC';
 
-    public const SORTS = [
+    public const array SORTS = [
         self::SORT_ASC,
         self::SORT_DESC,
     ];
