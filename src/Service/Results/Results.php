@@ -21,6 +21,8 @@ class Results extends ViewableData
 
     private bool $success = false;
 
+    private string $error = '';
+
     public function __construct(private readonly Query $query)
     {
         $this->records = Records::create(ArrayList::create());
@@ -81,6 +83,18 @@ class Results extends ViewableData
     public function setSuccess(bool $success): Results
     {
         $this->success = $success;
+
+        return $this;
+    }
+
+    public function getError(): string
+    {
+        return $this->error;
+    }
+
+    public function setError(string $error): Results
+    {
+        $this->error = $error;
 
         return $this;
     }
