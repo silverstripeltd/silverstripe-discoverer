@@ -32,6 +32,8 @@ class Suggestions extends ViewableData
      */
     private array $suggestions = [];
 
+    private string $error = '';
+
     public function forTemplate(): DBHTMLText
     {
         return $this->renderWith(static::class);
@@ -102,6 +104,18 @@ class Suggestions extends ViewableData
         }
 
         return new ArrayIterator($this->getSuggestions());
+    }
+
+    public function getError(): string
+    {
+        return $this->error;
+    }
+
+    public function setError(string $error): Suggestions
+    {
+        $this->error = $error;
+
+        return $this;
     }
 
 }
