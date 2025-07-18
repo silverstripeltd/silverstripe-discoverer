@@ -3,14 +3,18 @@
 namespace SilverStripe\Discoverer\Service\Results;
 
 use Exception;
+use JsonSerializable;
 use SilverStripe\Control\Controller;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
 use SilverStripe\Model\ModelData;
+use stdClass;
 
-class Record extends ModelData
+class Record extends ModelData implements JsonSerializable
 {
 
     private ?AnalyticsData $analyticsData = null;
+
+    private array $fields = [];
 
     public function forTemplate(): string
     {
@@ -60,7 +64,27 @@ class Record extends ModelData
             throw new Exception(sprintf('Field value must be an instance of %s', Field::class));
         }
 
+        // Keep track of what fields have been added (atm, mostly just used for jsonSerialize, as we have no way of
+        // retrieving dynamic data if we don't want what fields to look up)
+        $this->fields[] = $property;
+
         parent::__set($property, $value);
+    }
+
+    public function jsonSerialize(): array|stdClass
+    {
+        $data = [];
+
+        foreach ($this->fields as $field) {
+            $data[$field] = $this->__get($field);
+        }
+
+        if (!$data) {
+            // Return an empty stdClass, so that json_encode provides an empty object (rather than an empty array)
+            return new stdClass();
+        }
+
+        return $data;
     }
 
 }

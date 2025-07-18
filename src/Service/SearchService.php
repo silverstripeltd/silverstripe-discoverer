@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Discoverer\Service;
 
-use SilverStripe\Core\Environment;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
 use SilverStripe\Discoverer\Query\Query;
@@ -80,10 +79,8 @@ class SearchService
 
     public function environmentizeIndex(string $indexSuffix): string
     {
-        $variant = Environment::getEnv($this->indexPrefix);
-
-        if ($variant) {
-            return sprintf('%s-%s', $variant, $indexSuffix);
+        if ($this->indexPrefix) {
+            return sprintf('%s-%s', $this->indexPrefix, $indexSuffix);
         }
 
         return $indexSuffix;

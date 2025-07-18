@@ -5,9 +5,8 @@ namespace SilverStripe\Discoverer\Service\Results;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Discoverer\Query\Query;
 use SilverStripe\Model\List\ArrayList;
-use SilverStripe\Model\ModelData;
 
-class Results extends ModelData
+class Results extends Response
 {
 
     use Injectable;
@@ -18,19 +17,12 @@ class Results extends ModelData
 
     private ?string $indexName = null;
 
-    private bool $success = false;
-
     public function __construct(private readonly Query $query)
     {
         parent::__construct();
 
         $this->records = Records::create(ArrayList::create());
         $this->facets = Facets::create();
-    }
-
-    public function forTemplate(): string
-    {
-        return $this->renderWith(static::class);
     }
 
     public function getRecords(): ?Records
@@ -74,16 +66,12 @@ class Results extends ModelData
         return $this;
     }
 
-    public function isSuccess(): bool
+    public function jsonSerialize(): array
     {
-        return $this->success;
-    }
-
-    public function setSuccess(bool $success): Results
-    {
-        $this->success = $success;
-
-        return $this;
+        return [
+            'records' => $this->getRecords()->jsonSerialize(),
+            'facets' => $this->getFacets()->jsonSerialize(),
+        ];
     }
 
 }

@@ -2,10 +2,11 @@
 
 namespace SilverStripe\Discoverer\Service\Results;
 
+use JsonSerializable;
 use SilverStripe\Model\List\ArrayList;
 use SilverStripe\Model\ModelData;
 
-class Facet extends ModelData
+class Facet extends ModelData implements JsonSerializable
 {
 
     /**
@@ -78,6 +79,22 @@ class Facet extends ModelData
         $this->type = $type;
 
         return $this;
+    }
+
+    public function jsonSerialize(): array
+    {
+        $data = [];
+
+        foreach ($this->getData() as $facetData) {
+            $data[] = $facetData->jsonSerialize();
+        }
+
+        return [
+            'data' => $data,
+            'name' => $this->getName(),
+            'fieldName' => $this->getFieldName(),
+            'type' => $this->getType(),
+        ];
     }
 
 }

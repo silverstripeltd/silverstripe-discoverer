@@ -3,10 +3,11 @@
 namespace SilverStripe\Discoverer\Service\Results;
 
 use ArrayIterator;
+use JsonSerializable;
 use SilverStripe\Model\ModelData;
 use Traversable;
 
-class Field extends ModelData
+class Field extends ModelData implements JsonSerializable
 {
 
     public function __construct(private mixed $raw = null, private mixed $formatted = null)
@@ -58,6 +59,14 @@ class Field extends ModelData
             : [$this];
 
         return new ArrayIterator($arrayValue);
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'raw' => $this->getRaw(),
+            'formatted' => $this->getFormatted(),
+        ];
     }
 
     /**

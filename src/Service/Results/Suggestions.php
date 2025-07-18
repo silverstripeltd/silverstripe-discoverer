@@ -3,7 +3,6 @@
 namespace SilverStripe\Discoverer\Service\Results;
 
 use ArrayIterator;
-use SilverStripe\Model\ModelData;
 use Traversable;
 
 /**
@@ -17,26 +16,17 @@ use Traversable;
  *
  * See also: Suggestions.ss for an example of how these fields are implemented to create links back to a search form
  */
-class Suggestions extends ModelData
+class Suggestions extends Response
 {
 
     private string $targetQueryStringField = '';
 
     private string $targetQueryUrl = '';
 
-    private bool $success = false;
-
-    private ?int $statusCode = null;
-
     /**
      * @var Field[]
      */
     private array $suggestions = [];
-
-    public function forTemplate(): string
-    {
-        return $this->renderWith(static::class);
-    }
 
     public function getTargetQueryStringField(): string
     {
@@ -60,16 +50,6 @@ class Suggestions extends ModelData
         $this->targetQueryUrl = $targetQueryUrl;
 
         return $this;
-    }
-
-    public function isSuccess(): bool
-    {
-        return $this->success;
-    }
-
-    public function setStatusCode(int $statusCode): static
-    {
-        $this->statusCode = $statusCode;
     }
 
     public function addSuggestion(Field $suggestion): static
@@ -101,6 +81,21 @@ class Suggestions extends ModelData
         }
 
         return new ArrayIterator($this->getSuggestions());
+    }
+
+    public function jsonSerialize(): array
+    {
+        $suggestions = [];
+
+        foreach ($this->suggestions as $suggestion) {
+            $suggestions[] = $suggestion->jsonSerialize();
+        }
+
+        return [
+            'targetQueryStringField' => $this->getTargetQueryStringField(),
+            'targetQueryUrl' => $this->getTargetQueryUrl(),
+            'suggestions' => $suggestions,
+        ];
     }
 
 }

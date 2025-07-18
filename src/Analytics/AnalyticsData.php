@@ -2,10 +2,12 @@
 
 namespace SilverStripe\Discoverer\Analytics;
 
+use JsonSerializable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Model\ModelData;
+use stdClass;
 
-class AnalyticsData extends ModelData
+class AnalyticsData extends ModelData implements JsonSerializable
 {
 
     use Injectable;
@@ -68,6 +70,33 @@ class AnalyticsData extends ModelData
 
     public function forTemplate(): string
     {
+        $data = $this->getDataArray();
+
+        if (!$data) {
+            return '';
+        }
+
+        $query = [
+            '_searchAnalytics' => base64_encode(json_encode($data)),
+        ];
+
+        return http_build_query($query);
+    }
+
+    public function jsonSerialize(): array|stdClass
+    {
+        $data = $this->getDataArray();
+
+        if (!$data) {
+            // Return an empty stdClass, so that json_encode provides an empty object (rather than an empty array)
+            return new stdClass();
+        }
+
+        return $data;
+    }
+
+    private function getDataArray(): array
+    {
         $data = [];
 
         $indexName = $this->getIndexName();
@@ -91,15 +120,7 @@ class AnalyticsData extends ModelData
             $data['requestId'] = $requestId;
         }
 
-        if (!$data) {
-            return '';
-        }
-
-        $query = [
-            '_searchAnalytics' => base64_encode(json_encode($data)),
-        ];
-
-        return http_build_query($query);
+        return $data;
     }
 
 }
