@@ -17,9 +17,9 @@ class Results extends Response
 
     private ?string $indexName = null;
 
-    public function __construct(private readonly Query $query)
+    public function __construct(private readonly Query $query, int $statusCode)
     {
-        parent::__construct();
+        parent::__construct($statusCode);
 
         $this->records = Records::create(ArrayList::create());
         $this->facets = Facets::create();

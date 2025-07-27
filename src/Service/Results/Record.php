@@ -53,12 +53,9 @@ class Record extends ModelData implements JsonSerializable
     }
 
     /**
-     * @param string $property
-     * @param mixed $value
      * @throws Exception
-     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
-    public function __set($property, $value): void
+    public function __set(string $property, mixed $value): void
     {
         if (!$value instanceof Field) {
             throw new Exception(sprintf('Field value must be an instance of %s', Field::class));
@@ -73,10 +70,12 @@ class Record extends ModelData implements JsonSerializable
 
     public function jsonSerialize(): array|stdClass
     {
-        $data = [];
+        $data = [
+            'AnalyticsData' => $this->analyticsData?->jsonSerialize() ?? null,
+        ];
 
         foreach ($this->fields as $field) {
-            $data[$field] = $this->__get($field);
+            $data[$field] = $this->__get($field)->jsonSerialize();
         }
 
         if (!$data) {

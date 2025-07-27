@@ -8,7 +8,10 @@ use SilverStripe\Model\ModelData;
 abstract class Response extends ModelData implements JsonSerializable
 {
 
-    private bool $success = false;
+    public function __construct(private readonly int $statusCode)
+    {
+        parent::__construct();
+    }
 
     public function forTemplate(): string
     {
@@ -17,14 +20,12 @@ abstract class Response extends ModelData implements JsonSerializable
 
     public function isSuccess(): bool
     {
-        return $this->success;
+        return $this->statusCode >= 200 && $this->statusCode < 300;
     }
 
-    public function setSuccess(bool $success): static
+    public function getStatusCode(): int
     {
-        $this->success = $success;
-
-        return $this;
+        return $this->statusCode;
     }
 
 }
