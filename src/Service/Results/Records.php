@@ -19,7 +19,13 @@ class Records extends PaginatedList implements JsonSerializable
 
     public function jsonSerialize(): array
     {
-        return $this->toArray();
+        $records = [];
+
+        foreach ($this->toArray() as $record) {
+            $records[] = $record->jsonSerialize();
+        }
+
+        return $records;
     }
 
 }

@@ -17,7 +17,7 @@ class Results extends Response
 
     private ?string $indexName = null;
 
-    public function __construct(private readonly Query $query, int $statusCode)
+    public function __construct(int $statusCode, private readonly Query $query)
     {
         parent::__construct($statusCode);
 

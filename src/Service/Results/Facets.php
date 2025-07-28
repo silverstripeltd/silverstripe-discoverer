@@ -18,7 +18,13 @@ class Facets extends ArrayList implements JsonSerializable
 
     public function jsonSerialize(): array
     {
-        return $this->toArray();
+        $facets = [];
+
+        foreach ($this->items as $item) {
+            $facets[] = $item->jsonSerialize();
+        }
+
+        return $facets;
     }
 
 }

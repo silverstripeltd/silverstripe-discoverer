@@ -8,17 +8,17 @@ use SilverStripe\Model\ModelData;
 class FacetData extends ModelData implements JsonSerializable
 {
 
-    private int $count;
+    private ?int $count = null;
 
-    private string|int|float $from;
+    private string|int|float|null $from = null;
 
-    private string|int|float $to;
+    private string|int|float|null $to = null;
 
-    private string $name;
+    private ?string $name = null;
 
-    private string|int|float $value;
+    private string|int|float|null $value = null;
 
-    public function getCount(): int
+    public function getCount(): ?int
     {
         return $this->count;
     }
@@ -30,7 +30,7 @@ class FacetData extends ModelData implements JsonSerializable
         return $this;
     }
 
-    public function getFrom(): float|int|string
+    public function getFrom(): float|int|string|null
     {
         return $this->from;
     }
@@ -42,7 +42,7 @@ class FacetData extends ModelData implements JsonSerializable
         return $this;
     }
 
-    public function getTo(): float|int|string
+    public function getTo(): float|int|string|null
     {
         return $this->to;
     }
@@ -54,7 +54,7 @@ class FacetData extends ModelData implements JsonSerializable
         return $this;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -66,7 +66,7 @@ class FacetData extends ModelData implements JsonSerializable
         return $this;
     }
 
-    public function getValue(): string|int|float
+    public function getValue(): string|int|float|null
     {
         return $this->value;
     }

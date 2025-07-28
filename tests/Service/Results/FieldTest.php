@@ -65,4 +65,28 @@ class FieldTest extends SapphireTest
         $this->assertEqualsCanonicalizing($expected, $results);
     }
 
+    public function testJsonSerialize(): void
+    {
+        $fieldOne = Field::create('raw', 'formatted');
+
+        $expected = [
+            'raw' => 'raw',
+            'formatted' => 'formatted',
+        ];
+
+        $this->assertEqualsCanonicalizing($expected, $fieldOne->jsonSerialize());
+    }
+
+    public function testJsonSerializeEmpty(): void
+    {
+        $fieldOne = Field::create();
+
+        $expected = [
+            'raw' => null,
+            'formatted' => null,
+        ];
+
+        $this->assertEqualsCanonicalizing($expected, $fieldOne->jsonSerialize());
+    }
+
 }
