@@ -397,8 +397,17 @@ class QueryTest extends SapphireTest
         $this->assertEquals($expected, $query->getTags());
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Injector::inst()->registerService(new MockCriteriaAdaptor(), CriteriaAdaptor::class);
+        Injector::inst()->registerService(new MockCriterionAdaptor(), CriterionAdaptor::class);
+        Injector::inst()->registerService(new MockFacetAdaptor(), FacetAdaptor::class);
+    }
+
     /**
-     * Data provider for testing search terms and ensuring sanitization of user input to mitigate XSS issues.
+     * Data provider for testing search terms and ensuring escaping of user input to mitigate XSS issues.
      *
      * @return array[]
      */
@@ -420,15 +429,6 @@ class QueryTest extends SapphireTest
                 'expected' => '&lt;IMG height=100 width=100 onmouseover=alert(&#039;test&#039;)&gt;',
             ],
         ];
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        Injector::inst()->registerService(new MockCriteriaAdaptor(), CriteriaAdaptor::class);
-        Injector::inst()->registerService(new MockCriterionAdaptor(), CriterionAdaptor::class);
-        Injector::inst()->registerService(new MockFacetAdaptor(), FacetAdaptor::class);
     }
 
 }
