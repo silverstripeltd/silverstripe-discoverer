@@ -3,6 +3,7 @@
 namespace SilverStripe\Discoverer\Query;
 
 use Exception;
+use SilverStripe\Core\Convert;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Discoverer\Query\Facet\Facet;
 use SilverStripe\Discoverer\Query\Facet\FacetCollection;
@@ -271,7 +272,9 @@ class Query
 
     public function forTemplate(): string
     {
-        return $this->queryString;
+        // the query string potentially contains raw user input and should be sanitised for
+        // rendering to the template
+        return Convert::raw2xml($this->queryString);
     }
 
     /**
