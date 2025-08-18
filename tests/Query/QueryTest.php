@@ -14,7 +14,6 @@ use SilverStripe\Discoverer\Query\Query;
 use SilverStripe\Discoverer\Tests\Query\Facet\MockFacetAdaptor;
 use SilverStripe\Discoverer\Tests\Query\Filter\MockCriteriaAdaptor;
 use SilverStripe\Discoverer\Tests\Query\Filter\MockCriterionAdaptor;
-use SilverStripe\ORM\FieldType\DBHTMLText;
 
 class QueryTest extends SapphireTest
 {
@@ -407,16 +406,18 @@ class QueryTest extends SapphireTest
     {
         return [
             [
-                'term' => '%26%23123%3B%26%23123%3B%27tenablewas_VuSleDMm7Rcj%27%2B4419%2A5502%26%23125%3B%26%23125%3B',
-                'expected' => '%26%23123%3B%26%23123%3B%27tenablewas_VuSleDMm7Rcj%27%2B4419%2A5502%26%23125%3B%26%23125%3B'
+                'term' => '%26%23123%3B%26%23123%3B%27tenablewas_'
+                    . 'VuSleDMm7Rcj%27%2B4419%2A5502%26%23125%3B%26%23125%3B',
+                'expected' => '%26%23123%3B%26%23123%3B%27tenablewas_'
+                    . 'VuSleDMm7Rcj%27%2B4419%2A5502%26%23125%3B%26%23125%3B',
             ],
             [
                 'term' => '<h1>Test</h1>',
-                'expected' => '&lt;h1&gt;Test&lt;/h1&gt;'
+                'expected' => '&lt;h1&gt;Test&lt;/h1&gt;',
             ],
             [
                 'term' => '<IMG height=100 width=100 onmouseover=alert(\'test\')>',
-                'expected' => '&lt;IMG height=100 width=100 onmouseover=alert(&#039;test&#039;)&gt;'
+                'expected' => '&lt;IMG height=100 width=100 onmouseover=alert(&#039;test&#039;)&gt;',
             ],
         ];
     }
