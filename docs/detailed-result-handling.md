@@ -25,11 +25,10 @@ The `Results` class is also a `ViewableData` object, so these methods can be acc
 `$Records`, and `$Facets`.
 
 ## `Query` class
-The `Query` class provides the original query that was used for matching results. This is available should you wish
-to include `Showing results for "test"` or similar text on your results page.
+The `Query` class provides the original query that was used for matching results.
 
-**Important:** When including `$Query` in the template it should be noted that this could contain raw user input
-and you may need to handle sanitisation of this value to mitigate against cross-site scripting (xss) attacks.
+**Important:** If you need to include the search term on the page (for example, `Showing results for "test"`) you will
+need to handle sanitisation of this value to mitigate against cross-site scripting (xss) attacks.
 
 ## `Record` class
 
