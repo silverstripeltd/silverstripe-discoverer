@@ -39,7 +39,7 @@ The `Query` class provides the original query that was used for matching results
  */
 public function sanitisedQuery(Query $query): DBText
 {
-return DBText::create()->setValue($query->getQueryString());
+    return DBText::create()->setValue($query->getQueryString());
 }
 ````
 
