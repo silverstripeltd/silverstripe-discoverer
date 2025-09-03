@@ -27,8 +27,21 @@ The `Results` class is also a `ViewableData` object, so these methods can be acc
 ## `Query` class
 The `Query` class provides the original query that was used for matching results.
 
-**Important:** If you need to include the search term on the page (for example, `Showing results for "test"`) you will
-need to handle sanitisation of this value to mitigate against cross-site scripting (xss) attacks.
+> [!IMPORTANT]
+> If you need to include the search term on the page (for example, `Showing results for "test"`) you will
+> need to handle sanitisation of this value to mitigate against cross-site scripting (xss) attacks. The simplest
+> way of doing this is to create a custom function that returns a DBText field, and the Silverstripe templating
+> system will handle this for you (see example below).
+
+````php
+/**
+ * Wraps the raw query string in a DBText instance for safely adding $sanitisedQuery to template.
+ */
+public function sanitisedQuery(Query $query): DBText
+{
+return DBText::create()->setValue($query->getQueryString());
+}
+````
 
 ## `Record` class
 
