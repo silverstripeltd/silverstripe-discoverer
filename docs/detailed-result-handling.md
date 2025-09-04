@@ -20,17 +20,29 @@ simple methods available that you can access anywhere.
 * `isSuccess()`: Simply states whether or not the search was a success, or error.
 * `getRecords()`: A `PaginatedList` of `Record` objects that were returned by the search service based on your `Query`.
 * `getFacets`: An `ArrayList` of `Facet` objects that were returned by the search service based on your `Query`.
-* `getQuery`": The `Query` object
+* `getQuery`: The `Query` object containing the user entered search term. See the [Query class](#query-class) section below for safe handling of user input.
 
 The `Results` class is also a `ViewableData` object, so these methods can be access in your template with `$isSuccess`,
-`$Records`, `$Facets`, and `$Query`.
+`$Records`, and `$Facets`.
 
 ## `Query` class
-The `Query` class provides the original query that was used for matching results. This is available should you wish
-to include `Showing results for "test"` or similar text on your results page.
+The `Query` class provides the original query that was used for matching results.
 
-**Important:** When including `$Query` in the template it should be noted that this assumes the query string is
-safe and that the implementation has sanitised the user input to mitigate against cross-site scripting (xss) attacks.
+> [!IMPORTANT]
+> If you need to include the search term on the page (for example, `Showing results for "test"`) you will
+> need to handle sanitisation of this value to mitigate against cross-site scripting (xss) attacks. The simplest
+> way of doing this is to create a custom function that returns a DBText field, and the Silverstripe templating
+> system will handle this for you (see example below).
+
+````php
+/**
+ * Wraps the raw query string in a DBText instance for safely adding $sanitisedQuery to template.
+ */
+public function sanitisedQuery(Query $query): DBText
+{
+    return DBText::create()->setValue($query->getQueryString());
+}
+````
 
 ## `Record` class
 
