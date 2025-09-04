@@ -20,7 +20,7 @@ simple methods available that you can access anywhere.
 * `isSuccess()`: Simply states whether or not the search was a success, or error.
 * `getRecords()`: A `PaginatedList` of `Record` objects that were returned by the search service based on your `Query`.
 * `getFacets`: An `ArrayList` of `Facet` objects that were returned by the search service based on your `Query`.
-* `getQuery`": The `Query` object containing the user entered search term. See the [Query class](#query-class) section below for safe handling of user input.
+* `getQuery`: The `Query` object containing the user entered search term. See the [Query class](#query-class) section below for safe handling of user input.
 
 The `Results` class is also a `ViewableData` object, so these methods can be access in your template with `$isSuccess`,
 `$Records`, and `$Facets`.
