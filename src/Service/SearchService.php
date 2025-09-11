@@ -33,6 +33,10 @@ class SearchService
         'processAnalyticsAdaptor' => '%$' . ProcessAnalyticsAdaptor::class,
     ];
 
+    public function __construct(private readonly ?string $indexPrefix = null)
+    {
+    }
+
     public function setSearchAdaptor(?SearchAdaptor $searchAdaptor): void
     {
         $this->searchAdaptor = $searchAdaptor;
@@ -53,24 +57,33 @@ class SearchService
         $this->processAnalyticsAdaptor = $processAnalyticsAdaptor;
     }
 
-    public function search(Query $query, string $indexName): Results
+    public function search(Query $query, string $indexSuffix): Results
     {
-        return $this->searchAdaptor->process($query, $indexName);
+        return $this->searchAdaptor->process($query, $indexSuffix);
     }
 
-    public function querySuggestion(Suggestion $suggestion, string $indexName): Suggestions
+    public function querySuggestion(Suggestion $suggestion, string $indexSuffix): Suggestions
     {
-        return $this->querySuggestionAdaptor->process($suggestion, $indexName);
+        return $this->querySuggestionAdaptor->process($suggestion, $indexSuffix);
     }
 
-    public function spellingSuggestion(Suggestion $suggestion, string $indexName): Suggestions
+    public function spellingSuggestion(Suggestion $suggestion, string $indexSuffix): Suggestions
     {
-        return $this->spellingSuggestionAdaptor->process($suggestion, $indexName);
+        return $this->spellingSuggestionAdaptor->process($suggestion, $indexSuffix);
     }
 
     public function processAnalytics(AnalyticsData $analyticsData): void
     {
         $this->processAnalyticsAdaptor->process($analyticsData);
+    }
+
+    public function environmentizeIndex(string $indexSuffix): string
+    {
+        if ($this->indexPrefix) {
+            return sprintf('%s-%s', $this->indexPrefix, $indexSuffix);
+        }
+
+        return $indexSuffix;
     }
 
 }

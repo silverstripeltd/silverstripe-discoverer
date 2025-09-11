@@ -18,7 +18,7 @@ class AnalyticsMiddleware implements HTTPMiddleware
     use Configurable;
     use Injectable;
 
-    public const ENV_ANALYTICS_ENABLED = 'SEARCH_ANALYTICS_ENABLED';
+    public const string ENV_ANALYTICS_ENABLED = 'SEARCH_ANALYTICS_ENABLED';
 
     private ?LoggerInterface $logger = null;
 
@@ -58,7 +58,7 @@ class AnalyticsMiddleware implements HTTPMiddleware
             $analyticsData->setQueryString($data['queryString'] ?? null);
             $analyticsData->setRequestId($data['requestId'] ?? null);
             $analyticsData->setDocumentId($data['documentId'] ?? null);
-            $analyticsData->setEngineName($data['engineName'] ?? null);
+            $analyticsData->setIndexName($data['indexName'] ?? null);
 
             $service = SearchService::create();
             $service->processAnalytics($analyticsData);

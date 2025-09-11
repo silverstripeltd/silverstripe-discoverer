@@ -2,6 +2,8 @@
 
 namespace SilverStripe\Discoverer\Tests\Service\Results;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use SilverStripe\Control\Controller;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
 use SilverStripe\Discoverer\Service\Results\Field;
@@ -18,9 +20,7 @@ class RecordTest extends SapphireTest
         $this->assertInstanceOf(AnalyticsData::class, $record->getAnalyticsData());
     }
 
-    /**
-     * @dataProvider provideLinks
-     */
+    #[DataProvider('provideLinks')]
     public function testGetDecoratedLink(?AnalyticsData $analyticsData, string $link, string $expectedLink): void
     {
         $record = Record::create();
@@ -29,11 +29,11 @@ class RecordTest extends SapphireTest
         $this->assertEquals($expectedLink, $record->getDecoratedLink($link));
     }
 
-    public function provideLinks(): array
+    public static function provideLinks(): array
     {
         // SapphireTest doesn't like the use of injector in data providers
         $analyticsData = new AnalyticsData();
-        $analyticsData->setEngineName('test');
+        $analyticsData->setIndexName('test');
         $analyticsData->setQueryString('query');
         $analyticsData->setDocumentId('documentId');
         $analyticsData->setRequestId('requestId');
@@ -77,6 +77,45 @@ class RecordTest extends SapphireTest
         $record = Record::create();
         // This should throw our Exception
         $record->Title = 'Invalid';
+    }
+
+    public function testJsonSerialize(): void
+    {
+        $analyticsData = AnalyticsData::create();
+        $analyticsData->setIndexName('our-index-main');
+        $analyticsData->setQueryString('search string');
+        $analyticsData->setDocumentId('abc123');
+        $analyticsData->setRequestId('123abc');
+
+        $record = Record::create();
+        $record->setAnalyticsData($analyticsData);
+        $record->CustomField = Field::create('raw', 'formatted');
+
+        $expected = [
+            'AnalyticsData' => [
+                'indexName' => 'our-index-main',
+                'queryString' => 'search string',
+                'documentId' => 'abc123',
+                'requestId' => '123abc',
+            ],
+            'CustomFieldText' => [
+                'raw' => 'raw',
+                'formatted' => 'formatted',
+            ],
+        ];
+
+        $this->assertEqualsCanonicalizing($expected, $record->jsonSerialize());
+    }
+
+    public function testJsonSerializeEmpty(): void
+    {
+        $record = Record::create();
+
+        $expected = [
+            'AnalyticsData' => null,
+        ];
+
+        $this->assertEqualsCanonicalizing($expected, $record->jsonSerialize());
     }
 
 }

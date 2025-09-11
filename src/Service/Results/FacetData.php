@@ -2,79 +2,91 @@
 
 namespace SilverStripe\Discoverer\Service\Results;
 
-use SilverStripe\View\ViewableData;
+use JsonSerializable;
+use SilverStripe\Model\ModelData;
 
-class FacetData extends ViewableData
+class FacetData extends ModelData implements JsonSerializable
 {
 
-    private int $count;
+    private ?int $count = null;
 
-    private string|int|float $from;
+    private string|int|float|null $from = null;
 
-    private string|int|float $to;
+    private string|int|float|null $to = null;
 
-    private string $name;
+    private ?string $name = null;
 
-    private string|int|float $value;
+    private string|int|float|null $value = null;
 
-    public function getCount(): int
+    public function getCount(): ?int
     {
         return $this->count;
     }
 
-    public function setCount(int $count): self
+    public function setCount(int $count): static
     {
         $this->count = $count;
 
         return $this;
     }
 
-    public function getFrom(): float|int|string
+    public function getFrom(): float|int|string|null
     {
         return $this->from;
     }
 
-    public function setFrom(float|int|string $from): self
+    public function setFrom(float|int|string $from): static
     {
         $this->from = $from;
 
         return $this;
     }
 
-    public function getTo(): float|int|string
+    public function getTo(): float|int|string|null
     {
         return $this->to;
     }
 
-    public function setTo(float|int|string $to): self
+    public function setTo(float|int|string $to): static
     {
         $this->to = $to;
 
         return $this;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function setName(string $name): self
+    public function setName(string $name): static
     {
         $this->name = $name;
 
         return $this;
     }
 
-    public function getValue(): string|int|float
+    public function getValue(): string|int|float|null
     {
         return $this->value;
     }
 
-    public function setValue(string|int|float $value): self
+    public function setValue(string|int|float $value): static
     {
         $this->value = $value;
 
         return $this;
+    }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'count' => $this->getCount(),
+            'from' => $this->getFrom(),
+            'to' => $this->getTo(),
+            'name' => $this->getName(),
+            'value' => $this->getValue(),
+        ];
     }
 
 }

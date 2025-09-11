@@ -2,11 +2,11 @@
 
 namespace SilverStripe\Discoverer\Service\Results;
 
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\FieldType\DBHTMLText;
-use SilverStripe\View\ViewableData;
+use JsonSerializable;
+use SilverStripe\Model\List\ArrayList;
+use SilverStripe\Model\ModelData;
 
-class Facet extends ViewableData
+class Facet extends ModelData implements JsonSerializable
 {
 
     /**
@@ -27,7 +27,7 @@ class Facet extends ViewableData
         $this->data = ArrayList::create();
     }
 
-    public function forTemplate(): DBHTMLText
+    public function forTemplate(): string
     {
         return $this->renderWith(static::class);
     }
@@ -50,7 +50,7 @@ class Facet extends ViewableData
         return $this->name;
     }
 
-    public function setName(?string $name): self
+    public function setName(?string $name): static
     {
         $this->name = $name;
 
@@ -62,7 +62,7 @@ class Facet extends ViewableData
         return $this->fieldName;
     }
 
-    public function setFieldName(?string $fieldName): self
+    public function setFieldName(?string $fieldName): static
     {
         $this->fieldName = $fieldName;
 
@@ -74,11 +74,27 @@ class Facet extends ViewableData
         return $this->type;
     }
 
-    public function setType(?string $type): self
+    public function setType(?string $type): static
     {
         $this->type = $type;
 
         return $this;
+    }
+
+    public function jsonSerialize(): array
+    {
+        $data = [];
+
+        foreach ($this->getData() as $facetData) {
+            $data[] = $facetData->jsonSerialize();
+        }
+
+        return [
+            'data' => $data,
+            'name' => $this->getName(),
+            'fieldName' => $this->getFieldName(),
+            'type' => $this->getType(),
+        ];
     }
 
 }

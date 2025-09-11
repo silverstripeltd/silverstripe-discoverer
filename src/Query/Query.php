@@ -15,10 +15,10 @@ class Query
 
     use Injectable;
 
-    public const SORT_ASC = 'ASC';
-    public const SORT_DESC = 'DESC';
+    public const string SORT_ASC = 'ASC';
+    public const string SORT_DESC = 'DESC';
 
-    public const SORTS = [
+    public const array SORTS = [
         self::SORT_ASC,
         self::SORT_DESC,
     ];
@@ -72,14 +72,14 @@ class Query
         return $this->facetCollection;
     }
 
-    public function addFacet(Facet $facet): self
+    public function addFacet(Facet $facet): static
     {
         $this->facetCollection->addFacet($facet);
 
         return $this;
     }
 
-    public function addFacets(array $facets): self
+    public function addFacets(array $facets): static
     {
         foreach ($facets as $facet) {
             $this->addFacet($facet);
@@ -97,7 +97,7 @@ class Query
      * @param array $filters [string $target, mixed $value, string $comparison] expected for each clause
      * @throws Exception
      */
-    public function filterAny(array $filters): self
+    public function filterAny(array $filters): static
     {
         $criteria = Criteria::createAny();
 
@@ -120,7 +120,7 @@ class Query
     /**
      * @throws Exception
      */
-    public function filter(Clause|string $targetOrClause, mixed $value = null, ?string $comparison = null): self
+    public function filter(Clause|string $targetOrClause, mixed $value = null, ?string $comparison = null): static
     {
         $this->criteria->filter($targetOrClause, $value, $comparison);
 
@@ -131,7 +131,7 @@ class Query
      * @param string $direction use the SORT_ constants defined in this class
      * @throws Exception
      */
-    public function addSort(string $fieldName, string $direction = self::SORT_ASC): self
+    public function addSort(string $fieldName, string $direction = self::SORT_ASC): static
     {
         if (!in_array($direction, self::SORTS, true)) {
             throw new Exception(sprintf('Invalid sort $direction "%s"', $direction));
@@ -148,7 +148,7 @@ class Query
      * @param array $sortMethods [$fieldName => $direction]
      * @throws Exception
      */
-    public function addSorts(array $sortMethods): self
+    public function addSorts(array $sortMethods): static
     {
         foreach ($sortMethods as $fieldName => $direction) {
             $this->addSort($fieldName, $direction);
@@ -162,14 +162,14 @@ class Query
         return $this->sort;
     }
 
-    public function addTag(string $tag): self
+    public function addTag(string $tag): static
     {
         $this->tags[] = $tag;
 
         return $this;
     }
 
-    public function setTags(array $tags): self
+    public function setTags(array $tags): static
     {
         $this->tags = $tags;
 
@@ -189,7 +189,7 @@ class Query
         return $this->resultFields;
     }
 
-    public function addResultField(string $fieldName, int $length = 0, bool $formatted = false): self
+    public function addResultField(string $fieldName, int $length = 0, bool $formatted = false): static
     {
         $resultField = ResultField::create($fieldName, $length, $formatted);
 
@@ -203,7 +203,7 @@ class Query
         return $this->searchFields;
     }
 
-    public function addSearchField(string $field, int $weight = 0): self
+    public function addSearchField(string $field, int $weight = 0): static
     {
         $this->searchFields[$field] = $weight;
 
@@ -215,7 +215,7 @@ class Query
      * of both. Basically, if the key is an int, we'll assume the value is the fieldName, and you didn't want a weight
      * for that fieldName
      */
-    public function addSearchFields(array $searchFields): self
+    public function addSearchFields(array $searchFields): static
     {
         foreach ($searchFields as $key => $value) {
             if (is_int($key)) {
@@ -232,7 +232,7 @@ class Query
         return $this;
     }
 
-    public function setPaginationOffset(int $paginationOffset): self
+    public function setPaginationOffset(int $paginationOffset): static
     {
         $this->paginationOffset = $paginationOffset;
 
@@ -244,7 +244,7 @@ class Query
         return $this->paginationOffset;
     }
 
-    public function setPaginationLimit(int $paginationLimit): self
+    public function setPaginationLimit(int $paginationLimit): static
     {
         $this->paginationLimit = $paginationLimit;
 
@@ -261,7 +261,7 @@ class Query
         return $this->paginationLimit !== null && $this->paginationOffset !== null;
     }
 
-    public function setPagination(int $limit, int $offset): self
+    public function setPagination(int $limit, int $offset): static
     {
         $this->setPaginationLimit($limit);
         $this->setPaginationOffset($offset);

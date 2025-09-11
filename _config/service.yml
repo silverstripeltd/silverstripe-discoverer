@@ -1,0 +1,7 @@
+---
+Name: discoverer-service
+---
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Discoverer\Service\SearchService:
+    constructor:
+      indexPrefix: '`SS_ENVIRONMENT_TYPE`'

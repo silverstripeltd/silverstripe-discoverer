@@ -2,18 +2,29 @@
 
 namespace SilverStripe\Discoverer\Service\Results;
 
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\FieldType\DBHTMLText;
+use JsonSerializable;
+use SilverStripe\Model\List\ArrayList;
 
 /**
  * @extends ArrayList<Facet>
  */
-class Facets extends ArrayList
+class Facets extends ArrayList implements JsonSerializable
 {
 
-    public function forTemplate(): DBHTMLText
+    public function forTemplate(): string
     {
         return $this->renderWith(static::class);
+    }
+
+    public function jsonSerialize(): array
+    {
+        $facets = [];
+
+        foreach ($this->items as $item) {
+            $facets[] = $item->jsonSerialize();
+        }
+
+        return $facets;
     }
 
 }

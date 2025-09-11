@@ -8,6 +8,6 @@ use SilverStripe\Discoverer\Service\Results\Suggestions;
 interface SpellingSuggestionAdaptor
 {
 
-    public function process(Suggestion $suggestion, string $indexName): Suggestions;
+    public function process(Suggestion $suggestion, string $indexSuffix): Suggestions;
 
 }

@@ -21,10 +21,10 @@ class Criteria implements Clause
 
     use Injectable;
 
-    public const CONJUNCTION_AND = 'AND';
-    public const CONJUNCTION_OR = 'OR';
+    public const string CONJUNCTION_AND = 'AND';
+    public const string CONJUNCTION_OR = 'OR';
 
-    public const CONJUNCTIONS = [
+    public const array CONJUNCTIONS = [
         self::CONJUNCTION_AND,
         self::CONJUNCTION_OR,
     ];
@@ -52,12 +52,12 @@ class Criteria implements Clause
         }
     }
 
-    public static function createAny(): self
+    public static function createAny(): static
     {
         return static::create(self::CONJUNCTION_OR);
     }
 
-    public static function createAll(): self
+    public static function createAll(): static
     {
         return static::create(self::CONJUNCTION_AND);
     }
@@ -77,7 +77,7 @@ class Criteria implements Clause
         return $this->conjunction;
     }
 
-    public function addClause(Clause $clause): self
+    public function addClause(Clause $clause): static
     {
         $this->clauses[] = $clause;
 
@@ -92,7 +92,7 @@ class Criteria implements Clause
     /**
      * @throws Exception
      */
-    public function filter(Clause|string $targetOrClause, mixed $value = null, ?string $comparison = null): self
+    public function filter(Clause|string $targetOrClause, mixed $value = null, ?string $comparison = null): static
     {
         if ($targetOrClause instanceof Clause) {
             $this->addClause($targetOrClause);

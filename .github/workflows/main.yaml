@@ -1,13 +1,22 @@
 name: CI
 
 on:
-  push:
   pull_request:
-  workflow_dispatch:
+    branches:
+      - "main"
+      - "1"
+      - "2"
+      - "release/**"
+      - "feature/**"
+  push:
+    branches:
+      - "main"
+      - "1"
+      - "2"
 
 jobs:
   ci:
-    uses: silverstripe/gha-ci/.github/workflows/ci.yml@v1
+    uses: silverstripe/gha-ci/.github/workflows/ci.yml@v2
     with:
       # disable auto detection of JS tests (remove if any JS tests are added)
       js: false

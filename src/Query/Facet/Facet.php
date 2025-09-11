@@ -14,10 +14,10 @@ class Facet
 
     use Injectable;
 
-    public const TYPE_VALUE = 'VALUE';
-    public const TYPE_RANGE = 'RANGE';
+    public const string TYPE_VALUE = 'VALUE';
+    public const string TYPE_RANGE = 'RANGE';
 
-    public const TYPES = [
+    public const array TYPES = [
         self::TYPE_VALUE,
         self::TYPE_RANGE,
     ];
@@ -43,7 +43,7 @@ class Facet
         return $this->limit;
     }
 
-    public function setLimit(?int $limit): self
+    public function setLimit(?int $limit): static
     {
         $this->limit = $limit;
 
@@ -55,7 +55,7 @@ class Facet
         return $this->name;
     }
 
-    public function setName(?string $name): self
+    public function setName(?string $name): static
     {
         $this->name = $name;
 
@@ -67,7 +67,7 @@ class Facet
         return $this->fieldName;
     }
 
-    public function setFieldName(?string $fieldName): self
+    public function setFieldName(?string $fieldName): static
     {
         $this->fieldName = $fieldName;
 
@@ -83,7 +83,7 @@ class Facet
         string|int|float|null $from = null,
         string|int|float|null $to = null,
         ?string $name = null
-    ): self {
+    ): static {
         // If a range is added, then we'll update the type
         $this->type = self::TYPE_RANGE;
         $range = FacetRange::create($from, $to, $name);
@@ -101,7 +101,7 @@ class Facet
     /**
      * @throws Exception
      */
-    public function setType(?string $type): self
+    public function setType(?string $type): static
     {
         if (!in_array($type, self::TYPES, true)) {
             throw new Exception(sprintf('Invalid type "%s" provided', $type));

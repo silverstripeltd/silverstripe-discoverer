@@ -4,11 +4,9 @@ namespace SilverStripe\Discoverer\Service\Results;
 
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Discoverer\Query\Query;
-use SilverStripe\ORM\ArrayList;
-use SilverStripe\ORM\FieldType\DBHTMLText;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\List\ArrayList;
 
-class Results extends ViewableData
+class Results extends Response
 {
 
     use Injectable;
@@ -19,17 +17,12 @@ class Results extends ViewableData
 
     private ?string $indexName = null;
 
-    private bool $success = false;
-
-    public function __construct(private readonly Query $query)
+    public function __construct(int $statusCode, private readonly Query $query)
     {
+        parent::__construct($statusCode);
+
         $this->records = Records::create(ArrayList::create());
         $this->facets = Facets::create();
-    }
-
-    public function forTemplate(): DBHTMLText
-    {
-        return $this->renderWith(static::class);
     }
 
     public function getRecords(): ?Records
@@ -37,7 +30,7 @@ class Results extends ViewableData
         return $this->records;
     }
 
-    public function addRecord(Record $record): self
+    public function addRecord(Record $record): static
     {
         $this->records->add($record);
 
@@ -49,7 +42,7 @@ class Results extends ViewableData
         return $this->facets;
     }
 
-    public function addFacet(Facet $facet): self
+    public function addFacet(Facet $facet): static
     {
         $this->facets->add($facet);
 
@@ -66,23 +59,19 @@ class Results extends ViewableData
         return $this->indexName;
     }
 
-    public function setIndexName(?string $indexName): self
+    public function setIndexName(?string $indexName): static
     {
         $this->indexName = $indexName;
 
         return $this;
     }
 
-    public function isSuccess(): bool
+    public function jsonSerialize(): array
     {
-        return $this->success;
-    }
-
-    public function setSuccess(bool $success): Results
-    {
-        $this->success = $success;
-
-        return $this;
+        return [
+            'records' => $this->getRecords()->jsonSerialize(),
+            'facets' => $this->getFacets()->jsonSerialize(),
+        ];
     }
 
 }

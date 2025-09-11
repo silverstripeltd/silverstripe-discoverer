@@ -3,17 +3,20 @@
 namespace SilverStripe\Discoverer\Service\Results;
 
 use Exception;
+use JsonSerializable;
 use SilverStripe\Control\Controller;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
-use SilverStripe\ORM\FieldType\DBHTMLText;
-use SilverStripe\View\ViewableData;
+use SilverStripe\Model\ModelData;
+use stdClass;
 
-class Record extends ViewableData
+class Record extends ModelData implements JsonSerializable
 {
 
     private ?AnalyticsData $analyticsData = null;
 
-    public function forTemplate(): DBHTMLText
+    private array $fields = [];
+
+    public function forTemplate(): string
     {
         return $this->renderWith(static::class);
     }
@@ -50,18 +53,37 @@ class Record extends ViewableData
     }
 
     /**
-     * @param string $property
-     * @param mixed $value
      * @throws Exception
-     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
-    public function __set($property, $value): void
+    public function __set(string $property, mixed $value): void
     {
         if (!$value instanceof Field) {
             throw new Exception(sprintf('Field value must be an instance of %s', Field::class));
         }
 
+        // Keep track of what fields have been added (atm, mostly just used for jsonSerialize, as we have no way of
+        // retrieving dynamic data if we don't want what fields to look up)
+        $this->fields[] = $property;
+
         parent::__set($property, $value);
+    }
+
+    public function jsonSerialize(): array|stdClass
+    {
+        $data = [
+            'AnalyticsData' => $this->analyticsData?->jsonSerialize() ?? null,
+        ];
+
+        foreach ($this->fields as $field) {
+            $data[$field] = $this->__get($field)->jsonSerialize();
+        }
+
+        if (!$data) {
+            // Return an empty stdClass, so that json_encode provides an empty object (rather than an empty array)
+            return new stdClass();
+        }
+
+        return $data;
     }
 
 }
