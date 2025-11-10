@@ -3,14 +3,28 @@
 namespace SilverStripe\Discoverer\Tests\Service\Results;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use SilverStripe\Control\Controller;
+use SilverStripe\Assets\Dev\TestAssetStore;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
 use SilverStripe\Discoverer\Service\Results\Field;
 use SilverStripe\Discoverer\Service\Results\Record;
+use SilverStripe\View\SSViewer;
 
 class RecordTest extends SapphireTest
 {
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        SSViewer::config()->set('source_file_comments', false);
+        TestAssetStore::activate('RecordTest');
+    }
+
+    protected function tearDown(): void
+    {
+        TestAssetStore::reset();
+        parent::tearDown();
+    }
 
     public function testAnalyticsData(): void
     {
@@ -27,6 +41,13 @@ class RecordTest extends SapphireTest
         $record->setAnalyticsData($analyticsData);
 
         $this->assertEquals($expectedLink, $record->getDecoratedLink($link));
+    }
+
+    public function testGetDecoratedLinkTemplate(): void
+    {
+        $actual = Record::create()->renderWith('DecoratedLink', ['Link' => Field::create('http://www.example.com')]);
+
+        $this->assertSame('<a href="SilverStripe\Discoverer\Service\Results\Field">Link</a><a href="http://www.example.com">Link</a>', trim($actual->RAW()));
     }
 
     public static function provideLinks(): array
