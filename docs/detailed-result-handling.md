@@ -78,7 +78,7 @@ the two, as it will automatically consider whether there are existing GET params
 The following example assumes that you have indexed a `title` and `link` for each search Document.
 
 ```silverstripe
-<a href="{$getDecoratedLink($Link)}">$Title</a>
+<a href="{$getDecoratedLink($Link.forTemplate)}">$Title</a>
 ```
 
 **Note:** Analytics is perhaps the most likely feature to be missing from search service providers. EG: It is
