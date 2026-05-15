@@ -9,6 +9,7 @@
   * [Pagination](#pagination)
   * [Filters](#filters)
   * [Facets](#facets)
+  * [Tags](#tags)
 
 ## `SearchService` class
 
