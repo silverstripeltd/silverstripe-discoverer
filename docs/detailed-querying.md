@@ -32,6 +32,7 @@ etc.
 * [Pagination](#pagination)
 * [Filters](#filters)
 * [Facets](#facets)
+* [Tags](#tags)
 
 ### Query string
 
@@ -411,4 +412,19 @@ $query->addFacet($facetTwo);
 
 // An array method is also available, and it expects an array of facets
 $query->addFacets([$facet, $facetTwo]);
+```
+
+### Tags
+
+Tag support will also differ between search service providers. The intention is to send a value with a search query that can be used for tracking and segmenting query logs.
+
+```PHP
+
+// Create your Query
+$query = Query::create('query string');
+
+// add one or more tags to be sent with this query
+$query->addTag('global');
+$query->addTag('header');
+
 ```
