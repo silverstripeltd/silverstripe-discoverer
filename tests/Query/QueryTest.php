@@ -36,6 +36,25 @@ class QueryTest extends SapphireTest
         $this->assertEquals('modified query string', $query->getQueryString());
     }
 
+    public function testPrecisionDefaultsToNull(): void
+    {
+        $query = Query::create();
+
+        $this->assertNull($query->getPrecision());
+    }
+
+    public function testSetPrecision(): void
+    {
+        $query = Query::create();
+
+        $this->assertSame($query, $query->setPrecision(10));
+        $this->assertEquals(10, $query->getPrecision());
+
+        $query->setPrecision(null);
+
+        $this->assertNull($query->getPrecision());
+    }
+
     public function testAddSort(): void
     {
         $query = Query::create();

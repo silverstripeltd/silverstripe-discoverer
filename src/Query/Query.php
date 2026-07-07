@@ -50,6 +50,8 @@ class Query
 
     private array $tags = [];
 
+    private ?int $precision = null;
+
     public function __construct(private string $queryString = '')
     {
         // See the docblock on self::$filter for some details
@@ -179,6 +181,24 @@ class Query
     public function getTags(): array
     {
         return $this->tags;
+    }
+
+    /**
+     * Override the engine's configured precision for this query only. Not all search services support precision tuning;
+     * where unsupported, this value is ignored. When null, the engine's configured precision is used.
+     *
+     * @param int|null $precision A precision level, or null to defer to the engine's configured precision
+     */
+    public function setPrecision(?int $precision): static
+    {
+        $this->precision = $precision;
+
+        return $this;
+    }
+
+    public function getPrecision(): ?int
+    {
+        return $this->precision;
     }
 
     /**
