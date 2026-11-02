@@ -5,6 +5,7 @@
   * [How fields are made available to you](#how-fields-are-made-available-to-you)
   * [Pagination](#pagination)
   * [Adding analytics](#adding-analytics)
+    * [Signing analytics links](#signing-analytics-links)
 
 Ok, so you've written some queries and run some searches, and now you want to understand how that information is going
 to be made available for use in (say) a Silverstripe template.
@@ -86,3 +87,28 @@ available through Elastic App Search, but not currently available through Elasti
 be that if you switched to a new service that did not support analytics, then that portion of your search would be
 silently excluded - allowing the core functionality of search to remain functioning without any code changes. **At
 some point**, it would be great if Analytics became a CMS feature, rather than us relying on our service providers.
+
+#### Signing analytics links
+
+Without signing, the `_searchAnalytics` param is plain base64 encoded JSON, so anyone can construct or reuse a link and
+have a click recorded. To make sure clicks are only recorded for links that your site generated, set a signing secret:
+
+* `SEARCH_ANALYTICS_SECRET="<long random string>"`
+
+You can generate a secret with:
+
+```shell
+php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
+```
+
+When a secret is set, each decorated link also carries a timestamp and an HMAC-SHA256 signature. Clicks are not
+recorded when the signature is missing or invalid, or when the link is older than `max_link_age` (the page itself is
+always rendered as normal). The default is one hour, and `0` disables the age check:
+
+```yaml
+SilverStripe\Discoverer\Analytics\AnalyticsMiddleware:
+  max_link_age: 3600
+```
+
+**Note:** If your results pages are cached (EG: by a CDN, static publishing or partial caching), set `max_link_age` to
+at least that cache lifetime, otherwise clicks from cached pages will not be recorded.

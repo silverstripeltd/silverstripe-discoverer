@@ -5,11 +5,18 @@ namespace SilverStripe\Discoverer\Analytics;
 use JsonSerializable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Model\ModelData;
+use SilverStripe\ORM\FieldType\DBDatetime;
 
 class AnalyticsData extends ModelData implements JsonSerializable
 {
 
     use Injectable;
+
+    public const string QUERY_PARAM = '_searchAnalytics';
+
+    public const string KEY_TIMESTAMP = 'ts';
+
+    public const string KEY_SIGNATURE = 'sig';
 
     private ?string $indexName = null;
 
@@ -18,6 +25,10 @@ class AnalyticsData extends ModelData implements JsonSerializable
     private mixed $documentId = null;
 
     private mixed $requestId = null;
+
+    private ?int $timestamp = null;
+
+    private ?string $signature = null;
 
     public function getIndexName(): ?string
     {
@@ -67,16 +78,58 @@ class AnalyticsData extends ModelData implements JsonSerializable
         return $this;
     }
 
+    /**
+     * Unix timestamp of when a signed link was generated. Only present on data decoded from a signed link.
+     */
+    public function getTimestamp(): ?int
+    {
+        return $this->timestamp;
+    }
+
+    public function setTimestamp(?int $timestamp): AnalyticsData
+    {
+        $this->timestamp = $timestamp;
+
+        return $this;
+    }
+
+    /**
+     * HMAC of the payload and timestamp. Only present on data decoded from a signed link.
+     */
+    public function getSignature(): ?string
+    {
+        return $this->signature;
+    }
+
+    public function setSignature(?string $signature): AnalyticsData
+    {
+        $this->signature = $signature;
+
+        return $this;
+    }
+
+    /**
+     * When SEARCH_ANALYTICS_SECRET is set, the encoded payload also carries a timestamp and signature so that the
+     * click can be verified when the link is followed.
+     */
     public function forTemplate(): string
     {
-        $data = $this->getDataArray();
+        $data = $this->getPayload();
 
         if (!$data) {
             return '';
         }
 
+        $signer = AnalyticsSigner::singleton();
+
+        if ($signer->isEnabled()) {
+            $timestamp = DBDatetime::now()->getTimestamp();
+            $data[self::KEY_TIMESTAMP] = $timestamp;
+            $data[self::KEY_SIGNATURE] = $signer->sign($this->getPayload(), $timestamp);
+        }
+
         $query = [
-            '_searchAnalytics' => base64_encode(json_encode($data)),
+            self::QUERY_PARAM => base64_encode(json_encode($data)),
         ];
 
         return http_build_query($query);
@@ -92,7 +145,12 @@ class AnalyticsData extends ModelData implements JsonSerializable
         ];
     }
 
-    private function getDataArray(): array
+    /**
+     * The populated analytics fields, as encoded into links and covered by the signature.
+     *
+     * @return array<string, mixed>
+     */
+    public function getPayload(): array
     {
         $data = [];
 
