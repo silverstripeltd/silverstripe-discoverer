@@ -122,8 +122,9 @@ class AnalyticsRequestValidator
 
     /**
      * With require_same_origin on: browsers whose user agent proves they send Fetch Metadata on every request to a
-     * secure origin, so an HTTPS request claiming one of them without Fetch Metadata comes from a script. Each entry has a pattern whose first
-     * capture group is the browser version, and the minimum version that sends Fetch Metadata.
+     * secure origin, so an HTTPS request claiming one of them without Fetch Metadata comes from a script. Each entry
+     * has a pattern whose first capture group is the browser version, and the minimum version that sends Fetch
+     * Metadata.
      *
      * @config
      */
@@ -281,7 +282,9 @@ class AnalyticsRequestValidator
         }
 
         // Browsers only send Fetch Metadata to secure origins, so its absence over plain http says nothing
-        if (Director::is_https($request) && $this->isFetchMetadataExpected((string) $request->getHeader('User-Agent'))) {
+        $userAgent = (string) $request->getHeader('User-Agent');
+
+        if (Director::is_https($request) && $this->isFetchMetadataExpected($userAgent)) {
             return self::REASON_MISSING_FETCH_METADATA;
         }
 
