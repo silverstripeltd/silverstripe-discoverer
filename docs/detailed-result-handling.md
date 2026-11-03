@@ -106,6 +106,16 @@ typed or bookmarked URLs and background fetches send different values and are no
 these headers at all, so those requests are recorded unless you enable `require_referer_without_fetch_metadata`, which
 then requires a `Referer` from your site.
 
+You can also require proof that a person triggered the navigation. Chromium-based browsers and Firefox send
+`Sec-Fetch-User: ?1` only when a navigation comes from a click, middle-click or key press, so a navigation without it
+was started by a script or an automated browser. Safari and browsers on iOS don't send this header, so it is only
+required from user agents that do. It is off by default:
+
+```yaml
+SilverStripe\Discoverer\Analytics\AnalyticsRequestValidator:
+  require_user_activation: true
+```
+
 Crawler detection uses [`jaybizzle/crawler-detect`](https://github.com/JayBizzle/Crawler-Detect) when it is installed,
 and a small built-in pattern otherwise. Installing the library is recommended:
 
@@ -123,6 +133,10 @@ SilverStripe\Discoverer\Analytics\AnalyticsRequestValidator:
   ignore_crawlers: true
   require_same_origin: true
   require_referer_without_fetch_metadata: false
+  require_user_activation: false
+  # User agents expected to send Sec-Fetch-User, and exclusions (iOS browsers and Android WebViews don't send it)
+  user_activation_user_agent_pattern: '/\b(Chrome|Chromium|Firefox)\//i'
+  user_activation_excluded_user_agent_pattern: '/CriOS|FxiOS|EdgiOS|; wv\)/i'
 
 SilverStripe\Discoverer\Analytics\CrawlerDetector:
   # Set to false to always use user_agent_pattern, even when jaybizzle/crawler-detect is installed

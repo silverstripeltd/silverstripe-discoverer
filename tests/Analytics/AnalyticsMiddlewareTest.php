@@ -35,6 +35,17 @@ class AnalyticsMiddlewareTest extends SapphireTest
     private const string BROWSER_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 '
         . '(KHTML, like Gecko) Version/17.0 Safari/605.1.15';
 
+    private const string CHROME_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, '
+        . 'like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+    private const string FIREFOX_USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:121.0) Gecko/20100101 Firefox/121.0';
+
+    private const string CHROME_IOS_USER_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) '
+        . 'AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/120.0.6099.119 Mobile/15E148 Safari/604.1';
+
+    private const string ANDROID_WEBVIEW_USER_AGENT = 'Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/UQ1A; wv) '
+        . 'AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0.6099.193 Mobile Safari/537.36';
+
     private const string PAGE_BODY = 'rendered page';
 
     private const string QUERY_PARAM = '_searchAnalytics';
@@ -211,6 +222,46 @@ class AnalyticsMiddlewareTest extends SapphireTest
         $this->dispatch($this->createRequest(headers: ['Sec-Fetch-Site' => 'cross-site']));
 
         $this->assertCount(1, $this->adaptor->processed);
+    }
+
+    public function testUserActivationIsNotRequiredByDefault(): void
+    {
+        $this->dispatch($this->createRequest(headers: ['User-Agent' => self::CHROME_USER_AGENT]));
+
+        $this->assertCount(1, $this->adaptor->processed);
+    }
+
+    #[DataProvider('provideUserActivationCases')]
+    public function testUserActivationIsRequiredFromSupportingBrowsersWhenConfigured(
+        array $headers,
+        int $expectedCount
+    ): void {
+        AnalyticsRequestValidator::config()->set('require_user_activation', true);
+
+        $this->dispatch($this->createRequest(headers: $headers));
+
+        $this->assertCount($expectedCount, $this->adaptor->processed);
+    }
+
+    public static function provideUserActivationCases(): array
+    {
+        return [
+            'chrome click' => [['User-Agent' => self::CHROME_USER_AGENT, 'Sec-Fetch-User' => '?1'], 1],
+            'chrome without activation' => [['User-Agent' => self::CHROME_USER_AGENT], 0],
+            'chrome with invalid activation value' => [
+                ['User-Agent' => self::CHROME_USER_AGENT, 'Sec-Fetch-User' => '?0'],
+                0,
+            ],
+            'firefox click' => [['User-Agent' => self::FIREFOX_USER_AGENT, 'Sec-Fetch-User' => '?1'], 1],
+            'firefox without activation' => [['User-Agent' => self::FIREFOX_USER_AGENT], 0],
+            'safari never sends the header' => [['User-Agent' => self::BROWSER_USER_AGENT], 1],
+            'chrome on ios uses webkit' => [['User-Agent' => self::CHROME_IOS_USER_AGENT], 1],
+            'android webview' => [['User-Agent' => self::ANDROID_WEBVIEW_USER_AGENT], 1],
+            'chrome without fetch metadata' => [
+                ['User-Agent' => self::CHROME_USER_AGENT, 'Sec-Fetch-Site' => null, 'Sec-Fetch-Mode' => null],
+                1,
+            ],
+        ];
     }
 
     #[DataProvider('provideUnsuccessfulStatusCodes')]

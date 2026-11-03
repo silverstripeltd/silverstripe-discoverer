@@ -27,12 +27,16 @@ use SilverStripe\Core\Injector\Injectable;
  *    from this site.
  * 2. The user agent. An empty user agent, or one that matches a known crawler, bot, monitoring tool or HTTP library
  *    (see CrawlerDetector), is rejected.
+ * 3. Optionally, user activation. Browsers that support it send "Sec-Fetch-User: ?1" only when a person triggered the
+ *    navigation (click, middle-click, keyboard), so a navigation without it was started by a script or an automated
+ *    browser. Not every browser sends this header (notably Safari and every browser on iOS), so it is only required
+ *    from user agents matched by user_activation_user_agent_pattern.
  *
  * On top of that, only GET requests (following a link) with a successful (2xx) response are recorded.
  *
  * Checks run in this order:
  *
- * 1. Request checks: HTTP method, crawler user agent, same-origin navigation
+ * 1. Request checks: HTTP method, crawler user agent, same-origin navigation, user activation
  * 2. Response check: the page rendered successfully
  * 3. The updateShouldProcess() extension hook, which can veto or allow the click
  *
@@ -52,6 +56,8 @@ class AnalyticsRequestValidator
 
     public const string REASON_CROSS_ORIGIN = 'not_same_origin_navigation';
 
+    public const string REASON_NO_USER_ACTIVATION = 'no_user_activation';
+
     public const string REASON_UNSUCCESSFUL_RESPONSE = 'unsuccessful_response';
 
     public const string REASON_EXTENSION = 'rejected_by_extension';
@@ -59,6 +65,8 @@ class AnalyticsRequestValidator
     public const string FETCH_SITE_SAME_ORIGIN = 'same-origin';
 
     public const string FETCH_MODE_NAVIGATE = 'navigate';
+
+    public const string FETCH_USER_ACTIVATED = '?1';
 
     /**
      * HTTP methods that may record a click. Following a link is always a GET request.
@@ -97,6 +105,29 @@ class AnalyticsRequestValidator
      * @config
      */
     private static bool $require_referer_without_fetch_metadata = false;
+
+    /**
+     * Require "Sec-Fetch-User: ?1" (a navigation triggered by a person) from browsers that send it. Off by default:
+     * enable it once you have confirmed the browsers your visitors use send the header.
+     *
+     * @config
+     */
+    private static bool $require_user_activation = false;
+
+    /**
+     * User agents expected to send Sec-Fetch-User on user-activated navigations: Chromium-based browsers and Firefox
+     *
+     * @config
+     */
+    private static string $user_activation_user_agent_pattern = '/\b(Chrome|Chromium|Firefox)\//i';
+
+    /**
+     * User agents excluded from the user activation check even when they match user_activation_user_agent_pattern:
+     * browsers on iOS (which all use WebKit, which does not send Sec-Fetch-User) and Android WebViews (in-app browsers)
+     *
+     * @config
+     */
+    private static string $user_activation_excluded_user_agent_pattern = '/CriOS|FxiOS|EdgiOS|; wv\)/i';
 
     private static array $dependencies = [
         'logger' => '%$' . LoggerInterface::class,
@@ -155,6 +186,10 @@ class AnalyticsRequestValidator
             return self::REASON_CROSS_ORIGIN;
         }
 
+        if ($this->config()->get('require_user_activation') && !$this->hasUserActivation($request)) {
+            return self::REASON_NO_USER_ACTIVATION;
+        }
+
         return null;
     }
 
@@ -171,6 +206,35 @@ class AnalyticsRequestValidator
         }
 
         return null;
+    }
+
+    /**
+     * Requests without Fetch Metadata, and from browsers that never send Sec-Fetch-User, cannot be judged by this
+     * header, so they pass.
+     */
+    private function hasUserActivation(HTTPRequest $request): bool
+    {
+        if (!$request->getHeader('Sec-Fetch-Site')) {
+            return true;
+        }
+
+        if (!$this->isUserActivationExpected((string) $request->getHeader('User-Agent'))) {
+            return true;
+        }
+
+        return $request->getHeader('Sec-Fetch-User') === self::FETCH_USER_ACTIVATED;
+    }
+
+    private function isUserActivationExpected(string $userAgent): bool
+    {
+        $pattern = (string) $this->config()->get('user_activation_user_agent_pattern');
+        $excludedPattern = (string) $this->config()->get('user_activation_excluded_user_agent_pattern');
+
+        if ($pattern === '' || preg_match($pattern, $userAgent) !== 1) {
+            return false;
+        }
+
+        return $excludedPattern === '' || preg_match($excludedPattern, $userAgent) !== 1;
     }
 
     private function isAllowedMethod(HTTPRequest $request): bool
