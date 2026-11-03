@@ -129,9 +129,10 @@ on your site arrives as `Sec-Fetch-Site: same-origin`, `Sec-Fetch-Mode: navigate
   Fetch Metadata as a click, so they're identified by their `Sec-Purpose` or `Purpose` header instead. If the visitor
   then opens a prefetched or prerendered result, the browser may use the loaded copy without a new request, and that
   click isn't recorded.
-* A request without Fetch Metadata is not recorded when its user agent claims a browser that always sends it
-  (Chromium 76+, Firefox 90+, Safari 16.4+), because it comes from a script. Requests from older browsers are
-  recorded, unless you also turn on `require_referer_without_fetch_metadata`, which then requires a `Referer` from
+* On HTTPS, a request without Fetch Metadata is not recorded when its user agent claims a browser that always sends
+  it (Chromium 76+, Firefox 90+, Safari 16.4+), because it comes from a script. Browsers only send Fetch Metadata to
+  secure origins, so this isn't checked over plain http (for example a local development site). Requests from older
+  browsers are recorded, unless you also turn on `require_referer_without_fetch_metadata`, which then requires a `Referer` from
   your site. The browser versions are set in `fetch_metadata_browsers`.
 
 This check also rejects clicks between different origins of one install, such as Subsites or Fluent domains, an http

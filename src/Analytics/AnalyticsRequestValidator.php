@@ -25,9 +25,11 @@ use SilverStripe\Core\Injector\Injectable;
  *   scripts cannot set or change them. A click on a link on this site arrives as Sec-Fetch-Site: same-origin,
  *   Sec-Fetch-Mode: navigate and Sec-Fetch-Dest: document. Other values (links from other sites, typed or bookmarked
  *   URLs, background fetches, iframes) are rejected, and so are speculative loads (prefetch and prerender, flagged by
- *   the Sec-Purpose or Purpose header), which send the same Fetch Metadata as a click. A request without Fetch Metadata
- *   is rejected when its user agent claims a browser version that always sends it (see fetch_metadata_browsers), as
- *   it then comes from a script. Otherwise it is accepted, unless require_referer_without_fetch_metadata is on.
+ *   the Sec-Purpose or Purpose header), which send the same Fetch Metadata as a click. On HTTPS, a request without
+ *   Fetch Metadata is rejected when its user agent claims a browser version that always sends it (see
+ *   fetch_metadata_browsers), as it then comes from a script. Browsers only send Fetch Metadata to secure origins, so
+ *   this isn't checked over plain http. Otherwise the request is accepted, unless
+ *   require_referer_without_fetch_metadata is on.
  * - require_user_activation: browsers that support it send Sec-Fetch-User: ?1 only when a person triggered the
  *   navigation (click, middle-click, keyboard). Not every browser sends it (notably Safari and every browser on
  *   iOS), so it is only required from user agents matched by user_activation_user_agent_pattern.
@@ -119,8 +121,8 @@ class AnalyticsRequestValidator
     private static bool $require_referer_without_fetch_metadata = false;
 
     /**
-     * With require_same_origin on: browsers whose user agent proves they send Fetch Metadata on every request, so a
-     * request claiming one of them without Fetch Metadata comes from a script. Each entry has a pattern whose first
+     * With require_same_origin on: browsers whose user agent proves they send Fetch Metadata on every request to a
+     * secure origin, so an HTTPS request claiming one of them without Fetch Metadata comes from a script. Each entry has a pattern whose first
      * capture group is the browser version, and the minimum version that sends Fetch Metadata.
      *
      * @config
@@ -278,7 +280,8 @@ class AnalyticsRequestValidator
             return $this->getFetchMetadataRejectionReason($request);
         }
 
-        if ($this->isFetchMetadataExpected((string) $request->getHeader('User-Agent'))) {
+        // Browsers only send Fetch Metadata to secure origins, so its absence over plain http says nothing
+        if (Director::is_https($request) && $this->isFetchMetadataExpected((string) $request->getHeader('User-Agent'))) {
             return self::REASON_MISSING_FETCH_METADATA;
         }
 

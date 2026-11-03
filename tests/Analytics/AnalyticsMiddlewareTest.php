@@ -365,6 +365,18 @@ class AnalyticsMiddlewareTest extends SapphireTest
         ];
     }
 
+    public function testMissingFetchMetadataIsRecordedOverHttp(): void
+    {
+        Director::config()->set('alternate_base_url', 'http://www.example.com/');
+
+        $this->dispatch($this->createRequest(headers: [
+            ...self::WITHOUT_FETCH_METADATA,
+            'User-Agent' => self::CHROME_USER_AGENT,
+        ]));
+
+        $this->assertCount(1, $this->adaptor->processed);
+    }
+
     public function testLoggerFailureStillRendersPage(): void
     {
         $this->adaptor->exception = new RuntimeException('Search service unavailable');
