@@ -10,6 +10,7 @@
   * [Filters](#filters)
   * [Facets](#facets)
   * [Tags](#tags)
+* [Blocking search keywords](#blocking-search-keywords)
 
 ## `SearchService` class
 
@@ -429,3 +430,42 @@ $query->addTag('global');
 $query->addTag('header');
 
 ```
+
+## Blocking search keywords
+
+You can stop searches containing particular words or phrases from reaching your search service. A blocked search
+returns successful, empty results, so visitors see "no results" with no indication that the query was blocked. The
+search service isn't called. This applies to searches, query suggestions (autocomplete) and spelling suggestions made
+through `SearchService`.
+
+```yaml
+SilverStripe\Discoverer\Service\Blocklist\ConfigBlockedKeywordProvider:
+  blocked_keywords:
+    - casino
+    - adult video
+```
+
+Matching is on whole words, and ignores case and punctuation:
+
+| Blocked keyword | Query | Blocked? |
+|---|---|---|
+| `casino` | `Online CASINO!` | Yes |
+| `casino` | `casinos near me` | No (not a whole word) |
+| `adult video` | `free adult video clips` | Yes |
+| `adult video` | `adult education video` | No (the words aren't together) |
+
+Patterns and partial-word matches aren't supported, so a keyword can't accidentally block unrelated searches. Blocked
+queries are logged at debug level with the matching keyword only (not the full query).
+
+To load keywords from somewhere else (for example the CMS), implement
+`SilverStripe\Discoverer\Service\Blocklist\BlockedKeywordProvider` and register it with the Injector. The provider is
+called on every search, so cache the list if it comes from a database or remote source.
+
+```yaml
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Discoverer\Service\Blocklist\BlockedKeywordProvider:
+    class: App\Search\MyBlockedKeywordProvider
+```
+
+If the provider throws an error, the search is allowed and the error is logged as a warning, so a blocklist problem
+never stops search working.

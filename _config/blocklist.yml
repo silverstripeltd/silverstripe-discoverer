@@ -1,0 +1,6 @@
+---
+Name: discoverer-blocklist
+---
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Discoverer\Service\Blocklist\BlockedKeywordProvider:
+    class: SilverStripe\Discoverer\Service\Blocklist\ConfigBlockedKeywordProvider
