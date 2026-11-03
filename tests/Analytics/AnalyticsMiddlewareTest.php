@@ -6,6 +6,7 @@ namespace SilverStripe\Discoverer\Tests\Analytics;
 
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
+use Monolog\LogRecord;
 use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use SilverStripe\Control\Director;
@@ -18,6 +19,7 @@ use SilverStripe\Discoverer\Analytics\AnalyticsData;
 use SilverStripe\Discoverer\Analytics\AnalyticsMiddleware;
 use SilverStripe\Discoverer\Analytics\AnalyticsRequestValidator;
 use SilverStripe\Discoverer\Service\Interfaces\ProcessAnalyticsAdaptor;
+use UnexpectedValueException;
 
 class AnalyticsMiddlewareTest extends SapphireTest
 {
@@ -46,6 +48,32 @@ class AnalyticsMiddlewareTest extends SapphireTest
     private const string ANDROID_WEBVIEW_USER_AGENT = 'Mozilla/5.0 (Linux; Android 14; Pixel 8 Build/UQ1A; wv) '
         . 'AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0.6099.193 Mobile Safari/537.36';
 
+    private const string IOS_SAFARI_USER_AGENT = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_1 like Mac OS X) '
+        . 'AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Mobile/15E148 Safari/604.1';
+
+    private const string OLD_CHROME_USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, '
+        . 'like Gecko) Chrome/75.0.3770.100 Safari/537.36';
+
+    private const string OLD_SAFARI_USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 '
+        . '(KHTML, like Gecko) Version/16.3 Safari/605.1.15';
+
+    private const array WITHOUT_FETCH_METADATA = [
+        'User-Agent' => self::OLD_SAFARI_USER_AGENT,
+        'Sec-Fetch-Site' => null,
+        'Sec-Fetch-Mode' => null,
+        'Sec-Fetch-Dest' => null,
+    ];
+
+    /**
+     * Checks that are off by default and recommended in the docs
+     */
+    private const array RECOMMENDED_CHECKS = [
+        'allowed_methods' => ['GET'],
+        'require_successful_response' => true,
+        'ignore_crawlers' => true,
+        'require_same_origin' => true,
+    ];
+
     private const string PAGE_BODY = 'rendered page';
 
     private const string QUERY_PARAM = '_searchAnalytics';
@@ -68,6 +96,8 @@ class AnalyticsMiddlewareTest extends SapphireTest
         $this->logHandler = new TestHandler();
 
         Injector::inst()->registerService($this->adaptor, ProcessAnalyticsAdaptor::class);
+
+        $this->enableRecommendedChecks();
     }
 
     protected function tearDown(): void
@@ -75,6 +105,35 @@ class AnalyticsMiddlewareTest extends SapphireTest
         Environment::setVariables($this->envBackup);
 
         parent::tearDown();
+    }
+
+    #[DataProvider('provideRequestsRejectedByRecommendedChecks')]
+    public function testDefaultConfigRecordsEveryRequest(array $headers, string $method, int $statusCode): void
+    {
+        AnalyticsRequestValidator::config()->set('allowed_methods', []);
+        AnalyticsRequestValidator::config()->set('require_successful_response', false);
+        AnalyticsRequestValidator::config()->set('ignore_crawlers', false);
+        AnalyticsRequestValidator::config()->set('require_same_origin', false);
+
+        $this->dispatch($this->createRequest($method, $headers), $statusCode);
+
+        $this->assertCount(1, $this->adaptor->processed);
+    }
+
+    public static function provideRequestsRejectedByRecommendedChecks(): array
+    {
+        return [
+            'crawler' => [['User-Agent' => 'curl/8.4.0'], 'GET', 200],
+            'post' => [[], 'POST', 200],
+            'cross-site' => [['Sec-Fetch-Site' => 'cross-site'], 'GET', 200],
+            'prefetch' => [['Sec-Purpose' => 'prefetch'], 'GET', 200],
+            'modern browser without fetch metadata' => [
+                ['User-Agent' => self::CHROME_USER_AGENT, 'Sec-Fetch-Site' => null],
+                'GET',
+                200,
+            ],
+            'not found' => [[], 'GET', 404],
+        ];
     }
 
     public function testValidClickIsRecorded(): void
@@ -184,9 +243,9 @@ class AnalyticsMiddlewareTest extends SapphireTest
         ];
     }
 
-    public function testMissingFetchMetadataIsRecordedByDefault(): void
+    public function testMissingFetchMetadataIsRecordedFromOlderBrowsers(): void
     {
-        $this->dispatch($this->createRequest(headers: ['Sec-Fetch-Site' => null, 'Sec-Fetch-Mode' => null]));
+        $this->dispatch($this->createRequest(headers: self::WITHOUT_FETCH_METADATA));
 
         $this->assertCount(1, $this->adaptor->processed);
     }
@@ -196,11 +255,7 @@ class AnalyticsMiddlewareTest extends SapphireTest
     {
         AnalyticsRequestValidator::config()->set('require_referer_without_fetch_metadata', true);
 
-        $this->dispatch($this->createRequest(headers: [
-            'Sec-Fetch-Site' => null,
-            'Sec-Fetch-Mode' => null,
-            'Referer' => $referer,
-        ]));
+        $this->dispatch($this->createRequest(headers: [...self::WITHOUT_FETCH_METADATA, 'Referer' => $referer]));
 
         $this->assertCount($expectedCount, $this->adaptor->processed);
     }
@@ -258,10 +313,76 @@ class AnalyticsMiddlewareTest extends SapphireTest
             'chrome on ios uses webkit' => [['User-Agent' => self::CHROME_IOS_USER_AGENT], 1],
             'android webview' => [['User-Agent' => self::ANDROID_WEBVIEW_USER_AGENT], 1],
             'chrome without fetch metadata' => [
-                ['User-Agent' => self::CHROME_USER_AGENT, 'Sec-Fetch-Site' => null, 'Sec-Fetch-Mode' => null],
+                [...self::WITHOUT_FETCH_METADATA, 'User-Agent' => self::OLD_CHROME_USER_AGENT],
                 1,
             ],
         ];
+    }
+
+    #[DataProvider('provideSpeculativeLoads')]
+    public function testSpeculativeLoadIsNotRecorded(array $headers): void
+    {
+        $this->dispatch($this->createRequest(headers: $headers));
+
+        $this->assertCount(0, $this->adaptor->processed);
+    }
+
+    public static function provideSpeculativeLoads(): array
+    {
+        return [
+            'speculation rules prefetch' => [['Sec-Purpose' => 'prefetch']],
+            'speculation rules prerender' => [['Sec-Purpose' => 'prefetch;prerender']],
+            'legacy prefetch' => [['Purpose' => 'prefetch']],
+        ];
+    }
+
+    public function testIframeNavigationIsNotRecorded(): void
+    {
+        $this->dispatch($this->createRequest(headers: ['Sec-Fetch-Dest' => 'iframe']));
+
+        $this->assertCount(0, $this->adaptor->processed);
+    }
+
+    #[DataProvider('provideUserAgentsWithoutFetchMetadata')]
+    public function testMissingFetchMetadataDependsOnClaimedBrowser(string $userAgent, int $expectedCount): void
+    {
+        $this->dispatch($this->createRequest(headers: [...self::WITHOUT_FETCH_METADATA, 'User-Agent' => $userAgent]));
+
+        $this->assertCount($expectedCount, $this->adaptor->processed);
+    }
+
+    public static function provideUserAgentsWithoutFetchMetadata(): array
+    {
+        return [
+            'chrome 120 always sends it' => [self::CHROME_USER_AGENT, 0],
+            'firefox 121 always sends it' => [self::FIREFOX_USER_AGENT, 0],
+            'safari 17 always sends it' => [self::BROWSER_USER_AGENT, 0],
+            'ios safari 17 always sends it' => [self::IOS_SAFARI_USER_AGENT, 0],
+            'chrome 75 predates it' => [self::OLD_CHROME_USER_AGENT, 1],
+            'safari 16.3 predates it' => [self::OLD_SAFARI_USER_AGENT, 1],
+            'chrome on ios is excluded' => [self::CHROME_IOS_USER_AGENT, 1],
+            'android webview is excluded' => [self::ANDROID_WEBVIEW_USER_AGENT, 1],
+        ];
+    }
+
+    public function testLoggerFailureStillRendersPage(): void
+    {
+        $this->adaptor->exception = new RuntimeException('Search service unavailable');
+        $middleware = AnalyticsMiddleware::create();
+        $middleware->setLogger(new Logger('test', [new class extends TestHandler {
+
+            protected function write(LogRecord $record): void
+            {
+                throw new UnexpectedValueException('Log file is not writable');
+            }
+
+        }]));
+
+        $response = $middleware->process($this->createRequest(), function (): HTTPResponse {
+            return HTTPResponse::create(self::PAGE_BODY, 200);
+        });
+
+        $this->assertSame(self::PAGE_BODY, $response->getBody());
     }
 
     #[DataProvider('provideUnsuccessfulStatusCodes')]
@@ -337,6 +458,13 @@ class AnalyticsMiddlewareTest extends SapphireTest
         $this->assertCount(0, $this->adaptor->processed);
     }
 
+    private function enableRecommendedChecks(): void
+    {
+        foreach (self::RECOMMENDED_CHECKS as $key => $value) {
+            AnalyticsRequestValidator::config()->set($key, $value);
+        }
+    }
+
     private function dispatch(HTTPRequest $request, int $statusCode = 200): HTTPResponse
     {
         $middleware = AnalyticsMiddleware::create();
@@ -365,6 +493,7 @@ class AnalyticsMiddlewareTest extends SapphireTest
                 'User-Agent' => self::BROWSER_USER_AGENT,
                 'Sec-Fetch-Site' => 'same-origin',
                 'Sec-Fetch-Mode' => 'navigate',
+                'Sec-Fetch-Dest' => 'document',
             ],
             $headers
         );

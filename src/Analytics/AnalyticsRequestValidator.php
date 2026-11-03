@@ -15,33 +15,31 @@ use SilverStripe\Core\Injector\Injectable;
 /**
  * Decides whether a request carrying search analytics data should be recorded as a click.
  *
- * A click is only recorded when it looks like a person in a real browser followed a search result link on this site.
- * A "real browser" is identified by two signals:
+ * Every check is off by default, so every request carrying analytics data is recorded. Each check can be turned on
+ * through configuration:
  *
- * 1. Fetch Metadata headers. Modern browsers add Sec-Fetch-Site and Sec-Fetch-Mode to every request themselves, and
- *    page scripts cannot set or change them. Clicking a result link on this site produces
- *    "Sec-Fetch-Site: same-origin" and "Sec-Fetch-Mode: navigate". Links from other sites, typed or bookmarked URLs,
- *    and background fetch/prefetch requests produce different values and are rejected. Crawlers and HTTP libraries
- *    usually send no Fetch Metadata at all. Older browsers do not send these headers either, so a request without them
- *    is accepted, unless require_referer_without_fetch_metadata is enabled, in which case it must carry a Referer
- *    from this site.
- * 2. The user agent. An empty user agent, or one that matches a known crawler, bot, monitoring tool or HTTP library
- *    (see CrawlerDetector), is rejected.
- * 3. Optionally, user activation. Browsers that support it send "Sec-Fetch-User: ?1" only when a person triggered the
- *    navigation (click, middle-click, keyboard), so a navigation without it was started by a script or an automated
- *    browser. Not every browser sends this header (notably Safari and every browser on iOS), so it is only required
- *    from user agents matched by user_activation_user_agent_pattern.
- *
- * On top of that, only GET requests (following a link) with a successful (2xx) response are recorded.
+ * - allowed_methods: only record these HTTP methods. Following a link is a GET request.
+ * - ignore_crawlers: reject an empty user agent, or one that matches a known crawler, bot, monitoring tool or HTTP
+ *   library (see CrawlerDetector).
+ * - require_same_origin: browsers add Fetch Metadata headers (Sec-Fetch-*) to their requests themselves, and page
+ *   scripts cannot set or change them. A click on a link on this site arrives as Sec-Fetch-Site: same-origin,
+ *   Sec-Fetch-Mode: navigate and Sec-Fetch-Dest: document. Other values (links from other sites, typed or bookmarked
+ *   URLs, background fetches, iframes) are rejected, and so are speculative loads (prefetch and prerender, flagged by
+ *   the Sec-Purpose or Purpose header), which send the same Fetch Metadata as a click. A request without Fetch Metadata
+ *   is rejected when its user agent claims a browser version that always sends it (see fetch_metadata_browsers), as
+ *   it then comes from a script. Otherwise it is accepted, unless require_referer_without_fetch_metadata is on.
+ * - require_user_activation: browsers that support it send Sec-Fetch-User: ?1 only when a person triggered the
+ *   navigation (click, middle-click, keyboard). Not every browser sends it (notably Safari and every browser on
+ *   iOS), so it is only required from user agents matched by user_activation_user_agent_pattern.
+ * - require_successful_response: only record 2xx responses.
  *
  * Checks run in this order:
  *
  * 1. Request checks: HTTP method, crawler user agent, same-origin navigation, user activation
- * 2. Response check: the page rendered successfully
+ * 2. Response check: the response status
  * 3. The updateShouldProcess() extension hook, which can veto or allow the click
  *
- * Every check can be switched off through configuration. Rejections are logged at debug level with one of the
- * REASON_* constants.
+ * Rejections are logged at debug level with one of the REASON_* constants.
  */
 class AnalyticsRequestValidator
 {
@@ -56,6 +54,10 @@ class AnalyticsRequestValidator
 
     public const string REASON_CROSS_ORIGIN = 'not_same_origin_navigation';
 
+    public const string REASON_SPECULATIVE = 'speculative_load';
+
+    public const string REASON_MISSING_FETCH_METADATA = 'missing_fetch_metadata';
+
     public const string REASON_NO_USER_ACTIVATION = 'no_user_activation';
 
     public const string REASON_UNSUCCESSFUL_RESPONSE = 'unsuccessful_response';
@@ -66,49 +68,88 @@ class AnalyticsRequestValidator
 
     public const string FETCH_MODE_NAVIGATE = 'navigate';
 
+    public const string FETCH_DEST_DOCUMENT = 'document';
+
     public const string FETCH_USER_ACTIVATED = '?1';
 
     /**
-     * HTTP methods that may record a click. Following a link is always a GET request.
-     *
-     * @config
+     * Matches the Sec-Purpose (current) and Purpose (legacy) header values sent with speculative loads
      */
-    private static array $allowed_methods = [
-        'GET',
-    ];
+    private const string SPECULATIVE_PURPOSE_PATTERN = '/prefetch|prerender/i';
 
     /**
-     * Only record clicks when the response status is 2xx
+     * HTTP methods that may record a click. Empty means any method. Following a link is a GET request, so ['GET'] is
+     * recommended.
      *
      * @config
      */
-    private static bool $require_successful_response = true;
+    private static array $allowed_methods = [];
+
+    /**
+     * Only record clicks when the response status is 2xx. A result link that redirects (for example to a
+     * RedirectorPage or a redirected URL) returns a 3xx, and the redirect target doesn't carry the analytics data, so
+     * that click is not recorded at all when this is on.
+     *
+     * @config
+     */
+    private static bool $require_successful_response = false;
 
     /**
      * Reject requests with an empty or known crawler user agent
      *
      * @config
      */
-    private static bool $ignore_crawlers = true;
+    private static bool $ignore_crawlers = false;
 
     /**
-     * When the browser sends Fetch Metadata headers, require a same-origin top-level navigation
+     * Require a same-origin top-level navigation that isn't a speculative load, based on Fetch Metadata headers. Note
+     * that this also rejects clicks between origins of one install (Subsites or Fluent domains, an http link to an
+     * https site, or a search UI hosted on another origin).
      *
      * @config
      */
-    private static bool $require_same_origin = true;
+    private static bool $require_same_origin = false;
 
     /**
-     * When the browser sends no Fetch Metadata headers, require a Referer from this site. Off by default, as some
-     * privacy settings strip the Referer header from genuine clicks.
+     * With require_same_origin on: when the browser sends no Fetch Metadata headers, require a Referer from this site.
+     * Off by default, as some privacy settings strip the Referer header from genuine clicks.
      *
      * @config
      */
     private static bool $require_referer_without_fetch_metadata = false;
 
     /**
-     * Require "Sec-Fetch-User: ?1" (a navigation triggered by a person) from browsers that send it. Off by default:
-     * enable it once you have confirmed the browsers your visitors use send the header.
+     * With require_same_origin on: browsers whose user agent proves they send Fetch Metadata on every request, so a
+     * request claiming one of them without Fetch Metadata comes from a script. Each entry has a pattern whose first
+     * capture group is the browser version, and the minimum version that sends Fetch Metadata.
+     *
+     * @config
+     */
+    private static array $fetch_metadata_browsers = [
+        'chromium' => [
+            'pattern' => '/\b(?:Chrome|Chromium)\/(\d+(?:\.\d+)?)/',
+            'minimum_version' => '76',
+        ],
+        'firefox' => [
+            'pattern' => '/\bFirefox\/(\d+(?:\.\d+)?)/',
+            'minimum_version' => '90',
+        ],
+        'safari' => [
+            'pattern' => '/\bVersion\/(\d+(?:\.\d+)?)[^ ]*(?: Mobile\/\S+)? Safari\//',
+            'minimum_version' => '16.4',
+        ],
+    ];
+
+    /**
+     * User agents never treated as a fetch_metadata_browsers match: browsers on iOS other than Safari and Android
+     * WebViews (in-app browsers), whose Fetch Metadata support can't be told from the user agent
+     *
+     * @config
+     */
+    private static string $fetch_metadata_excluded_user_agent_pattern = '/CriOS|FxiOS|EdgiOS|; wv\)/i';
+
+    /**
+     * Require "Sec-Fetch-User: ?1" (a navigation triggered by a person) from browsers that send it
      *
      * @config
      */
@@ -182,8 +223,12 @@ class AnalyticsRequestValidator
             return self::REASON_CRAWLER;
         }
 
-        if ($this->config()->get('require_same_origin') && !$this->isSameOriginNavigation($request)) {
-            return self::REASON_CROSS_ORIGIN;
+        if ($this->config()->get('require_same_origin')) {
+            $reason = $this->getOriginRejectionReason($request);
+
+            if ($reason !== null) {
+                return $reason;
+            }
         }
 
         if ($this->config()->get('require_user_activation') && !$this->hasUserActivation($request)) {
@@ -206,6 +251,87 @@ class AnalyticsRequestValidator
         }
 
         return null;
+    }
+
+    private function isCrawler(HTTPRequest $request): bool
+    {
+        return $this->crawlerDetector?->isCrawler($request->getHeader('User-Agent')) ?? false;
+    }
+
+    private function isAllowedMethod(HTTPRequest $request): bool
+    {
+        $allowedMethods = array_map('strtoupper', (array) $this->config()->get('allowed_methods'));
+
+        if (!$allowedMethods) {
+            return true;
+        }
+
+        return in_array(strtoupper($request->httpMethod()), $allowedMethods, true);
+    }
+
+    /**
+     * @return string|null One of the REASON_* constants, or null if the request is a same-origin navigation
+     */
+    private function getOriginRejectionReason(HTTPRequest $request): ?string
+    {
+        if ($request->getHeader('Sec-Fetch-Site')) {
+            return $this->getFetchMetadataRejectionReason($request);
+        }
+
+        if ($this->isFetchMetadataExpected((string) $request->getHeader('User-Agent'))) {
+            return self::REASON_MISSING_FETCH_METADATA;
+        }
+
+        if ($this->config()->get('require_referer_without_fetch_metadata')
+            && !$this->isSiteReferer((string) $request->getHeader('Referer'))
+        ) {
+            return self::REASON_CROSS_ORIGIN;
+        }
+
+        return null;
+    }
+
+    /**
+     * Speculative loads are checked as well as the Fetch Metadata values, because prefetch and prerender requests
+     * (including ones added by CDNs) send the same Sec-Fetch-Site, Sec-Fetch-Mode and Sec-Fetch-Dest as a click.
+     */
+    private function getFetchMetadataRejectionReason(HTTPRequest $request): ?string
+    {
+        $purpose = sprintf('%s %s', $request->getHeader('Sec-Purpose'), $request->getHeader('Purpose'));
+
+        if (preg_match(self::SPECULATIVE_PURPOSE_PATTERN, $purpose) === 1) {
+            return self::REASON_SPECULATIVE;
+        }
+
+        $isNavigation = strtolower((string) $request->getHeader('Sec-Fetch-Site')) === self::FETCH_SITE_SAME_ORIGIN
+            && strtolower((string) $request->getHeader('Sec-Fetch-Mode')) === self::FETCH_MODE_NAVIGATE
+            && strtolower((string) $request->getHeader('Sec-Fetch-Dest')) === self::FETCH_DEST_DOCUMENT;
+
+        return $isNavigation ? null : self::REASON_CROSS_ORIGIN;
+    }
+
+    private function isFetchMetadataExpected(string $userAgent): bool
+    {
+        $excludedPattern = (string) $this->config()->get('fetch_metadata_excluded_user_agent_pattern');
+
+        if ($userAgent === '' || ($excludedPattern !== '' && preg_match($excludedPattern, $userAgent) === 1)) {
+            return false;
+        }
+
+        foreach ((array) $this->config()->get('fetch_metadata_browsers') as $browser) {
+            $pattern = (string) ($browser['pattern'] ?? '');
+            $minimumVersion = (string) ($browser['minimum_version'] ?? '');
+
+            if ($pattern === '' || $minimumVersion === '' || preg_match($pattern, $userAgent, $matches) !== 1) {
+                continue;
+            }
+
+            if (version_compare($matches[1] ?? '0', $minimumVersion, '>=')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -235,42 +361,6 @@ class AnalyticsRequestValidator
         }
 
         return $excludedPattern === '' || preg_match($excludedPattern, $userAgent) !== 1;
-    }
-
-    private function isAllowedMethod(HTTPRequest $request): bool
-    {
-        $allowedMethods = array_map('strtoupper', (array) $this->config()->get('allowed_methods'));
-
-        return in_array(strtoupper($request->httpMethod()), $allowedMethods, true);
-    }
-
-    private function isCrawler(HTTPRequest $request): bool
-    {
-        $crawlerDetector = $this->crawlerDetector ?? CrawlerDetector::create();
-
-        return $crawlerDetector->isCrawler($request->getHeader('User-Agent'));
-    }
-
-    /**
-     * Fetch Metadata headers are set by the browser and cannot be set by page scripts, so they reliably identify a
-     * user following a link on this site. Browsers that do not send them fall back to the optional Referer check.
-     */
-    private function isSameOriginNavigation(HTTPRequest $request): bool
-    {
-        $fetchSite = $request->getHeader('Sec-Fetch-Site');
-
-        if ($fetchSite) {
-            $fetchMode = (string) $request->getHeader('Sec-Fetch-Mode');
-
-            return strtolower($fetchSite) === self::FETCH_SITE_SAME_ORIGIN
-                && strtolower($fetchMode) === self::FETCH_MODE_NAVIGATE;
-        }
-
-        if (!$this->config()->get('require_referer_without_fetch_metadata')) {
-            return true;
-        }
-
-        return $this->isSiteReferer((string) $request->getHeader('Referer'));
     }
 
     /**

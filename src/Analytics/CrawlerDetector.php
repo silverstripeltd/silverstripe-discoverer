@@ -12,8 +12,9 @@ use SilverStripe\Core\Injector\Injector;
 /**
  * Classifies a user agent as automated (crawler, bot, monitoring tool, HTTP library) or not.
  *
- * Uses jaybizzle/crawler-detect when it is installed, as it maintains a far more complete list of agents. Otherwise
- * falls back to a small built-in pattern that covers the most common crawlers and HTTP clients.
+ * Uses jaybizzle/crawler-detect when it is installed. That library keeps a regularly updated list of over a thousand
+ * crawler user agent patterns. Otherwise falls back to a small built-in pattern of common crawlers, monitoring tools
+ * and HTTP client libraries.
  */
 class CrawlerDetector
 {
@@ -33,10 +34,12 @@ class CrawlerDetector
      *
      * @config
      */
-    private static string $user_agent_pattern = '/bot\b|bot\/|crawl|spider|slurp|archiver|facebookexternalhit'
-        . '|embedly|preview|monitor|uptime|pingdom|lighthouse|headless|phantomjs|semrush|ahrefs|screaming frog'
-        . '|scrapy|curl|wget|libwww|python-requests|python-urllib|httpclient|java\/|go-http-client|okhttp'
-        . '|axios|node-fetch|guzzle/i';
+    private static string $user_agent_pattern = '/(?<!cu)bot\b|crawl|spider|slurp|archiver|facebookexternalhit'
+        . '|whatsapp\/|embedly|preview|monitor|uptime|pingdom|lighthouse|headless|phantomjs|semrush|ahrefs'
+        . '|screaming frog|scrapy|curl|wget|libwww|python-requests|python-urllib|python-httpx|aiohttp|httpclient'
+        . '|java\/|go-http-client|okhttp|axios|node-fetch|guzzle|postmanruntime/i';
+
+    private ?CrawlerDetect $crawlerDetect = null;
 
     /**
      * An empty user agent is treated as automated, as every mainstream browser sends one.
@@ -50,10 +53,22 @@ class CrawlerDetector
         }
 
         if ($this->canUseCrawlerDetectLibrary()) {
-            return Injector::inst()->create(CrawlerDetect::class)->isCrawler($userAgent);
+            return $this->getCrawlerDetect()->isCrawler($userAgent);
         }
 
         return preg_match($this->config()->get('user_agent_pattern'), $userAgent) === 1;
+    }
+
+    /**
+     * CrawlerDetect compiles its patterns when it is created, so one instance is reused for every check
+     */
+    private function getCrawlerDetect(): CrawlerDetect
+    {
+        if (!$this->crawlerDetect) {
+            $this->crawlerDetect = Injector::inst()->create(CrawlerDetect::class);
+        }
+
+        return $this->crawlerDetect;
     }
 
     private function canUseCrawlerDetectLibrary(): bool

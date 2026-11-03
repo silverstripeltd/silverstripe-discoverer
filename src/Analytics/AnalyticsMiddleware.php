@@ -74,20 +74,30 @@ class AnalyticsMiddleware implements HTTPMiddleware
             $analyticsData->setDocumentId($data['documentId'] ?? null);
             $analyticsData->setIndexName($data['indexName'] ?? null);
 
-            $validator = $this->validator ?? AnalyticsRequestValidator::create();
-
-            if (!$validator->shouldProcess($request, $response, $analyticsData)) {
+            if ($this->validator && !$this->validator->shouldProcess($request, $response, $analyticsData)) {
                 return $response;
             }
 
             $service = SearchService::create();
             $service->processAnalytics($analyticsData);
         } catch (Throwable $e) {
-            // Log the error without breaking the page
-            $this->logger?->error(sprintf('Message: %s', $e->getMessage()), ['exception' => $e]);
+            $this->logError($e);
         }
 
         return $response;
+    }
+
+    /**
+     * Logging is guarded as well, because a logger can throw (e.g. when its log file can't be written), and analytics
+     * must never turn a rendered page into an error.
+     */
+    private function logError(Throwable $error): void
+    {
+        try {
+            $this->logger?->error(sprintf('Message: %s', $error->getMessage()), ['exception' => $error]);
+        } catch (Throwable) {
+            return;
+        }
     }
 
 }

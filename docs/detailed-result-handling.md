@@ -90,30 +90,24 @@ some point**, it would be great if Analytics became a CMS feature, rather than u
 
 #### Which requests are recorded
 
-A request carrying `_searchAnalytics` is only recorded as a click when it looks like a person in a browser followed a
-search result link on your site. The page is always rendered as normal; only the click event is skipped.
+By default, every request carrying `_searchAnalytics` is recorded as a click, including requests from crawlers, link
+previews and other automated clients. `AnalyticsRequestValidator` can filter these out, so that a click is only
+recorded when it looks like a person in a browser followed a search result link on your site. Every check is off by
+default; turn on the ones that suit your site. The page is always rendered as normal; only the click event is skipped.
 
-A click is recorded when all of the following are true:
-
-* It is a `GET` request.
-* The response status is 2xx (redirects, 404 and 500 pages are not recorded).
-* The user agent is not empty and is not a known crawler, bot, monitoring tool or HTTP library.
-* The browser's Fetch Metadata headers show a same-origin link navigation (`Sec-Fetch-Site: same-origin` and
-  `Sec-Fetch-Mode: navigate`).
-
-Browsers set the Fetch Metadata headers themselves, and page scripts cannot change them. Requests from other sites,
-typed or bookmarked URLs and background fetches send different values and are not recorded. Older browsers do not send
-these headers at all, so those requests are recorded unless you enable `require_referer_without_fetch_metadata`, which
-then requires a `Referer` from your site.
-
-You can also require proof that a person triggered the navigation. Chromium-based browsers and Firefox send
-`Sec-Fetch-User: ?1` only when a navigation comes from a click, middle-click or key press, so a navigation without it
-was started by a script or an automated browser. Safari and browsers on iOS don't send this header, so it is only
-required from user agents that do. It is off by default:
+This is the recommended configuration:
 
 ```yaml
 SilverStripe\Discoverer\Analytics\AnalyticsRequestValidator:
-  require_user_activation: true
+  # Following a link is a GET request
+  allowed_methods:
+    - GET
+  # Skip empty and known crawler, bot, monitoring and HTTP library user agents
+  ignore_crawlers: true
+  # Only same-origin link navigations that aren't prefetch or prerender (see below)
+  require_same_origin: true
+  # Only 2xx responses (see the note on redirects below)
+  require_successful_response: true
 ```
 
 Crawler detection uses [`jaybizzle/crawler-detect`](https://github.com/JayBizzle/Crawler-Detect) when it is installed,
@@ -123,20 +117,55 @@ and a small built-in pattern otherwise. Installing the library is recommended:
 composer require jaybizzle/crawler-detect
 ```
 
-Each check can be configured or switched off. These are the defaults:
+##### Same-origin navigation (`require_same_origin`)
+
+Browsers add Fetch Metadata headers to their requests themselves, and page scripts cannot change them. A click on a link
+on your site arrives as `Sec-Fetch-Site: same-origin`, `Sec-Fetch-Mode: navigate` and `Sec-Fetch-Dest: document`. With
+`require_same_origin` on:
+
+* Requests with other values are not recorded: links from other sites, typed or bookmarked URLs, background fetches
+  and iframes.
+* Prefetch and prerender requests are not recorded. Speculation rules (including ones added by CDNs) send the same
+  Fetch Metadata as a click, so they're identified by their `Sec-Purpose` or `Purpose` header instead. If the visitor
+  then opens a prefetched or prerendered result, the browser may use the loaded copy without a new request, and that
+  click isn't recorded.
+* A request without Fetch Metadata is not recorded when its user agent claims a browser that always sends it
+  (Chromium 76+, Firefox 90+, Safari 16.4+), because it comes from a script. Requests from older browsers are
+  recorded, unless you also turn on `require_referer_without_fetch_metadata`, which then requires a `Referer` from
+  your site. The browser versions are set in `fetch_metadata_browsers`.
+
+This check also rejects clicks between different origins of one install, such as Subsites or Fluent domains, an http
+link to an https site, or a search UI hosted on another origin. Leave it off if your site relies on those.
+
+##### User activation (`require_user_activation`)
+
+Chromium-based browsers and Firefox send `Sec-Fetch-User: ?1` only when a navigation comes from a click, middle-click or
+key press, so a navigation without it was started by a script or an automated browser. Safari and browsers on iOS don't
+send this header, so it is only required from user agents that do:
 
 ```yaml
 SilverStripe\Discoverer\Analytics\AnalyticsRequestValidator:
-  allowed_methods:
-    - GET
-  require_successful_response: true
-  ignore_crawlers: true
-  require_same_origin: true
+  require_user_activation: true
+```
+
+##### Redirects (`require_successful_response`)
+
+With `require_successful_response` on, a result that links to a redirect (for example a `RedirectorPage` or a
+redirected URL) returns a 3xx and isn't recorded. The page it redirects to doesn't carry `_searchAnalytics`, so that
+click isn't recorded at all. Leave this off, or link results to their final URL, if that matters for your site.
+
+##### All options
+
+These are the defaults:
+
+```yaml
+SilverStripe\Discoverer\Analytics\AnalyticsRequestValidator:
+  allowed_methods: []
+  require_successful_response: false
+  ignore_crawlers: false
+  require_same_origin: false
   require_referer_without_fetch_metadata: false
   require_user_activation: false
-  # User agents expected to send Sec-Fetch-User, and exclusions (iOS browsers and Android WebViews don't send it)
-  user_activation_user_agent_pattern: '/\b(Chrome|Chromium|Firefox)\//i'
-  user_activation_excluded_user_agent_pattern: '/CriOS|FxiOS|EdgiOS|; wv\)/i'
 
 SilverStripe\Discoverer\Analytics\CrawlerDetector:
   # Set to false to always use user_agent_pattern, even when jaybizzle/crawler-detect is installed
