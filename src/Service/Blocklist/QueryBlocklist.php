@@ -9,14 +9,13 @@ use SilverStripe\Core\Injector\Injectable;
 use Throwable;
 
 /**
- * Decides whether a search query contains a blocked keyword.
+ * Decides whether a search query should be blocked, using a BlockedKeywordProvider for the keywords and a
+ * KeywordMatcher for the matching. Both can be replaced through the Injector.
  *
- * A keyword matches when it appears in the query as a whole word (or, for a phrase, as consecutive whole words).
- * Matching ignores case and punctuation: with "casino" blocked, "Online CASINO!" is blocked but "casinos" is not.
- * Patterns and partial-word matches are deliberately not supported, so a keyword can't accidentally block unrelated
- * searches.
+ * Only the query string sent to the search service is checked. Suggestions returned by the service (autocomplete or
+ * "did you mean") are not filtered.
  *
- * If the keyword provider fails, the query is allowed, so a blocklist problem never stops search working.
+ * If the provider or matcher fails, the query is allowed, so a blocklist problem never stops search working.
  */
 class QueryBlocklist
 {
@@ -25,16 +24,24 @@ class QueryBlocklist
 
     private static array $dependencies = [
         'keywordProvider' => '%$' . BlockedKeywordProvider::class,
+        'keywordMatcher' => '%$' . KeywordMatcher::class,
         'logger' => '%$' . LoggerInterface::class,
     ];
 
     private ?BlockedKeywordProvider $keywordProvider = null;
+
+    private ?KeywordMatcher $keywordMatcher = null;
 
     private ?LoggerInterface $logger = null;
 
     public function setKeywordProvider(?BlockedKeywordProvider $keywordProvider): void
     {
         $this->keywordProvider = $keywordProvider;
+    }
+
+    public function setKeywordMatcher(?KeywordMatcher $keywordMatcher): void
+    {
+        $this->keywordMatcher = $keywordMatcher;
     }
 
     public function setLogger(?LoggerInterface $logger): void
@@ -44,66 +51,35 @@ class QueryBlocklist
 
     public function isBlocked(?string $queryString): bool
     {
-        $query = $this->normalise((string) $queryString);
-
-        if ($query === '') {
+        if ($queryString === null || trim($queryString) === '' || !$this->keywordProvider || !$this->keywordMatcher) {
             return false;
         }
 
-        $paddedQuery = sprintf(' %s ', $query);
-
-        foreach ($this->getNormalisedKeywords() as $keyword) {
-            if (str_contains($paddedQuery, sprintf(' %s ', $keyword))) {
-                $this->logger?->debug('Search query blocked', ['keyword' => $keyword]);
-
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Lower-cases the text and replaces everything other than letters and numbers with single spaces, so that words
-     * can be compared regardless of case, punctuation or spacing.
-     */
-    public function normalise(string $text): string
-    {
-        $text = mb_strtolower($text, 'UTF-8');
-        $text = preg_replace('/[^\p{L}\p{N}]+/u', ' ', $text) ?? '';
-
-        return trim($text);
-    }
-
-    /**
-     * @return string[]
-     */
-    private function getNormalisedKeywords(): array
-    {
         try {
-            $keywords = $this->keywordProvider?->getBlockedKeywords() ?? [];
+            $keywords = $this->keywordProvider->getBlockedKeywords();
+
+            if (!$keywords) {
+                return false;
+            }
+
+            $match = $this->keywordMatcher->findMatch($queryString, $keywords);
         } catch (Throwable $e) {
             $this->logger?->warning(
-                sprintf('Blocked search keywords could not be loaded: %s', $e->getMessage()),
+                sprintf('Search blocklist could not be checked: %s', $e->getMessage()),
                 ['exception' => $e]
             );
 
-            return [];
+            return false;
         }
 
-        $normalised = [];
-
-        foreach ($keywords as $keyword) {
-            $keyword = $this->normalise((string) $keyword);
-
-            if ($keyword === '') {
-                continue;
-            }
-
-            $normalised[$keyword] = $keyword;
+        if ($match === null) {
+            return false;
         }
 
-        return array_values($normalised);
+        // Only the keyword is logged, because the full query can contain personal information
+        $this->logger?->debug('Search query blocked', ['keyword' => $match]);
+
+        return true;
     }
 
 }

@@ -10,8 +10,11 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use RuntimeException;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Service\Blocklist\BlockedKeywordProvider;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Discoverer\Service\Blocklist\ConfigBlockedKeywordProvider;
+use SilverStripe\Discoverer\Service\Blocklist\KeywordMatcher;
 use SilverStripe\Discoverer\Service\Blocklist\QueryBlocklist;
+use SilverStripe\Discoverer\Service\Blocklist\WholeWordKeywordMatcher;
 
 class QueryBlocklistTest extends SapphireTest
 {
@@ -21,7 +24,8 @@ class QueryBlocklistTest extends SapphireTest
     #[DataProvider('provideQueries')]
     public function testIsBlocked(?string $query, bool $expected): void
     {
-        ConfigBlockedKeywordProvider::config()->set('blocked_keywords', ['casino', 'Adult Video', 'Ärger']);
+        // Ärger is written with a single precomposed character, so queries using a combining character must still match
+        ConfigBlockedKeywordProvider::config()->set('blocked_keywords', ['casino', 'Adult Video', "\u{00C4}rger"]);
 
         $this->assertSame($expected, QueryBlocklist::create()->isBlocked($query));
     }
@@ -43,7 +47,16 @@ class QueryBlocklistTest extends SapphireTest
             'empty query' => ['', false],
             'null query' => [null, false],
             'punctuation only' => ['!!!', false],
+            'accent typed as a combining character' => ["kein a\u{0308}rger", true],
         ];
+    }
+
+    public function testCombiningCharacterDoesNotSplitWord(): void
+    {
+        ConfigBlockedKeywordProvider::config()->set('blocked_keywords', ['sume']);
+
+        // "résumé" typed with combining accents must stay one word, not become "re sume"
+        $this->assertFalse(QueryBlocklist::create()->isBlocked("re\u{0301}sume\u{0301}"));
     }
 
     public function testNothingIsBlockedWithoutKeywords(): void
@@ -81,6 +94,55 @@ class QueryBlocklistTest extends SapphireTest
 
         $this->assertFalse($blocklist->isBlocked('casino'));
         $this->assertTrue($handler->hasWarningThatContains('Keyword source unavailable'));
+    }
+
+    public function testMatcherFailureAllowsQueryAndLogsWarning(): void
+    {
+        ConfigBlockedKeywordProvider::config()->set('blocked_keywords', ['casino']);
+        $handler = new TestHandler();
+        $matcher = new class implements KeywordMatcher {
+
+            public function findMatch(string $queryString, array $keywords): ?string
+            {
+                throw new RuntimeException('Matcher failed');
+            }
+
+        };
+
+        $blocklist = QueryBlocklist::create();
+        $blocklist->setKeywordMatcher($matcher);
+        $blocklist->setLogger(new Logger('test', [$handler]));
+
+        $this->assertFalse($blocklist->isBlocked('casino'));
+        $this->assertTrue($handler->hasWarningThatContains('Matcher failed'));
+    }
+
+    public function testDefaultMatcherIsWholeWord(): void
+    {
+        $this->assertInstanceOf(WholeWordKeywordMatcher::class, Injector::inst()->get(KeywordMatcher::class));
+    }
+
+    public function testMatcherCanBeReplaced(): void
+    {
+        ConfigBlockedKeywordProvider::config()->set('blocked_keywords', ['赌场']);
+        $matcher = new class implements KeywordMatcher {
+
+            public function findMatch(string $queryString, array $keywords): ?string
+            {
+                foreach ($keywords as $keyword) {
+                    if (str_contains($queryString, $keyword)) {
+                        return $keyword;
+                    }
+                }
+
+                return null;
+            }
+
+        };
+        Injector::inst()->registerService($matcher, KeywordMatcher::class);
+
+        $this->assertTrue(QueryBlocklist::create()->isBlocked('在线赌场'));
+        $this->assertFalse(QueryBlocklist::create()->isBlocked('图书馆'));
     }
 
     public function testBlockedQueryIsLoggedWithKeywordOnly(): void
