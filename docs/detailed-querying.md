@@ -10,6 +10,7 @@
   * [Filters](#filters)
   * [Facets](#facets)
   * [Tags](#tags)
+* [Blocking search keywords](#blocking-search-keywords)
 
 ## `SearchService` class
 
@@ -429,3 +430,57 @@ $query->addTag('global');
 $query->addTag('header');
 
 ```
+
+## Blocking search keywords
+
+You can stop searches containing particular words or phrases from reaching your search service. A blocked search
+returns successful, empty results, so visitors see "no results" with no indication that the query was blocked. The
+search service isn't called. The check applies to the query string of searches, query suggestions (autocomplete) and
+spelling suggestions made through `SearchService`.
+
+Only the query sent to the service is checked. Suggestions that come back from the service aren't filtered: typing
+`cas` can still suggest `casino`, and a search for `casinp` can still return "did you mean casino?". A suggestion only
+comes back when your indexed content contains that word.
+
+```yaml
+SilverStripe\Discoverer\Service\Blocklist\ConfigBlockedKeywordProvider:
+  blocked_keywords:
+    - casino
+    - adult video
+```
+
+Matching is on whole words, and ignores case and punctuation:
+
+| Blocked keyword | Query | Blocked? |
+|---|---|---|
+| `casino` | `Online CASINO!` | Yes |
+| `casino` | `casinos near me` | No (not a whole word) |
+| `adult video` | `free adult video clips` | Yes |
+| `adult video` | `adult education video` | No (the words aren't together) |
+
+Patterns and partial-word matches aren't supported, so a keyword can't accidentally block unrelated searches. Text is
+converted to Unicode NFC first, so an accented letter matches however it was typed. Blocked queries are logged at debug
+level with the matching keyword only (not the full query).
+
+The default matching finds words by the spaces and punctuation between them, so it doesn't work for languages written
+without spaces (for example Chinese, Japanese or Thai). To change how matching works, implement
+`SilverStripe\Discoverer\Service\Blocklist\KeywordMatcher` and register it with the Injector:
+
+```yaml
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Discoverer\Service\Blocklist\KeywordMatcher:
+    class: App\Search\MyKeywordMatcher
+```
+
+To load keywords from somewhere else (for example the CMS), implement
+`SilverStripe\Discoverer\Service\Blocklist\BlockedKeywordProvider` and register it with the Injector. The provider is
+called on every search, so cache the list if it comes from a database or remote source.
+
+```yaml
+SilverStripe\Core\Injector\Injector:
+  SilverStripe\Discoverer\Service\Blocklist\BlockedKeywordProvider:
+    class: App\Search\MyBlockedKeywordProvider
+```
+
+If the provider or matcher throws an error, the search is allowed and the error is logged as a warning, so a blocklist problem
+never stops search working.
