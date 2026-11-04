@@ -46,26 +46,11 @@ class AnalyticsMiddleware implements HTTPMiddleware
         }
 
         try {
-            $data = base64_decode($request->getVar(AnalyticsData::QUERY_PARAM) ?? '', true);
+            $analyticsData = AnalyticsData::decode($request->getVar(AnalyticsData::QUERY_PARAM));
 
-            if (!$data) {
+            if (!$analyticsData) {
                 return $response;
             }
-
-            $data = json_decode($data, true);
-
-            if (!$data) {
-                return $response;
-            }
-
-            $signature = $data[AnalyticsData::KEY_SIGNATURE] ?? null;
-
-            $analyticsData = AnalyticsData::create();
-            $analyticsData->setQueryString($data['queryString'] ?? null);
-            $analyticsData->setRequestId($data['requestId'] ?? null);
-            $analyticsData->setDocumentId($data['documentId'] ?? null);
-            $analyticsData->setIndexName($data['indexName'] ?? null);
-            $analyticsData->setSignature(is_string($signature) ? $signature : null);
 
             $rejectionReason = $this->getSignatureRejectionReason($analyticsData);
 
