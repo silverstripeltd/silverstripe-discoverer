@@ -11,6 +11,10 @@ class AnalyticsData extends ModelData implements JsonSerializable
 
     use Injectable;
 
+    public const string QUERY_PARAM = '_searchAnalytics';
+
+    public const string KEY_SIGNATURE = 'sig';
+
     private ?string $indexName = null;
 
     private ?string $queryString = null;
@@ -18,6 +22,8 @@ class AnalyticsData extends ModelData implements JsonSerializable
     private mixed $documentId = null;
 
     private mixed $requestId = null;
+
+    private ?string $signature = null;
 
     public function getIndexName(): ?string
     {
@@ -67,16 +73,41 @@ class AnalyticsData extends ModelData implements JsonSerializable
         return $this;
     }
 
+    /**
+     * HMAC of the payload. Only present on data decoded from a signed link.
+     */
+    public function getSignature(): ?string
+    {
+        return $this->signature;
+    }
+
+    public function setSignature(?string $signature): AnalyticsData
+    {
+        $this->signature = $signature;
+
+        return $this;
+    }
+
+    /**
+     * When SEARCH_ANALYTICS_SECRET is set, the encoded payload also carries a signature so that the click can be
+     * verified when the link is followed.
+     */
     public function forTemplate(): string
     {
-        $data = $this->getDataArray();
+        $data = $this->getPayload();
 
         if (!$data) {
             return '';
         }
 
+        $signer = AnalyticsSigner::singleton();
+
+        if ($signer->isEnabled()) {
+            $data[self::KEY_SIGNATURE] = $signer->sign($this->getPayload());
+        }
+
         $query = [
-            '_searchAnalytics' => base64_encode(json_encode($data)),
+            self::QUERY_PARAM => base64_encode(json_encode($data)),
         ];
 
         return http_build_query($query);
@@ -92,7 +123,12 @@ class AnalyticsData extends ModelData implements JsonSerializable
         ];
     }
 
-    private function getDataArray(): array
+    /**
+     * The populated analytics fields, as encoded into links and covered by the signature.
+     *
+     * @return array<string, mixed>
+     */
+    public function getPayload(): array
     {
         $data = [];
 

@@ -5,6 +5,7 @@
   * [How fields are made available to you](#how-fields-are-made-available-to-you)
   * [Pagination](#pagination)
   * [Adding analytics](#adding-analytics)
+    * [Signing analytics links](#signing-analytics-links)
 
 Ok, so you've written some queries and run some searches, and now you want to understand how that information is going
 to be made available for use in (say) a Silverstripe template.
@@ -86,3 +87,32 @@ available through Elastic App Search, but not currently available through Elasti
 be that if you switched to a new service that did not support analytics, then that portion of your search would be
 silently excluded - allowing the core functionality of search to remain functioning without any code changes. **At
 some point**, it would be great if Analytics became a CMS feature, rather than us relying on our service providers.
+
+#### Signing analytics links
+
+Without signing, the `_searchAnalytics` param is plain base64 encoded JSON, so anyone can construct or reuse a link and
+have a click recorded. To make sure clicks are only recorded for links that your site generated, set a signing secret:
+
+* `SEARCH_ANALYTICS_SECRET="<long random string>"`
+
+You can generate a secret with:
+
+```shell
+php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
+```
+
+When a secret is set, each decorated link also carries an HMAC-SHA256 signature of its analytics data. Clicks are not
+recorded when the signature is missing or doesn't match (the page itself is always rendered as normal). This means:
+
+* Forged links (made-up engine, request or document IDs) aren't recorded.
+* Links rendered by another site, or before you set the secret, aren't recorded. That includes old tracked URLs that
+  search engines have already indexed.
+
+The signature depends only on the link's data, so the same result always gets the same link. Results pages render
+identically on every request, and caching them (EG: by a CDN, static publishing or partial caching) is unaffected.
+
+Signing doesn't stop a genuine link from being followed again later. To keep crawlers away from tracked links, see
+the `robots.txt`, `X-Robots-Tag` and `rel="nofollow"` recommendations.
+
+Changing the secret makes every previously rendered link invalid, so clicks on cached results pages aren't recorded
+until those pages are rendered again.
