@@ -74,6 +74,11 @@ This module comes with an HTTP middleware that you can apply by setting the foll
 
 * `SEARCH_ANALYTICS_ENABLED=1`
 
+> [!WARNING]
+> Every request that carries the analytics param is sent to your search service as a click event, including requests
+> from crawlers and bots. Before enabling analytics, read [Search analytics](analytics.md) and follow its
+> [recommended setup checklist](analytics.md#recommended-setup-checklist).
+
 If you do this, then you will have access to `$AnalyticsData` and `$getDecoratedLink()` for your `Record` objects.
 Eiter of these can be used to add analytics tracking data to your link (though, `$getDecoratedLink()` is the easier of
 the two, as it will automatically consider whether there are existing GET params in the link before appending more).
@@ -81,7 +86,7 @@ the two, as it will automatically consider whether there are existing GET params
 The following example assumes that you have indexed a `title` and `link` for each search Document.
 
 ```silverstripe
-<a href="{$getDecoratedLink($Link.forTemplate)}">$Title</a>
+<a href="{$getDecoratedLink($Link.forTemplate)}" rel="nofollow">$Title</a>
 ```
 
 **Note:** Analytics is perhaps the most likely feature to be missing from search service providers. EG: It is
