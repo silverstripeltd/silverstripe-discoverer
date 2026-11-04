@@ -8,6 +8,7 @@
   * [Simple usage](docs/simple-usage.md)
   * [Detailed result handling](docs/detailed-result-handling.md)
   * [Detailed querying](docs/detailed-querying.md)
+  * [Search analytics](docs/analytics.md)
 * [Available service integration modules](#available-service-integration-modules)
 
 ## Purpose
@@ -79,6 +80,8 @@ Additional documentation can also be found below:
 * [Detailed querying](docs/detailed-querying.md)
   * Lots more information about filters, facets, sorts, and (hopefully) everything else you need to know to perform
     whatever sort of search you require.
+* [Search analytics](docs/analytics.md)
+  * How click tracking works, its risks, and a recommended setup checklist.
 
 ## Protected field names
 
