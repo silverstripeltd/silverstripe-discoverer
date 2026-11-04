@@ -2,8 +2,10 @@
 
 namespace SilverStripe\Discoverer\Tests\Analytics;
 
+use SilverStripe\Core\Environment;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
+use SilverStripe\Discoverer\Analytics\AnalyticsSigner;
 
 class AnalyticsDataTest extends SapphireTest
 {
@@ -28,6 +30,37 @@ class AnalyticsDataTest extends SapphireTest
         $expectedResult = http_build_query($expectedParams);
 
         $this->assertEquals($expectedResult, $data->forTemplate());
+    }
+
+    public function testForTemplateSignedWhenSecretSet(): void
+    {
+        $envBackup = Environment::getVariables();
+        Environment::setEnv(AnalyticsSigner::ENV_SECRET, 'secret');
+        try {
+            $data = AnalyticsData::create();
+            $data->setIndexName('our-index-main');
+            $data->setDocumentId('abc123');
+            $data->setRequestId('123abc');
+
+            parse_str($data->forTemplate(), $query);
+            $encoded = json_decode(base64_decode($query[AnalyticsData::QUERY_PARAM]), true);
+
+            $this->assertSame(['indexName', 'documentId', 'requestId', 'sig'], array_keys($encoded));
+            $this->assertTrue(
+                AnalyticsSigner::create()->verify($data->getPayload(), $encoded[AnalyticsData::KEY_SIGNATURE])
+            );
+        } finally {
+            Environment::setVariables($envBackup);
+        }
+    }
+
+    public function testGetPayloadOmitsEmptyFields(): void
+    {
+        $data = AnalyticsData::create();
+        $data->setIndexName('our-index-main');
+        $data->setDocumentId('abc123');
+
+        $this->assertSame(['indexName' => 'our-index-main', 'documentId' => 'abc123'], $data->getPayload());
     }
 
     public function testForTemplateEmptyData(): void

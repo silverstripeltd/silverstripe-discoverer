@@ -35,10 +35,13 @@ class RecordTest extends SapphireTest
     }
 
     #[DataProvider('provideLinks')]
-    public function testGetDecoratedLink(?AnalyticsData $analyticsData, string $link, string $expectedLink): void
+    public function testGetDecoratedLink(bool $withAnalytics, string $link, string $expectedLinkFormat): void
     {
+        $analyticsData = $withAnalytics ? $this->createAnalyticsData() : null;
         $record = Record::create();
         $record->setAnalyticsData($analyticsData);
+
+        $expectedLink = sprintf($expectedLinkFormat, $analyticsData?->forTemplate());
 
         $this->assertEquals($expectedLink, $record->getDecoratedLink($link));
     }
@@ -50,35 +53,40 @@ class RecordTest extends SapphireTest
         $this->assertSame('<a href="SilverStripe\Discoverer\Service\Results\Field">Link</a><a href="http://www.example.com">Link</a>', trim($actual->RAW()));
     }
 
+    /**
+     * Expected links are sprintf formats, where %s is replaced by the encoded analytics param
+     */
     public static function provideLinks(): array
     {
-        // SapphireTest doesn't like the use of injector in data providers
-        $analyticsData = new AnalyticsData();
+        return [
+            [false, '', '/'],
+            [false, '/', '/'],
+            [false, '?one=two', '/?one=two'],
+            [false, '/?one=two', '/?one=two'],
+            [false, '/page', '/page'],
+            [false, '/page/', '/page'],
+            [false, '/page?one=two', '/page?one=two'],
+            [false, '/page/?one=two', '/page?one=two'],
+            [true, '', '/?%s'],
+            [true, '/', '/?%s'],
+            [true, '?one=two', '/?one=two&%s'],
+            [true, '/?one=two', '/?one=two&%s'],
+            [true, '/page', '/page?%s'],
+            [true, '/page/', '/page?%s'],
+            [true, '/page?one=two', '/page?one=two&%s'],
+            [true, '/page/?one=two', '/page?one=two&%s'],
+        ];
+    }
+
+    private function createAnalyticsData(): AnalyticsData
+    {
+        $analyticsData = AnalyticsData::create();
         $analyticsData->setIndexName('test');
         $analyticsData->setQueryString('query');
         $analyticsData->setDocumentId('documentId');
         $analyticsData->setRequestId('requestId');
 
-        $expectedAnalytics = $analyticsData->forTemplate();
-
-        return [
-            [null, '', '/'],
-            [null, '/', '/'],
-            [null, '?one=two', '/?one=two'],
-            [null, '/?one=two', '/?one=two'],
-            [null, '/page', '/page'],
-            [null, '/page/', '/page'],
-            [null, '/page?one=two', '/page?one=two'],
-            [null, '/page/?one=two', '/page?one=two'],
-            [$analyticsData, '', sprintf('/?%s', $expectedAnalytics)],
-            [$analyticsData, '/', sprintf('/?%s', $expectedAnalytics)],
-            [$analyticsData, '?one=two', sprintf('/?one=two&%s', $expectedAnalytics)],
-            [$analyticsData, '/?one=two', sprintf('/?one=two&%s', $expectedAnalytics)],
-            [$analyticsData, '/page', sprintf('/page?%s', $expectedAnalytics)],
-            [$analyticsData, '/page/', sprintf('/page?%s', $expectedAnalytics)],
-            [$analyticsData, '/page?one=two', sprintf('/page?one=two&%s', $expectedAnalytics)],
-            [$analyticsData, '/page/?one=two', sprintf('/page?one=two&%s', $expectedAnalytics)],
-        ];
+        return $analyticsData;
     }
 
     public function testDynamicFields(): void

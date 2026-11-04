@@ -26,6 +26,10 @@ class AnalyticsMiddleware implements HTTPMiddleware
 
     public const string ENV_ANALYTICS_ENABLED = 'SEARCH_ANALYTICS_ENABLED';
 
+    public const string REASON_MISSING_SIGNATURE = 'missing_signature';
+
+    public const string REASON_INVALID_SIGNATURE = 'invalid_signature';
+
     private ?LoggerInterface $logger = null;
 
     private ?AnalyticsRequestValidator $validator = null;
@@ -56,23 +60,19 @@ class AnalyticsMiddleware implements HTTPMiddleware
         }
 
         try {
-            $data = base64_decode($request->getVar('_searchAnalytics') ?? '', true);
+            $analyticsData = AnalyticsData::decode($request->getVar(AnalyticsData::QUERY_PARAM));
 
-            if (!$data) {
+            if (!$analyticsData) {
                 return $response;
             }
 
-            $data = json_decode($data, true);
+            $rejectionReason = $this->getSignatureRejectionReason($analyticsData);
 
-            if (!$data || !is_array($data)) {
+            if ($rejectionReason !== null) {
+                $this->logger?->debug(sprintf('Search analytics click not recorded: %s', $rejectionReason));
+
                 return $response;
             }
-
-            $analyticsData = AnalyticsData::create();
-            $analyticsData->setQueryString($data['queryString'] ?? null);
-            $analyticsData->setRequestId($data['requestId'] ?? null);
-            $analyticsData->setDocumentId($data['documentId'] ?? null);
-            $analyticsData->setIndexName($data['indexName'] ?? null);
 
             if ($this->validator && !$this->validator->shouldProcess($request, $response, $analyticsData)) {
                 return $response;
@@ -98,6 +98,32 @@ class AnalyticsMiddleware implements HTTPMiddleware
         } catch (Throwable) {
             return;
         }
+    }
+
+    /**
+     * Checks the signature of decoded analytics data.
+     *
+     * @return string|null One of the REASON_* constants, or null when signing isn't enabled or the signature is valid
+     */
+    public function getSignatureRejectionReason(AnalyticsData $analyticsData): ?string
+    {
+        $signer = AnalyticsSigner::singleton();
+
+        if (!$signer->isEnabled()) {
+            return null;
+        }
+
+        $signature = $analyticsData->getSignature();
+
+        if ($signature === null) {
+            return self::REASON_MISSING_SIGNATURE;
+        }
+
+        if (!$signer->verify($analyticsData->getPayload(), $signature)) {
+            return self::REASON_INVALID_SIGNATURE;
+        }
+
+        return null;
     }
 
 }
