@@ -6,6 +6,7 @@ use Exception;
 use JsonSerializable;
 use SilverStripe\Control\Controller;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
+use SilverStripe\Discoverer\Analytics\ClickController;
 use SilverStripe\Model\ModelData;
 use stdClass;
 
@@ -35,9 +36,31 @@ class Record extends ModelData implements JsonSerializable
             return Controller::join_links($link);
         }
 
+        if (ClickController::isActive()) {
+            return $this->getClickLink($link);
+        }
+
         $analyticsQueryParam = $analyticsData->forTemplate();
 
         return Controller::join_links($link, '?' . $analyticsQueryParam);
+    }
+
+    /**
+     * The click route URL for a result link, which records the click and redirects to the link. Returns null when
+     * there's no link or analytics data, or the click route isn't active (see ClickController).
+     *
+     * Templates can use this alongside the real link (for example in a data attribute) so that hovering over or copying
+     * a result shows the real link, and a script swaps in this URL when the result is clicked.
+     */
+    public function getClickLink(?string $link = null): ?string
+    {
+        $analyticsData = $this->getAnalyticsData();
+
+        if ($link === null || !$analyticsData || !ClickController::isActive()) {
+            return null;
+        }
+
+        return ClickController::linkFor(Controller::join_links($link), $analyticsData);
     }
 
     public function getAnalyticsData(): ?AnalyticsData

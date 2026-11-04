@@ -15,6 +15,11 @@ class AnalyticsData extends ModelData implements JsonSerializable
 
     public const string KEY_SIGNATURE = 'sig';
 
+    /**
+     * Key under which a click route's destination URL is included in the signed payload
+     */
+    public const string KEY_DESTINATION = 'url';
+
     private ?string $indexName = null;
 
     private ?string $queryString = null;
@@ -111,6 +116,64 @@ class AnalyticsData extends ModelData implements JsonSerializable
         ];
 
         return http_build_query($query);
+    }
+
+    /**
+     * Query string for a click route link: the destination URL plus the analytics data, signed together so that
+     * neither can be changed. Requires SEARCH_ANALYTICS_SECRET.
+     */
+    public function forClickUrl(string $destination): string
+    {
+        $data = $this->getPayload();
+        $data[self::KEY_SIGNATURE] = AnalyticsSigner::singleton()->sign($this->getDestinationPayload($destination));
+
+        return http_build_query([
+            self::KEY_DESTINATION => $destination,
+            self::QUERY_PARAM => base64_encode(json_encode($data)),
+        ]);
+    }
+
+    /**
+     * The payload signed for a click route link: the analytics data plus the destination URL
+     *
+     * @return array<string, mixed>
+     */
+    public function getDestinationPayload(string $destination): array
+    {
+        $payload = $this->getPayload();
+        $payload[self::KEY_DESTINATION] = $destination;
+
+        return $payload;
+    }
+
+    /**
+     * Creates analytics data from an encoded _searchAnalytics value.
+     *
+     * @return static|null Null when the value is missing, isn't base64 encoded JSON, or isn't a JSON object
+     */
+    public static function decode(mixed $encoded): ?static
+    {
+        if (!is_string($encoded) || $encoded === '') {
+            return null;
+        }
+
+        $json = base64_decode($encoded, true);
+        $data = $json ? json_decode($json, true) : null;
+
+        if (!is_array($data) || !$data) {
+            return null;
+        }
+
+        $signature = $data[self::KEY_SIGNATURE] ?? null;
+
+        $analyticsData = static::create();
+        $analyticsData->setQueryString($data['queryString'] ?? null);
+        $analyticsData->setRequestId($data['requestId'] ?? null);
+        $analyticsData->setDocumentId($data['documentId'] ?? null);
+        $analyticsData->setIndexName($data['indexName'] ?? null);
+        $analyticsData->setSignature(is_string($signature) ? $signature : null);
+
+        return $analyticsData;
     }
 
     public function jsonSerialize(): array
