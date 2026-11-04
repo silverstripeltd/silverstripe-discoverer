@@ -36,7 +36,7 @@ class AnalyticsSignerTest extends SapphireTest
         $signer = AnalyticsSigner::create();
 
         $this->assertFalse($signer->isEnabled());
-        $this->assertFalse($signer->verify(['documentId' => 'doc-1'], 1000, 'anything'));
+        $this->assertFalse($signer->verify(['documentId' => 'doc-1'], 'anything'));
     }
 
     public function testSignWithoutSecretThrows(): void
@@ -45,7 +45,7 @@ class AnalyticsSignerTest extends SapphireTest
 
         $this->expectException(LogicException::class);
 
-        AnalyticsSigner::create()->sign(['documentId' => 'doc-1'], 1000);
+        AnalyticsSigner::create()->sign(['documentId' => 'doc-1']);
     }
 
     public function testSignatureVerifies(): void
@@ -54,9 +54,9 @@ class AnalyticsSignerTest extends SapphireTest
         $signer = AnalyticsSigner::create();
         $payload = ['indexName' => 'main', 'documentId' => 'doc-1', 'requestId' => 'request-1'];
 
-        $signature = $signer->sign($payload, 1000);
+        $signature = $signer->sign($payload);
 
-        $this->assertTrue($signer->verify($payload, 1000, $signature));
+        $this->assertTrue($signer->verify($payload, $signature));
     }
 
     public function testSignatureIsIndependentOfKeyOrder(): void
@@ -65,8 +65,8 @@ class AnalyticsSignerTest extends SapphireTest
         $signer = AnalyticsSigner::create();
 
         $this->assertSame(
-            $signer->sign(['documentId' => 'doc-1', 'indexName' => 'main'], 1000),
-            $signer->sign(['indexName' => 'main', 'documentId' => 'doc-1'], 1000)
+            $signer->sign(['documentId' => 'doc-1', 'indexName' => 'main']),
+            $signer->sign(['indexName' => 'main', 'documentId' => 'doc-1'])
         );
     }
 
@@ -75,14 +75,13 @@ class AnalyticsSignerTest extends SapphireTest
         Environment::setEnv(AnalyticsSigner::ENV_SECRET, 'secret');
         $signer = AnalyticsSigner::create();
         $payload = ['documentId' => 'doc-1'];
-        $signature = $signer->sign($payload, 1000);
+        $signature = $signer->sign($payload);
 
-        $this->assertFalse($signer->verify(['documentId' => 'doc-2'], 1000, $signature));
-        $this->assertFalse($signer->verify($payload, 1001, $signature));
+        $this->assertFalse($signer->verify(['documentId' => 'doc-2'], $signature));
 
         Environment::setEnv(AnalyticsSigner::ENV_SECRET, 'rotated');
 
-        $this->assertFalse($signer->verify($payload, 1000, $signature));
+        $this->assertFalse($signer->verify($payload, $signature));
     }
 
 }

@@ -11,6 +11,9 @@ use SilverStripe\Core\Injector\Injectable;
 /**
  * Signs and verifies search analytics payloads with an HMAC, so that click events can only be recorded for links that
  * this site rendered. Signing is only active when the SEARCH_ANALYTICS_SECRET environment variable is set.
+ *
+ * The signature depends only on the payload, so the same data always produces the same link. That keeps rendered
+ * results pages identical between requests and safe to cache.
  */
 class AnalyticsSigner
 {
@@ -27,11 +30,10 @@ class AnalyticsSigner
     }
 
     /**
-     * @param array<string, mixed> $payload The analytics fields being signed (excluding timestamp and signature)
-     * @param int $timestamp Unix timestamp of when the link was generated
+     * @param array<string, mixed> $payload The fields being signed
      * @throws LogicException When no secret is configured
      */
-    public function sign(array $payload, int $timestamp): string
+    public function sign(array $payload): string
     {
         $secret = $this->getSecret();
 
@@ -39,7 +41,7 @@ class AnalyticsSigner
             throw new LogicException(sprintf('Cannot sign analytics data: %s is not set', self::ENV_SECRET));
         }
 
-        return hash_hmac(self::ALGORITHM, $this->canonicalise($payload, $timestamp), $secret);
+        return hash_hmac(self::ALGORITHM, $this->canonicalise($payload), $secret);
     }
 
     /**
@@ -47,13 +49,13 @@ class AnalyticsSigner
      *
      * @param array<string, mixed> $payload
      */
-    public function verify(array $payload, int $timestamp, string $signature): bool
+    public function verify(array $payload, string $signature): bool
     {
         if (!$this->isEnabled()) {
             return false;
         }
 
-        return hash_equals($this->sign($payload, $timestamp), $signature);
+        return hash_equals($this->sign($payload), $signature);
     }
 
     /**
@@ -62,13 +64,11 @@ class AnalyticsSigner
      *
      * @param array<string, mixed> $payload
      */
-    private function canonicalise(array $payload, int $timestamp): string
+    private function canonicalise(array $payload): string
     {
         ksort($payload);
 
-        $json = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
-
-        return sprintf('%s|%d', $json, $timestamp);
+        return json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
     }
 
     private function getSecret(): ?string

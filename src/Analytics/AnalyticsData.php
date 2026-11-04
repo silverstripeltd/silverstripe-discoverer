@@ -5,7 +5,6 @@ namespace SilverStripe\Discoverer\Analytics;
 use JsonSerializable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Model\ModelData;
-use SilverStripe\ORM\FieldType\DBDatetime;
 
 class AnalyticsData extends ModelData implements JsonSerializable
 {
@@ -13,8 +12,6 @@ class AnalyticsData extends ModelData implements JsonSerializable
     use Injectable;
 
     public const string QUERY_PARAM = '_searchAnalytics';
-
-    public const string KEY_TIMESTAMP = 'ts';
 
     public const string KEY_SIGNATURE = 'sig';
 
@@ -25,8 +22,6 @@ class AnalyticsData extends ModelData implements JsonSerializable
     private mixed $documentId = null;
 
     private mixed $requestId = null;
-
-    private ?int $timestamp = null;
 
     private ?string $signature = null;
 
@@ -79,22 +74,7 @@ class AnalyticsData extends ModelData implements JsonSerializable
     }
 
     /**
-     * Unix timestamp of when a signed link was generated. Only present on data decoded from a signed link.
-     */
-    public function getTimestamp(): ?int
-    {
-        return $this->timestamp;
-    }
-
-    public function setTimestamp(?int $timestamp): AnalyticsData
-    {
-        $this->timestamp = $timestamp;
-
-        return $this;
-    }
-
-    /**
-     * HMAC of the payload and timestamp. Only present on data decoded from a signed link.
+     * HMAC of the payload. Only present on data decoded from a signed link.
      */
     public function getSignature(): ?string
     {
@@ -109,8 +89,8 @@ class AnalyticsData extends ModelData implements JsonSerializable
     }
 
     /**
-     * When SEARCH_ANALYTICS_SECRET is set, the encoded payload also carries a timestamp and signature so that the
-     * click can be verified when the link is followed.
+     * When SEARCH_ANALYTICS_SECRET is set, the encoded payload also carries a signature so that the click can be
+     * verified when the link is followed.
      */
     public function forTemplate(): string
     {
@@ -123,9 +103,7 @@ class AnalyticsData extends ModelData implements JsonSerializable
         $signer = AnalyticsSigner::singleton();
 
         if ($signer->isEnabled()) {
-            $timestamp = DBDatetime::now()->getTimestamp();
-            $data[self::KEY_TIMESTAMP] = $timestamp;
-            $data[self::KEY_SIGNATURE] = $signer->sign($this->getPayload(), $timestamp);
+            $data[self::KEY_SIGNATURE] = $signer->sign($this->getPayload());
         }
 
         $query = [

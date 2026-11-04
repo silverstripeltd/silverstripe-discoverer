@@ -6,7 +6,6 @@ use SilverStripe\Core\Environment;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Analytics\AnalyticsData;
 use SilverStripe\Discoverer\Analytics\AnalyticsSigner;
-use SilverStripe\ORM\FieldType\DBDatetime;
 
 class AnalyticsDataTest extends SapphireTest
 {
@@ -37,8 +36,6 @@ class AnalyticsDataTest extends SapphireTest
     {
         $envBackup = Environment::getVariables();
         Environment::setEnv(AnalyticsSigner::ENV_SECRET, 'secret');
-        DBDatetime::set_mock_now('2026-01-01 12:00:00');
-
         try {
             $data = AnalyticsData::create();
             $data->setIndexName('our-index-main');
@@ -47,19 +44,13 @@ class AnalyticsDataTest extends SapphireTest
 
             parse_str($data->forTemplate(), $query);
             $encoded = json_decode(base64_decode($query[AnalyticsData::QUERY_PARAM]), true);
-            $timestamp = DBDatetime::now()->getTimestamp();
 
-            $this->assertSame($timestamp, $encoded[AnalyticsData::KEY_TIMESTAMP]);
+            $this->assertSame(['indexName', 'documentId', 'requestId', 'sig'], array_keys($encoded));
             $this->assertTrue(
-                AnalyticsSigner::create()->verify(
-                    $data->getPayload(),
-                    $timestamp,
-                    $encoded[AnalyticsData::KEY_SIGNATURE]
-                )
+                AnalyticsSigner::create()->verify($data->getPayload(), $encoded[AnalyticsData::KEY_SIGNATURE])
             );
         } finally {
             Environment::setVariables($envBackup);
-            DBDatetime::clear_mock_now();
         }
     }
 

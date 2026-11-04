@@ -101,14 +101,18 @@ You can generate a secret with:
 php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
 ```
 
-When a secret is set, each decorated link also carries a timestamp and an HMAC-SHA256 signature. Clicks are not
-recorded when the signature is missing or invalid, or when the link is older than `max_link_age` (the page itself is
-always rendered as normal). The default is one hour, and `0` disables the age check:
+When a secret is set, each decorated link also carries an HMAC-SHA256 signature of its analytics data. Clicks are not
+recorded when the signature is missing or doesn't match (the page itself is always rendered as normal). This means:
 
-```yaml
-SilverStripe\Discoverer\Analytics\AnalyticsMiddleware:
-  max_link_age: 3600
-```
+* Forged links (made-up engine, request or document IDs) aren't recorded.
+* Links rendered by another site, or before you set the secret, aren't recorded. That includes old tracked URLs that
+  search engines have already indexed.
 
-**Note:** If your results pages are cached (EG: by a CDN, static publishing or partial caching), set `max_link_age` to
-at least that cache lifetime, otherwise clicks from cached pages will not be recorded.
+The signature depends only on the link's data, so the same result always gets the same link. Results pages render
+identically on every request, and caching them (EG: by a CDN, static publishing or partial caching) is unaffected.
+
+Signing doesn't stop a genuine link from being followed again later. To keep crawlers away from tracked links, see
+the `robots.txt`, `X-Robots-Tag` and `rel="nofollow"` recommendations.
+
+Changing the secret makes every previously rendered link invalid, so clicks on cached results pages aren't recorded
+until those pages are rendered again.

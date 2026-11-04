@@ -73,7 +73,6 @@ class AnalyticsMiddlewareTest extends SapphireTest
     {
         $payload = $this->decodeParam($this->encodePayload());
 
-        $this->assertArrayNotHasKey(AnalyticsData::KEY_TIMESTAMP, $payload);
         $this->assertArrayNotHasKey(AnalyticsData::KEY_SIGNATURE, $payload);
 
         $this->dispatch($this->createRequest());
@@ -101,9 +100,10 @@ class AnalyticsMiddlewareTest extends SapphireTest
         match ($case) {
             'tampered' => $payload['documentId'] = 'other-doc',
             'missing signature' => $payload = array_diff_key($payload, [AnalyticsData::KEY_SIGNATURE => true]),
-            'missing timestamp' => $payload = array_diff_key($payload, [AnalyticsData::KEY_TIMESTAMP => true]),
             'wrong secret' => $payload[AnalyticsData::KEY_SIGNATURE] = hash_hmac('sha256', 'anything', 'guess'),
-            'timestamp changed' => $payload[AnalyticsData::KEY_TIMESTAMP] += 10,
+            'signature for other data' => $payload[AnalyticsData::KEY_SIGNATURE] = AnalyticsSigner::create()->sign(
+                ['documentId' => 'other-doc']
+            ),
         };
 
         $response = $this->dispatch($this->createRequest(base64_encode(json_encode($payload))));
@@ -118,9 +118,8 @@ class AnalyticsMiddlewareTest extends SapphireTest
         return [
             'tampered' => ['tampered'],
             'missing signature' => ['missing signature'],
-            'missing timestamp' => ['missing timestamp'],
             'wrong secret' => ['wrong secret'],
-            'timestamp changed' => ['timestamp changed'],
+            'signature for other data' => ['signature for other data'],
         ];
     }
 
@@ -134,50 +133,36 @@ class AnalyticsMiddlewareTest extends SapphireTest
         $this->assertCount(0, $this->adaptor->processed);
     }
 
-    public function testExpiredSignedClickIsNotRecorded(): void
+    public function testSignedLinkIsTheSameOnEveryRender(): void
     {
         $this->enableSigning();
-        $param = $this->encodePayload();
+        $first = $this->encodePayload();
 
-        DBDatetime::set_mock_now('2026-01-01 13:00:01');
-        $this->dispatch($this->createRequest($param));
+        DBDatetime::set_mock_now('2026-06-01 09:30:00');
 
-        $this->assertCount(0, $this->adaptor->processed);
+        $this->assertSame($first, $this->encodePayload());
     }
 
-    public function testSignedClickWithinMaxLinkAgeIsRecorded(): void
+    public function testSignedClickIsRecordedRegardlessOfAge(): void
     {
         $this->enableSigning();
         $param = $this->encodePayload();
 
-        DBDatetime::set_mock_now('2026-01-01 13:00:00');
+        DBDatetime::set_mock_now('2027-01-01 12:00:00');
         $this->dispatch($this->createRequest($param));
 
         $this->assertCount(1, $this->adaptor->processed);
     }
 
-    public function testMaxLinkAgeCanBeDisabled(): void
-    {
-        AnalyticsMiddleware::config()->set('max_link_age', 0);
-        $this->enableSigning();
-        $param = $this->encodePayload();
-
-        DBDatetime::set_mock_now('2026-02-01 12:00:00');
-        $this->dispatch($this->createRequest($param));
-
-        $this->assertCount(1, $this->adaptor->processed);
-    }
-
-    public function testFutureSignedClickIsNotRecorded(): void
+    public function testRejectionReasonIsLogged(): void
     {
         $this->enableSigning();
-        DBDatetime::set_mock_now('2026-01-01 12:05:00');
-        $param = $this->encodePayload();
+        $payload = $this->decodeParam($this->encodePayload());
+        $payload['documentId'] = 'other-doc';
 
-        DBDatetime::set_mock_now('2026-01-01 12:00:00');
-        $this->dispatch($this->createRequest($param));
+        $this->dispatch($this->createRequest(base64_encode(json_encode($payload))));
 
-        $this->assertCount(0, $this->adaptor->processed);
+        $this->assertTrue($this->logHandler->hasDebugThatContains(AnalyticsMiddleware::REASON_INVALID_SIGNATURE));
     }
 
     public function testAdaptorFailureStillRendersPageAndLogsError(): void
