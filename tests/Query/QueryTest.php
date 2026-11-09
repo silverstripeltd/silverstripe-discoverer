@@ -5,7 +5,10 @@ namespace SilverStripe\Discoverer\Tests\Query;
 use InvalidArgumentException;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Discoverer\Query\Boost;
+use SilverStripe\Discoverer\Query\Boost\Boost;
+use SilverStripe\Discoverer\Query\Boost\BoostAdaptor;
+use SilverStripe\Discoverer\Query\Boost\BoostCollection;
+use SilverStripe\Discoverer\Query\Boost\ProximityBoost;
 use SilverStripe\Discoverer\Query\Facet\Facet;
 use SilverStripe\Discoverer\Query\Facet\FacetAdaptor;
 use SilverStripe\Discoverer\Query\Filter\Criteria;
@@ -13,6 +16,7 @@ use SilverStripe\Discoverer\Query\Filter\CriteriaAdaptor;
 use SilverStripe\Discoverer\Query\Filter\Criterion;
 use SilverStripe\Discoverer\Query\Filter\CriterionAdaptor;
 use SilverStripe\Discoverer\Query\Query;
+use SilverStripe\Discoverer\Tests\Query\Boost\MockBoostAdaptor;
 use SilverStripe\Discoverer\Tests\Query\Facet\MockFacetAdaptor;
 use SilverStripe\Discoverer\Tests\Query\Filter\MockCriteriaAdaptor;
 use SilverStripe\Discoverer\Tests\Query\Filter\MockCriterionAdaptor;
@@ -64,6 +68,40 @@ class QueryTest extends SapphireTest
         $this->assertSame([], $query->getBoosts());
     }
 
+    public function testGetBoostCollectionHoldsAddedBoosts(): void
+    {
+        $query = Query::create();
+        $boost = Boost::value(['yes']);
+        $query->addBoost('featured', $boost);
+
+        $this->assertInstanceOf(BoostCollection::class, $query->getBoostCollection());
+        $this->assertSame(['featured' => [$boost]], $query->getBoostCollection()->getBoosts());
+    }
+
+    public function testDefaultBoostAdaptorIgnoresBoosts(): void
+    {
+        // `setUp()` registers no boost adaptor, so this relies on the default in `_config/adaptors.yml`
+        $query = Query::create();
+        $query->addBoost('featured', Boost::value(['yes']));
+        $query->addBoost('published_date', Boost::proximity('now', ProximityBoost::FUNCTION_LINEAR));
+
+        $this->assertCount(2, $query->getBoosts());
+        $this->assertNull($query->getBoostCollection()->getPreparedBoosts());
+    }
+
+    public function testRegisteredBoostAdaptorPreparesBoosts(): void
+    {
+        Injector::inst()->registerService(new MockBoostAdaptor(), BoostAdaptor::class);
+
+        $query = Query::create();
+        $query->addBoost('featured', Boost::value(['yes'], 2));
+
+        $this->assertSame(
+            ['featured' => [['factor' => 2.0, 'type' => 'value', 'values' => ['yes']]]],
+            $query->getBoostCollection()->getPreparedBoosts()
+        );
+    }
+
     public function testAddBoostReturnsSameInstance(): void
     {
         $query = Query::create();
@@ -75,7 +113,7 @@ class QueryTest extends SapphireTest
     {
         $query = Query::create();
         $first = Boost::value(['yes'], 2);
-        $second = Boost::proximity('now', Boost::FUNCTION_LINEAR);
+        $second = Boost::proximity('now', ProximityBoost::FUNCTION_LINEAR);
 
         $query->addBoost('published_date', $first)->addBoost('published_date', $second);
 
@@ -86,7 +124,7 @@ class QueryTest extends SapphireTest
     {
         $query = Query::create();
         $featured = Boost::value(['yes']);
-        $popularity = Boost::proximity(100, Boost::FUNCTION_GAUSSIAN, 3);
+        $popularity = Boost::proximity(100, ProximityBoost::FUNCTION_GAUSSIAN, 3);
 
         $query->addBoost('featured', $featured);
         $query->addBoost('popularity', $popularity);
@@ -107,7 +145,7 @@ class QueryTest extends SapphireTest
         $query->addBoost('old', Boost::value(['yes']));
 
         $featured = Boost::value(['yes']);
-        $date = Boost::proximity('now', Boost::FUNCTION_LINEAR);
+        $date = Boost::proximity('now', ProximityBoost::FUNCTION_LINEAR);
 
         $this->assertSame($query, $query->setBoosts(['featured' => [$featured, $date]]));
         $this->assertSame(['featured' => [$featured, $date]], $query->getBoosts());

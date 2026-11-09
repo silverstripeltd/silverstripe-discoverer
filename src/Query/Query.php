@@ -5,6 +5,8 @@ namespace SilverStripe\Discoverer\Query;
 use Exception;
 use InvalidArgumentException;
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Discoverer\Query\Boost\Boost;
+use SilverStripe\Discoverer\Query\Boost\BoostCollection;
 use SilverStripe\Discoverer\Query\Facet\Facet;
 use SilverStripe\Discoverer\Query\Facet\FacetCollection;
 use SilverStripe\Discoverer\Query\Filter\Clause;
@@ -54,17 +56,16 @@ class Query
     private ?int $precision = null;
 
     /**
-     * The query-time boosts keyed by field name, each holding a list in insertion order.
-     *
-     * @var array<string, Boost[]>
+     * The query-time boosts, translated for the provider by its `BoostAdaptor`.
      */
-    private array $boosts = [];
+    private BoostCollection $boostCollection;
 
     public function __construct(private string $queryString = '')
     {
         // See the docblock on self::$filter for some details
         $this->criteria = Criteria::createAll();
         $this->facetCollection = FacetCollection::create();
+        $this->boostCollection = BoostCollection::create();
     }
 
     public function setQueryString(string $queryString): void
@@ -210,6 +211,16 @@ class Query
     }
 
     /**
+     * Get the collection holding this query's boosts, for a provider to translate.
+     *
+     * @return BoostCollection - the boosts on this query
+     */
+    public function getBoostCollection(): BoostCollection
+    {
+        return $this->boostCollection;
+    }
+
+    /**
      * Add a query-time relevance boost for a field. Several boosts on one field are kept in the order they were added.
      * Not all search services support query-time boosts; where unsupported, boosts are ignored. Some providers (the
      * Silverstripe Search Service among them) replace the engine's stored boosts for the query when query-time
@@ -222,51 +233,23 @@ class Query
      */
     public function addBoost(string $field, Boost $boost): static
     {
-        if ($field === '') {
-            throw new InvalidArgumentException('Boost $field must not be empty');
-        }
-
-        $this->boosts[$field][] = $boost;
+        $this->boostCollection->addBoost($field, $boost);
 
         return $this;
     }
 
     /**
-     * Replace all boosts. Pass an empty array to clear them; on providers where query-time boosts replace the
-     * engine's stored boosts, clearing restores the stored boosts.
+     * Replace all boosts, or none of them when any entry is invalid. Pass an empty array to clear them; on providers
+     * where query-time boosts replace the engine's stored boosts, clearing restores the stored boosts.
      *
      * @param array<string, Boost[]> $boosts The boosts keyed by field name, in the shape `getBoosts()` returns
      * @return static - this query, for chaining
-     * @throws InvalidArgumentException When a field name is empty or an element is not a `Boost`
+     * @throws InvalidArgumentException When a field name is empty, a field's entry is not an array, or an element
+     *     is not a `Boost`
      */
     public function setBoosts(array $boosts): static
     {
-        $previous = $this->boosts;
-        $this->boosts = [];
-
-        try {
-            foreach ($boosts as $field => $fieldBoosts) {
-                if (!is_array($fieldBoosts)) {
-                    throw new InvalidArgumentException('Boosts for each field must be an array of Boost instances');
-                }
-
-                foreach ($fieldBoosts as $boost) {
-                    if (!$boost instanceof Boost) {
-                        throw new InvalidArgumentException(
-                            sprintf('Boosts must be instances of Boost, got %s', get_debug_type($boost))
-                        );
-                    }
-
-                    // Numeric-string keys arrive as `int`, which `addBoost()` would reject
-                    $this->addBoost((string) $field, $boost);
-                }
-            }
-        } catch (InvalidArgumentException $e) {
-            // Leave the query unchanged when any entry is invalid
-            $this->boosts = $previous;
-
-            throw $e;
-        }
+        $this->boostCollection->setBoosts($boosts);
 
         return $this;
     }
@@ -274,11 +257,12 @@ class Query
     /**
      * Get all boosts.
      *
-     * @return array<string, Boost[]> The boosts keyed by field name, each holding a list in insertion order
+     * @return array<int|string, Boost[]> - the boosts keyed by field name, each holding a list in insertion order;
+     *     numeric field names come back as `int` keys, so adaptors must cast them to `string`
      */
     public function getBoosts(): array
     {
-        return $this->boosts;
+        return $this->boostCollection->getBoosts();
     }
 
     /**
