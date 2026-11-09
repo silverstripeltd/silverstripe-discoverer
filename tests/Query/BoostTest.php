@@ -122,4 +122,68 @@ class BoostTest extends SapphireTest
         Boost::create('functional');
     }
 
+    public function testNonFiniteFloatValuesAreRejected(): void
+    {
+        foreach ([NAN, INF, -INF] as $value) {
+            try {
+                Boost::value(['featured', $value]);
+                $this->fail('Expected InvalidArgumentException for value ' . $value);
+            } catch (InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
+
+    public function testNonFiniteCenterIsRejected(): void
+    {
+        foreach ([NAN, INF] as $center) {
+            try {
+                Boost::proximity($center, Boost::FUNCTION_LINEAR);
+                $this->fail('Expected InvalidArgumentException for center ' . $center);
+            } catch (InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
+
+    public function testValueBoostWithCenterOrFunctionThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Boost::create(Boost::TYPE_VALUE, ['featured'], 'now', Boost::FUNCTION_LINEAR);
+    }
+
+    public function testValueBoostWithCenterOnlyThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Boost::create(Boost::TYPE_VALUE, ['featured'], 'now');
+    }
+
+    public function testProximityBoostWithValuesThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Boost::create(Boost::TYPE_PROXIMITY, ['featured'], 'now', Boost::FUNCTION_LINEAR);
+    }
+
+    public function testEmptyAndWhitespaceStringValuesThrow(): void
+    {
+        foreach (['', '   ', "\t\n"] as $value) {
+            try {
+                Boost::value(['featured', $value]);
+                $this->fail('Expected InvalidArgumentException for a blank value');
+            } catch (InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
+
+    public function testWhitespaceCenterThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Boost::proximity('   ', Boost::FUNCTION_LINEAR);
+    }
+
 }

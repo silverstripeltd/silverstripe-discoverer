@@ -101,6 +101,55 @@ class QueryTest extends SapphireTest
         Query::create()->addBoost('', Boost::value(['yes']));
     }
 
+    public function testSetBoostsReplacesAllBoosts(): void
+    {
+        $query = Query::create();
+        $query->addBoost('old', Boost::value(['yes']));
+
+        $featured = Boost::value(['yes']);
+        $date = Boost::proximity('now', Boost::FUNCTION_LINEAR);
+
+        $this->assertSame($query, $query->setBoosts(['featured' => [$featured, $date]]));
+        $this->assertSame(['featured' => [$featured, $date]], $query->getBoosts());
+    }
+
+    public function testSetBoostsWithEmptyArrayClearsBoosts(): void
+    {
+        $query = Query::create();
+        $query->addBoost('featured', Boost::value(['yes']));
+
+        $query->setBoosts([]);
+
+        $this->assertSame([], $query->getBoosts());
+    }
+
+    public function testSetBoostsRejectsNonBoostElement(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Query::create()->setBoosts(['featured' => ['yes']]);
+    }
+
+    public function testSetBoostsRejectsEmptyFieldName(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Query::create()->setBoosts(['' => [Boost::value(['yes'])]]);
+    }
+
+    public function testSetBoostsLeavesBoostsUnchangedWhenInvalid(): void
+    {
+        $existing = Boost::value(['yes']);
+        $query = Query::create()->addBoost('featured', $existing);
+
+        try {
+            $query->setBoosts(['popularity' => [Boost::value(['high'])], 'category' => ['not a boost']]);
+            $this->fail('Expected an InvalidArgumentException');
+        } catch (InvalidArgumentException) {
+            $this->assertSame(['featured' => [$existing]], $query->getBoosts());
+        }
+    }
+
     public function testAddSort(): void
     {
         $query = Query::create();

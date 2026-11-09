@@ -467,6 +467,8 @@ $query->addBoost('location', Boost::proximity('51.5074,-0.1278', Boost::FUNCTION
 
 Several boosts can be added to the same field; they are kept in the order they were added. Use `getBoosts()` to read them back, keyed by field name.
 
+Use `setBoosts()` to replace all boosts at once, passing the same shape that `getBoosts()` returns (field name to a list of `Boost` objects). Passing an empty array clears them, which on providers where query-time boosts replace the stored boosts restores the engine's stored boosts.
+
 ## Blocking search keywords
 
 You can stop searches containing particular words or phrases from reaching your search service. A blocked search

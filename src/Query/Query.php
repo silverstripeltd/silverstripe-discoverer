@@ -54,6 +54,8 @@ class Query
     private ?int $precision = null;
 
     /**
+     * The query-time boosts keyed by field name, each holding a list in insertion order.
+     *
      * @var array<string, Boost[]>
      */
     private array $boosts = [];
@@ -215,6 +217,7 @@ class Query
      *
      * @param string $field The name of the field to boost
      * @param Boost $boost The boost to apply to the field
+     * @return static - this query, for chaining
      * @throws InvalidArgumentException When the field name is empty
      */
     public function addBoost(string $field, Boost $boost): static
@@ -229,6 +232,48 @@ class Query
     }
 
     /**
+     * Replace all boosts. Pass an empty array to clear them; on providers where query-time boosts replace the
+     * engine's stored boosts, clearing restores the stored boosts.
+     *
+     * @param array<string, Boost[]> $boosts The boosts keyed by field name, in the shape `getBoosts()` returns
+     * @return static - this query, for chaining
+     * @throws InvalidArgumentException When a field name is empty or an element is not a `Boost`
+     */
+    public function setBoosts(array $boosts): static
+    {
+        $previous = $this->boosts;
+        $this->boosts = [];
+
+        try {
+            foreach ($boosts as $field => $fieldBoosts) {
+                if (!is_array($fieldBoosts)) {
+                    throw new InvalidArgumentException('Boosts for each field must be an array of Boost instances');
+                }
+
+                foreach ($fieldBoosts as $boost) {
+                    if (!$boost instanceof Boost) {
+                        throw new InvalidArgumentException(
+                            sprintf('Boosts must be instances of Boost, got %s', get_debug_type($boost))
+                        );
+                    }
+
+                    // Numeric-string keys arrive as `int`, which `addBoost()` would reject
+                    $this->addBoost((string) $field, $boost);
+                }
+            }
+        } catch (InvalidArgumentException $e) {
+            // Leave the query unchanged when any entry is invalid
+            $this->boosts = $previous;
+
+            throw $e;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get all boosts.
+     *
      * @return array<string, Boost[]> The boosts keyed by field name, each holding a list in insertion order
      */
     public function getBoosts(): array
