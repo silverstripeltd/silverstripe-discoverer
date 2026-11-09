@@ -2,8 +2,10 @@
 
 namespace SilverStripe\Discoverer\Tests\Query;
 
+use InvalidArgumentException;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Discoverer\Query\Boost;
 use SilverStripe\Discoverer\Query\Facet\Facet;
 use SilverStripe\Discoverer\Query\Facet\FacetAdaptor;
 use SilverStripe\Discoverer\Query\Filter\Criteria;
@@ -53,6 +55,50 @@ class QueryTest extends SapphireTest
         $query->setPrecision(null);
 
         $this->assertNull($query->getPrecision());
+    }
+
+    public function testBoostsDefaultToEmpty(): void
+    {
+        $query = Query::create();
+
+        $this->assertSame([], $query->getBoosts());
+    }
+
+    public function testAddBoostReturnsSameInstance(): void
+    {
+        $query = Query::create();
+
+        $this->assertSame($query, $query->addBoost('featured', Boost::value(['yes'])));
+    }
+
+    public function testAddBoostKeepsInsertionOrderOnOneField(): void
+    {
+        $query = Query::create();
+        $first = Boost::value(['yes'], 2);
+        $second = Boost::proximity('now', Boost::FUNCTION_LINEAR);
+
+        $query->addBoost('published_date', $first)->addBoost('published_date', $second);
+
+        $this->assertSame(['published_date' => [$first, $second]], $query->getBoosts());
+    }
+
+    public function testAddBoostKeysBoostsByField(): void
+    {
+        $query = Query::create();
+        $featured = Boost::value(['yes']);
+        $popularity = Boost::proximity(100, Boost::FUNCTION_GAUSSIAN, 3);
+
+        $query->addBoost('featured', $featured);
+        $query->addBoost('popularity', $popularity);
+
+        $this->assertSame(['featured' => [$featured], 'popularity' => [$popularity]], $query->getBoosts());
+    }
+
+    public function testAddBoostRejectsEmptyField(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        Query::create()->addBoost('', Boost::value(['yes']));
     }
 
     public function testAddSort(): void

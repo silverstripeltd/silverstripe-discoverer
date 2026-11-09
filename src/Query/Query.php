@@ -3,6 +3,7 @@
 namespace SilverStripe\Discoverer\Query;
 
 use Exception;
+use InvalidArgumentException;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Discoverer\Query\Facet\Facet;
 use SilverStripe\Discoverer\Query\Facet\FacetCollection;
@@ -51,6 +52,11 @@ class Query
     private array $tags = [];
 
     private ?int $precision = null;
+
+    /**
+     * @var array<string, Boost[]>
+     */
+    private array $boosts = [];
 
     public function __construct(private string $queryString = '')
     {
@@ -199,6 +205,35 @@ class Query
     public function getPrecision(): ?int
     {
         return $this->precision;
+    }
+
+    /**
+     * Add a query-time relevance boost for a field. Several boosts on one field are kept in the order they were added.
+     * Not all search services support query-time boosts; where unsupported, boosts are ignored. Some providers (the
+     * Silverstripe Search Service among them) replace the engine's stored boosts for the query when query-time
+     * boosts are sent.
+     *
+     * @param string $field The name of the field to boost
+     * @param Boost $boost The boost to apply to the field
+     * @throws InvalidArgumentException When the field name is empty
+     */
+    public function addBoost(string $field, Boost $boost): static
+    {
+        if ($field === '') {
+            throw new InvalidArgumentException('Boost $field must not be empty');
+        }
+
+        $this->boosts[$field][] = $boost;
+
+        return $this;
+    }
+
+    /**
+     * @return array<string, Boost[]> The boosts keyed by field name, each holding a list in insertion order
+     */
+    public function getBoosts(): array
+    {
+        return $this->boosts;
     }
 
     /**
