@@ -11,6 +11,17 @@ class NullBoostAdaptor implements BoostAdaptor
 {
 
     /**
+     * Accept every boost, as the provider ignores them all.
+     *
+     * @param string $field the name of the field being boosted
+     * @param Boost $boost the boost to accept
+     */
+    public function validateBoost(string $field, Boost $boost): void
+    {
+        // Nothing to check, as every boost is ignored when the request is prepared
+    }
+
+    /**
      * Ignore the boosts in a collection, as the provider does not use them.
      *
      * @param BoostCollection $boostCollection the boosts to ignore

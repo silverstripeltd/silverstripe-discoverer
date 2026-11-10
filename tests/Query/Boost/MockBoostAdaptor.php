@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Discoverer\Tests\Query\Boost;
 
+use SilverStripe\Discoverer\Query\Boost\Boost;
 use SilverStripe\Discoverer\Query\Boost\BoostAdaptor;
 use SilverStripe\Discoverer\Query\Boost\BoostCollection;
 use SilverStripe\Discoverer\Query\Boost\ProximityBoost;
@@ -9,6 +10,13 @@ use SilverStripe\Discoverer\Query\Boost\ValueBoost;
 
 class MockBoostAdaptor implements BoostAdaptor
 {
+
+    /**
+     * @inheritDoc
+     */
+    public function validateBoost(string $field, Boost $boost): void
+    {
+    }
 
     public function prepareBoosts(BoostCollection $boostCollection): mixed
     {

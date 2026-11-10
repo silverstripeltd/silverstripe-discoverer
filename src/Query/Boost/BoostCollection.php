@@ -51,13 +51,15 @@ class BoostCollection
      * @param string $field the name of the field to boost
      * @param Boost $boost the boost to apply to the field
      * @return static - this collection, for chaining
-     * @throws InvalidArgumentException When the field name is empty
+     * @throws InvalidArgumentException When the field name is empty, or the adaptor rejects the boost
      */
     public function addBoost(string $field, Boost $boost): static
     {
         if ($field === '') {
             throw new InvalidArgumentException('Boost $field must not be empty');
         }
+
+        $this->adaptor?->validateBoost($field, $boost);
 
         $this->boosts[$field][] = $boost;
 
@@ -69,8 +71,8 @@ class BoostCollection
      *
      * @param array<string, Boost[]> $boosts the boosts keyed by field name, in the shape `getBoosts()` returns
      * @return static - this collection, for chaining
-     * @throws InvalidArgumentException When a field name is empty, a field's entry is not an array, or an element
-     *     is not a `Boost`
+     * @throws InvalidArgumentException When a field name is empty, a field's entry is not an array, an element is
+     *     not a `Boost`, or the adaptor rejects a boost
      */
     public function setBoosts(array $boosts): static
     {

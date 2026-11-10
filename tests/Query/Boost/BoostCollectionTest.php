@@ -109,6 +109,41 @@ class BoostCollectionTest extends SapphireTest
         }
     }
 
+    /**
+     * Proves `addBoost()` throws as soon as the adaptor rejects a boost, and does not store it.
+     */
+    public function testAddBoostThrowsWhenAdaptorRejectsBoost(): void
+    {
+        $collection = BoostCollection::create();
+        $collection->setAdaptor($this->createRejectingAdaptor());
+
+        try {
+            $collection->addBoost('featured', Boost::value(['yes'], 6));
+            $this->fail('Expected an InvalidArgumentException');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('Rejected boost on "featured"', $e->getMessage());
+            $this->assertSame([], $collection->getBoosts());
+        }
+    }
+
+    /**
+     * Proves `setBoosts()` leaves the existing boosts in place when the adaptor rejects one of the replacements.
+     */
+    public function testSetBoostsLeavesBoostsUnchangedWhenAdaptorRejectsBoost(): void
+    {
+        $existing = Boost::value(['yes']);
+        $collection = BoostCollection::create();
+        $collection->setAdaptor($this->createRejectingAdaptor());
+        $collection->addBoost('featured', $existing);
+
+        try {
+            $collection->setBoosts(['popularity' => [Boost::value(['high'], 2), Boost::value(['low'], 6)]]);
+            $this->fail('Expected an InvalidArgumentException');
+        } catch (InvalidArgumentException) {
+            $this->assertSame(['featured' => [$existing]], $collection->getBoosts());
+        }
+    }
+
     public function testPrepareBoosts(): void
     {
         Injector::inst()->registerService(new MockBoostAdaptor(), BoostAdaptor::class);
@@ -145,6 +180,31 @@ class BoostCollectionTest extends SapphireTest
         $collection->addBoost('featured', Boost::value(['yes']));
 
         $this->assertNull($collection->getPreparedBoosts());
+    }
+
+    /**
+     * Build an adaptor that rejects any boost with a factor above 5.
+     *
+     * @return BoostAdaptor - the rejecting adaptor
+     */
+    private function createRejectingAdaptor(): BoostAdaptor
+    {
+        return new class extends MockBoostAdaptor {
+
+            /**
+             * Reject any boost with a factor above 5.
+             *
+             * @param string $field - the name of the field being boosted
+             * @param Boost $boost - the boost to check
+             */
+            public function validateBoost(string $field, Boost $boost): void
+            {
+                if ($boost->getFactor() > 5) {
+                    throw new InvalidArgumentException(sprintf('Rejected boost on "%s"', $field));
+                }
+            }
+
+        };
     }
 
 }

@@ -2,6 +2,8 @@
 
 namespace SilverStripe\Discoverer\Query\Boost;
 
+use InvalidArgumentException;
+
 /**
  * Translates a `BoostCollection` into a search provider's request format.
  *
@@ -10,6 +12,15 @@ namespace SilverStripe\Discoverer\Query\Boost;
  */
 interface BoostAdaptor
 {
+
+    /**
+     * Check that the provider can accept a boost, so an unusable boost is rejected when it is added to a query.
+     *
+     * @param string $field the name of the field being boosted
+     * @param Boost $boost the boost to check
+     * @throws InvalidArgumentException When the provider cannot accept the boost
+     */
+    public function validateBoost(string $field, Boost $boost): void;
 
     /**
      * Translate the boosts in a collection into the provider's request format.

@@ -229,7 +229,7 @@ class Query
      * @param string $field The name of the field to boost
      * @param Boost $boost The boost to apply to the field
      * @return static - this query, for chaining
-     * @throws InvalidArgumentException When the field name is empty
+     * @throws InvalidArgumentException When the field name is empty, or the provider's adaptor rejects the boost
      */
     public function addBoost(string $field, Boost $boost): static
     {
@@ -244,8 +244,8 @@ class Query
      *
      * @param array<string, Boost[]> $boosts The boosts keyed by field name, in the shape `getBoosts()` returns
      * @return static - this query, for chaining
-     * @throws InvalidArgumentException When a field name is empty, a field's entry is not an array, or an element
-     *     is not a `Boost`
+     * @throws InvalidArgumentException When a field name is empty, a field's entry is not an array, an element is
+     *     not a `Boost`, or the provider's adaptor rejects a boost
      */
     public function setBoosts(array $boosts): static
     {

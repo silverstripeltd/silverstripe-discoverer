@@ -472,6 +472,8 @@ Use `setBoosts()` to replace all boosts at once, passing the same shape that `ge
 
 Each provider translates boosts into its own request format through a `BoostAdaptor`, which it registers with the Injector. A provider that does not support boosts falls back to the default `NullBoostAdaptor`, which ignores them.
 
+A provider can set its own limits on boosts, such as a narrower range of factors. The adaptor checks each boost as it is added, so `addBoost()` and `setBoosts()` throw an `InvalidArgumentException` straight away for a boost the provider cannot accept, rather than the search failing later. `setBoosts()` leaves the existing boosts unchanged when it throws.
+
 ## Blocking search keywords
 
 You can stop searches containing particular words or phrases from reaching your search service. A blocked search
