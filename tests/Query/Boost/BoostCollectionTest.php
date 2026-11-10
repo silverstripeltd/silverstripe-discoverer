@@ -183,6 +183,17 @@ class BoostCollectionTest extends SapphireTest
     }
 
     /**
+     * Proves a collection with no adaptor ignores its boosts rather than failing when they are prepared.
+     */
+    public function testNoAdaptorIgnoresBoosts(): void
+    {
+        $collection = new BoostCollection();
+        $collection->addBoost('featured', Boost::value(['yes']));
+
+        $this->assertNull($collection->getPreparedBoosts());
+    }
+
+    /**
      * Build an adaptor that rejects any boost with a factor above 5.
      *
      * @return BoostAdaptor - the rejecting adaptor

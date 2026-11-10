@@ -120,11 +120,12 @@ class BoostCollection
     /**
      * Get the boosts translated by the registered adaptor.
      *
-     * @return mixed - the boosts in the provider's format, or `null` when the provider ignores boosts
+     * @return mixed - the boosts in the provider's format, or `null` when the provider ignores boosts or no adaptor
+     *     is set
      */
     public function getPreparedBoosts(): mixed
     {
-        return $this->adaptor->prepareBoosts($this);
+        return $this->adaptor?->prepareBoosts($this);
     }
 
 }
