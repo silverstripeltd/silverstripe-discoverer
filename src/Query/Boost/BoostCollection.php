@@ -92,7 +92,7 @@ class BoostCollection
                         );
                     }
 
-                    // Numeric-string keys arrive as `int`, which `addBoost()` would reject
+                    // Numeric field names arrive as `int` keys; cast so this still type-checks under `strict_types`
                     $this->addBoost((string) $field, $boost);
                 }
             }
