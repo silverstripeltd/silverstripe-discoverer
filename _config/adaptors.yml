@@ -10,3 +10,5 @@ SilverStripe\Core\Injector\Injector:
     class: SilverStripe\Discoverer\Service\Adaptors\SearchAdaptor
   SilverStripe\Discoverer\Service\Interfaces\SpellingSuggestionAdaptor:
     class: SilverStripe\Discoverer\Service\Adaptors\SpellingSuggestionAdaptor
+  SilverStripe\Discoverer\Query\Boost\BoostAdaptor:
+    class: SilverStripe\Discoverer\Query\Boost\NullBoostAdaptor

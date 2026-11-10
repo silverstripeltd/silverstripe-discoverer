@@ -3,7 +3,10 @@
 namespace SilverStripe\Discoverer\Query;
 
 use Exception;
+use InvalidArgumentException;
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Discoverer\Query\Boost\Boost;
+use SilverStripe\Discoverer\Query\Boost\BoostCollection;
 use SilverStripe\Discoverer\Query\Facet\Facet;
 use SilverStripe\Discoverer\Query\Facet\FacetCollection;
 use SilverStripe\Discoverer\Query\Filter\Clause;
@@ -52,11 +55,17 @@ class Query
 
     private ?int $precision = null;
 
+    /**
+     * The query-time boosts, translated for the provider by its `BoostAdaptor`.
+     */
+    private BoostCollection $boostCollection;
+
     public function __construct(private string $queryString = '')
     {
         // See the docblock on self::$filter for some details
         $this->criteria = Criteria::createAll();
         $this->facetCollection = FacetCollection::create();
+        $this->boostCollection = BoostCollection::create();
     }
 
     public function setQueryString(string $queryString): void
@@ -199,6 +208,61 @@ class Query
     public function getPrecision(): ?int
     {
         return $this->precision;
+    }
+
+    /**
+     * Get the collection holding this query's boosts, for a provider to translate.
+     *
+     * @return BoostCollection - the boosts on this query
+     */
+    public function getBoostCollection(): BoostCollection
+    {
+        return $this->boostCollection;
+    }
+
+    /**
+     * Add a query-time relevance boost for a field. Several boosts on one field are kept in the order they were added.
+     * Not all search services support query-time boosts; where unsupported, boosts are ignored. Some providers (the
+     * Silverstripe Search Service among them) replace the engine's stored boosts for the query when query-time
+     * boosts are sent.
+     *
+     * @param string $field The name of the field to boost
+     * @param Boost $boost The boost to apply to the field
+     * @return static - this query, for chaining
+     * @throws InvalidArgumentException When the field name is empty, or the provider's adaptor rejects the boost
+     */
+    public function addBoost(string $field, Boost $boost): static
+    {
+        $this->boostCollection->addBoost($field, $boost);
+
+        return $this;
+    }
+
+    /**
+     * Replace all boosts, or none of them when any entry is invalid. Pass an empty array to clear them; on providers
+     * where query-time boosts replace the engine's stored boosts, clearing restores the stored boosts.
+     *
+     * @param array<string, Boost[]> $boosts The boosts keyed by field name, in the shape `getBoosts()` returns
+     * @return static - this query, for chaining
+     * @throws InvalidArgumentException When a field name is empty, a field's entry is not an array, an element is
+     *     not a `Boost`, or the provider's adaptor rejects a boost
+     */
+    public function setBoosts(array $boosts): static
+    {
+        $this->boostCollection->setBoosts($boosts);
+
+        return $this;
+    }
+
+    /**
+     * Get all boosts.
+     *
+     * @return array<int|string, Boost[]> - the boosts keyed by field name, each holding a list in insertion order;
+     *     numeric field names come back as `int` keys, so adaptors must cast them to `string`
+     */
+    public function getBoosts(): array
+    {
+        return $this->boostCollection->getBoosts();
     }
 
     /**

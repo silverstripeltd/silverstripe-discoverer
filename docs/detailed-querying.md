@@ -10,6 +10,7 @@
   * [Filters](#filters)
   * [Facets](#facets)
   * [Tags](#tags)
+  * [Boosts](#boosts)
 * [Blocking search keywords](#blocking-search-keywords)
 
 ## `SearchService` class
@@ -430,6 +431,48 @@ $query->addTag('global');
 $query->addTag('header');
 
 ```
+
+### Boosts
+
+Boosts adjust relevance for a single query. Support differs between search service providers; where a provider does not support query-time boosts, they are ignored.
+
+**Note:** some providers (the Silverstripe Search Service among them) let query-time boosts **replace** the boosts stored on the engine for that query, rather than add to them. If you send any boost, include every boost you want applied.
+
+There are two kinds of boost, a `ValueBoost` and a `ProximityBoost`. Both are created through the `Boost` class and added to a field with `addBoost()`.
+
+A value boost raises documents whose field matches one of the listed values:
+
+```PHP
+use SilverStripe\Discoverer\Query\Boost\Boost;
+use SilverStripe\Discoverer\Query\Boost\ProximityBoost;
+
+$query = Query::create('query string');
+
+// the second argument is the boost factor, null uses the provider default
+$query->addBoost('featured', Boost::value(['yes'], 5));
+```
+
+A proximity boost raises documents whose field is close to a centre value. The centre can be a number, a date or a location, and it is passed through as a string or number for the provider to interpret. The decay function sets how quickly the boost falls away with distance from the centre:
+
+* `ProximityBoost::FUNCTION_GAUSSIAN`
+* `ProximityBoost::FUNCTION_EXPONENTIAL`
+* `ProximityBoost::FUNCTION_LINEAR`
+
+```PHP
+// favour recently published documents
+$query->addBoost('published_date', Boost::proximity('now', ProximityBoost::FUNCTION_LINEAR, 2));
+
+// favour documents near a location
+$query->addBoost('location', Boost::proximity('51.5074,-0.1278', ProximityBoost::FUNCTION_GAUSSIAN));
+```
+
+Several boosts can be added to the same field; they are kept in the order they were added. Use `getBoosts()` to read them back, keyed by field name.
+
+Use `setBoosts()` to replace all boosts at once, passing the same shape that `getBoosts()` returns (field name to a list of `Boost` objects). Passing an empty array clears them, which on providers where query-time boosts replace the stored boosts restores the engine's stored boosts.
+
+Each provider translates boosts into its own request format through a `BoostAdaptor`, which it registers with the Injector. A provider that does not support boosts falls back to the default `NullBoostAdaptor`, which ignores them.
+
+A provider can set its own limits on boosts, such as a narrower range of factors. The adaptor checks each boost as it is added, so `addBoost()` and `setBoosts()` throw an `InvalidArgumentException` straight away for a boost the provider cannot accept, rather than the search failing later. `setBoosts()` leaves the existing boosts unchanged when it throws.
 
 ## Blocking search keywords
 
