@@ -8,6 +8,9 @@ use SilverStripe\Discoverer\Query\Boost\BoostCollection;
 use SilverStripe\Discoverer\Query\Boost\ProximityBoost;
 use SilverStripe\Discoverer\Query\Boost\ValueBoost;
 
+/**
+ * A boost adaptor for tests that accepts every boost and prepares each one as a plain array.
+ */
 class MockBoostAdaptor implements BoostAdaptor
 {
 
@@ -18,6 +21,9 @@ class MockBoostAdaptor implements BoostAdaptor
     {
     }
 
+    /**
+     * @inheritDoc
+     */
     public function prepareBoosts(BoostCollection $boostCollection): mixed
     {
         $preparedBoosts = [];
