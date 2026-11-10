@@ -80,7 +80,7 @@ class QueryTest extends SapphireTest
 
     public function testDefaultBoostAdaptorIgnoresBoosts(): void
     {
-        // `setUp()` registers no boost adaptor, so this relies on the default in `_config/adaptors.yml`
+        // Relies on the default adaptor registered in `_config/adaptors.yml`
         $query = Query::create();
         $query->addBoost('featured', Boost::value(['yes']));
         $query->addBoost('published_date', Boost::proximity('now', ProximityBoost::FUNCTION_LINEAR));
