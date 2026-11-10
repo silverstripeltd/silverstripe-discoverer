@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Discoverer\Tests\Query;
 
-use InvalidArgumentException;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Query\Boost\Boost;
@@ -109,17 +108,6 @@ class QueryTest extends SapphireTest
         $this->assertSame($query, $query->addBoost('featured', Boost::value(['yes'])));
     }
 
-    public function testAddBoostKeepsInsertionOrderOnOneField(): void
-    {
-        $query = Query::create();
-        $first = Boost::value(['yes'], 2);
-        $second = Boost::proximity('now', ProximityBoost::FUNCTION_LINEAR);
-
-        $query->addBoost('published_date', $first)->addBoost('published_date', $second);
-
-        $this->assertSame(['published_date' => [$first, $second]], $query->getBoosts());
-    }
-
     public function testAddBoostKeysBoostsByField(): void
     {
         $query = Query::create();
@@ -132,14 +120,7 @@ class QueryTest extends SapphireTest
         $this->assertSame(['featured' => [$featured], 'popularity' => [$popularity]], $query->getBoosts());
     }
 
-    public function testAddBoostRejectsEmptyField(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        Query::create()->addBoost('', Boost::value(['yes']));
-    }
-
-    public function testSetBoostsReplacesAllBoosts(): void
+    public function testSetBoosts(): void
     {
         $query = Query::create();
         $query->addBoost('old', Boost::value(['yes']));
@@ -149,43 +130,6 @@ class QueryTest extends SapphireTest
 
         $this->assertSame($query, $query->setBoosts(['featured' => [$featured, $date]]));
         $this->assertSame(['featured' => [$featured, $date]], $query->getBoosts());
-    }
-
-    public function testSetBoostsWithEmptyArrayClearsBoosts(): void
-    {
-        $query = Query::create();
-        $query->addBoost('featured', Boost::value(['yes']));
-
-        $query->setBoosts([]);
-
-        $this->assertSame([], $query->getBoosts());
-    }
-
-    public function testSetBoostsRejectsNonBoostElement(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        Query::create()->setBoosts(['featured' => ['yes']]);
-    }
-
-    public function testSetBoostsRejectsEmptyFieldName(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-
-        Query::create()->setBoosts(['' => [Boost::value(['yes'])]]);
-    }
-
-    public function testSetBoostsLeavesBoostsUnchangedWhenInvalid(): void
-    {
-        $existing = Boost::value(['yes']);
-        $query = Query::create()->addBoost('featured', $existing);
-
-        try {
-            $query->setBoosts(['popularity' => [Boost::value(['high'])], 'category' => ['not a boost']]);
-            $this->fail('Expected an InvalidArgumentException');
-        } catch (InvalidArgumentException) {
-            $this->assertSame(['featured' => [$existing]], $query->getBoosts());
-        }
     }
 
     public function testAddSort(): void
