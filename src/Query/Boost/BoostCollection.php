@@ -51,11 +51,12 @@ class BoostCollection
      * @param string $field the name of the field to boost
      * @param Boost $boost the boost to apply to the field
      * @return static - this collection, for chaining
-     * @throws InvalidArgumentException When the field name is empty, or the adaptor rejects the boost
+     * @throws InvalidArgumentException When the field name is empty or only whitespace, or the adaptor rejects the
+     *     boost
      */
     public function addBoost(string $field, Boost $boost): static
     {
-        if ($field === '') {
+        if (trim($field) === '') {
             throw new InvalidArgumentException('Boost $field must not be empty');
         }
 

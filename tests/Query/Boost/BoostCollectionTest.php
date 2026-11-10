@@ -3,6 +3,7 @@
 namespace SilverStripe\Discoverer\Tests\Query\Boost;
 
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Query\Boost\Boost;
@@ -37,11 +38,31 @@ class BoostCollectionTest extends SapphireTest
         $this->assertSame(['published_date' => [$first, $second]], $collection->getBoosts());
     }
 
-    public function testAddBoostRejectsEmptyField(): void
+    /**
+     * Proves an empty or whitespace-only field name is rejected.
+     *
+     * @param string $field - the blank field name
+     */
+    #[DataProvider('blankFieldProvider')]
+    public function testAddBoostRejectsEmptyField(string $field): void
     {
         $this->expectException(InvalidArgumentException::class);
 
-        BoostCollection::create()->addBoost('', Boost::value(['yes']));
+        BoostCollection::create()->addBoost($field, Boost::value(['yes']));
+    }
+
+    /**
+     * Supplies field names that count as blank.
+     *
+     * @return array<string, array{0: string}> - the blank field names
+     */
+    public static function blankFieldProvider(): array
+    {
+        return [
+            'empty' => [''],
+            'space' => [' '],
+            'tab and newline' => ["\t\n"],
+        ];
     }
 
     public function testSetBoostsReplacesAllBoosts(): void
