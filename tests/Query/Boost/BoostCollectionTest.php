@@ -4,6 +4,7 @@ namespace SilverStripe\Discoverer\Tests\Query\Boost;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
+use RuntimeException;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Discoverer\Query\Boost\Boost;
@@ -161,6 +162,39 @@ class BoostCollectionTest extends SapphireTest
             $collection->setBoosts(['popularity' => [Boost::value(['high'], 2), Boost::value(['low'], 6)]]);
             $this->fail('Expected an InvalidArgumentException');
         } catch (InvalidArgumentException) {
+            $this->assertSame(['featured' => [$existing]], $collection->getBoosts());
+        }
+    }
+
+    /**
+     * Proves `setBoosts()` leaves the existing boosts in place when the adaptor throws something other than an
+     * `InvalidArgumentException`.
+     */
+    public function testSetBoostsLeavesBoostsUnchangedWhenAdaptorFails(): void
+    {
+        $existing = Boost::value(['yes']);
+        $collection = BoostCollection::create()->addBoost('featured', $existing);
+        $collection->setAdaptor(new class extends MockBoostAdaptor {
+
+            /**
+             * Fail on any boost with a factor above 5.
+             *
+             * @param string $field - the name of the field being boosted
+             * @param Boost $boost - the boost to check
+             */
+            public function validateBoost(string $field, Boost $boost): void
+            {
+                if ($boost->getFactor() > 5) {
+                    throw new RuntimeException('Adaptor failure');
+                }
+            }
+
+        });
+
+        try {
+            $collection->setBoosts(['popularity' => [Boost::value(['high'], 2), Boost::value(['low'], 6)]]);
+            $this->fail('Expected a RuntimeException');
+        } catch (RuntimeException) {
             $this->assertSame(['featured' => [$existing]], $collection->getBoosts());
         }
     }

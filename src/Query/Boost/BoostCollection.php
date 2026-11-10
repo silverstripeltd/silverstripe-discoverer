@@ -4,6 +4,7 @@ namespace SilverStripe\Discoverer\Query\Boost;
 
 use InvalidArgumentException;
 use SilverStripe\Core\Injector\Injectable;
+use Throwable;
 
 /**
  * The query-time boosts on a `Query`, keyed by field name.
@@ -72,8 +73,8 @@ class BoostCollection
      *
      * @param array<string, Boost[]> $boosts the boosts keyed by field name, in the shape `getBoosts()` returns
      * @return static - this collection, for chaining
-     * @throws InvalidArgumentException When a field name is empty, a field's entry is not an array, an element is
-     *     not a `Boost`, or the adaptor rejects a boost
+     * @throws InvalidArgumentException When a field name is empty or only whitespace, a field's entry is not an
+     *     array, an element is not a `Boost`, or the adaptor rejects a boost
      */
     public function setBoosts(array $boosts): static
     {
@@ -97,8 +98,8 @@ class BoostCollection
                     $this->addBoost((string) $field, $boost);
                 }
             }
-        } catch (InvalidArgumentException $e) {
-            // Leave the collection unchanged when any entry is invalid
+        } catch (Throwable $e) {
+            // Leave the collection unchanged when any entry fails, including an adaptor throwing outside its contract
             $this->boosts = $previous;
 
             throw $e;
